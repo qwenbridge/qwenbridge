@@ -1,19 +1,21 @@
 ## Summary
 
-Describe the change.
+What changed?
 
-## Type
+## Scope
 
-- [ ] Feature
-- [ ] Bug fix
-- [ ] Refactor
+- [ ] Core engine
+- [ ] API
+- [ ] AI integration
+- [ ] Docker
+- [ ] SDK
 - [ ] Documentation
-- [ ] Test
-- [ ] CI/CD
+- [ ] Tests
 
-## Checklist
+## Validation
 
-- [ ] Tests pass locally with `mvn clean test`
-- [ ] Documentation updated if needed
-- [ ] No secrets or generated files committed
-- [ ] Change matches V1 scope
+- [ ] `mvn clean test` passes
+- [ ] API behavior checked if applicable
+- [ ] Documentation updated if applicable
+
+## Notes

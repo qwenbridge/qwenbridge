@@ -1,16 +1,13 @@
-name: CI
+name: Release
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    tags:
+      - "v*"
 
 jobs:
-  test:
-    name: Build and Test
+  verify:
+    name: Verify Release Tag
     runs-on: ubuntu-latest
 
     steps:
@@ -24,5 +21,8 @@ jobs:
           java-version: 21
           cache: maven
 
-      - name: Run tests
+      - name: Build and test
         run: mvn clean test
+
+      - name: Build package
+        run: mvn clean package -DskipTests
