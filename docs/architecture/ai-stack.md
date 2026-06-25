@@ -1,6 +1,6 @@
 # AI Stack
 
-OmniSearch AI is AI-native but vendor agnostic.
+QwenBridge is AI-native but vendor agnostic.
 
 The current V1 implementation uses mock services.
 

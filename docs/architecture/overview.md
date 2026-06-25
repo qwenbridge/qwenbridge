@@ -1,6 +1,6 @@
 # Architecture Overview
 
-OmniSearch AI is an AI-native intelligence layer that sits between a Search Box and a Search Engine.
+QwenBridge is an AI-native intelligence layer that sits between a Search Box and a Search Engine.
 
 V1 focuses only on Search Box Intelligence.
 

@@ -4,7 +4,7 @@
 
 ## Context
 
-OmniSearch AI must remain independent of any specific AI provider.
+QwenBridge must remain independent of any specific AI provider.
 
 The first implementation will use Ollama with local models, but the architecture must allow additional providers to be added without changing the application pipeline.
 
@@ -34,7 +34,7 @@ The first provider implementation will be Ollama.
 
 ## Scope
 
-This ADR defines the architectural boundary between the OmniSearch AI application and external AI providers.
+This ADR defines the architectural boundary between the QwenBridge application and external AI providers.
 
 It does not define:
 

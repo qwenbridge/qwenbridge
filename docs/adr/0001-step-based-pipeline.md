@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-OmniSearch AI needs a pipeline that can evolve beyond V1.
+QwenBridge needs a pipeline that can evolve beyond V1.
 
 V1 starts with Search Box Intelligence, but future versions may include Forms, Payments, Checkout Flows, AI Prompt Gateway, and API Gateway use cases.
 
