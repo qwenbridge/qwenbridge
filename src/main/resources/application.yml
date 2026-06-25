@@ -12,7 +12,18 @@ management:
         include: health,info,metrics
 
 omnisearch:
-  ollama:
-    base-url: http://localhost:11434
-    qwen-model: qwen2.5
-    embedding-model: bge-m3
+  ai:
+
+    provider: ollama
+
+    ollama:
+
+      base-url: http://localhost:11434
+
+      chat-model: qwen2.5
+
+      embedding-model: bge-m3
+
+      connect-timeout: 5s
+
+      read-timeout: 60s

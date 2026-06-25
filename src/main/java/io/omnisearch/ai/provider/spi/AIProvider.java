@@ -8,7 +8,7 @@ import io.omnisearch.ai.value.ProviderId;
 
 public interface AIProvider {
 
-    ProviderId id();
+    ProviderId providerId();
 
     ChatResponse chat(ChatRequest request);
 
