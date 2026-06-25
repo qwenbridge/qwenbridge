@@ -20,3 +20,10 @@ qwenbridge:
       embedding-model: bge-m3
       connect-timeout: 5s
       read-timeout: 60s
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+
+  swagger-ui:
+    path: /swagger

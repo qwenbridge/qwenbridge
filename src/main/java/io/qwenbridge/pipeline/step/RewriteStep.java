@@ -29,7 +29,7 @@ public class RewriteStep implements PipelineStep<RewriteResult> {
 
         return new RewriteResult(
                 !rewrites.isEmpty(),
-                "mock",
+                "ai",
                 rewrites
         );
     }
