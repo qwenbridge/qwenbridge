@@ -15,9 +15,29 @@ public class SemanticJsonParser {
 
     public SemanticAnalysis parse(String json) {
         try {
-            return objectMapper.readValue(json, SemanticAnalysis.class);
+            return objectMapper.readValue(sanitize(json), SemanticAnalysis.class);
         } catch (Exception exception) {
             throw new IllegalArgumentException("failed to parse semantic analysis JSON", exception);
         }
+    }
+
+    private String sanitize(String json) {
+        if (json == null) {
+            throw new IllegalArgumentException("semantic analysis JSON must not be null");
+        }
+
+        String sanitized = json.trim();
+
+        if (sanitized.startsWith("```json")) {
+            sanitized = sanitized.substring("```json".length()).trim();
+        } else if (sanitized.startsWith("```")) {
+            sanitized = sanitized.substring("```".length()).trim();
+        }
+
+        if (sanitized.endsWith("```")) {
+            sanitized = sanitized.substring(0, sanitized.length() - "```".length()).trim();
+        }
+
+        return sanitized;
     }
 }

@@ -46,4 +46,41 @@ class SemanticJsonParserTest {
         assertThat(analysis.ambiguity().ambiguous()).isFalse();
         assertThat(analysis.confidence()).isEqualTo(0.9);
     }
+
+    @Test
+    void shouldParseSemanticAnalysisJsonWrappedInMarkdownFence() {
+        SemanticJsonParser parser = new SemanticJsonParser(new ObjectMapper());
+
+        String json = """
+                ```json
+                {
+                  "originalQuery": "میز",
+                  "normalizedQuery": "table",
+                  "semanticMeaning": "User is searching for a table.",
+                  "entities": [
+                    {
+                      "value": "table",
+                      "type": "PRODUCT",
+                      "confidence": 0.91
+                    }
+                  ],
+                  "domainHints": ["product_search"],
+                  "ambiguity": {
+                    "ambiguous": false,
+                    "possibleMeanings": []
+                  },
+                  "confidence": 0.88
+                }
+                ```
+                """;
+
+        SemanticAnalysis analysis = parser.parse(json);
+
+        assertThat(analysis.originalQuery()).isEqualTo("میز");
+        assertThat(analysis.normalizedQuery()).isEqualTo("table");
+        assertThat(analysis.semanticMeaning()).isEqualTo("User is searching for a table.");
+        assertThat(analysis.entities()).hasSize(1);
+        assertThat(analysis.entities().getFirst().type()).isEqualTo(SemanticEntityType.PRODUCT);
+        assertThat(analysis.confidence()).isEqualTo(0.88);
+    }
 }
