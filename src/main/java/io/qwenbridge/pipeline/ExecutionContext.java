@@ -27,6 +27,7 @@ public class ExecutionContext {
         store(ConfidenceResult.class, ConfidenceResult.zero());
         store(DecisionResult.class, DecisionResult.none());
         store(ExecutionPlanResult.class, ExecutionPlanResult.none());
+        store(ExecutionResultResult.class, ExecutionResultResult.none());
     }
 
     public RequestContext request() {

@@ -9,6 +9,7 @@ import io.qwenbridge.execution.ExecutionPlanFactory;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.result.DecisionResult;
 import org.junit.jupiter.api.Test;
+import io.qwenbridge.execution.DefaultExecutionEngine;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,7 +35,8 @@ class DecisionStepTest {
 
         DecisionStep step = new DecisionStep(
                 decisionService,
-                new ExecutionPlanFactory()
+                new ExecutionPlanFactory(),
+                new DefaultExecutionEngine()
         );
 
         DecisionResult result = step.execute(context);
@@ -51,7 +53,8 @@ class DecisionStepTest {
 
         DecisionStep step = new DecisionStep(
                 decisionService,
-                new ExecutionPlanFactory()
+                new ExecutionPlanFactory(),
+                new DefaultExecutionEngine()
         );
 
         DecisionResult result = step.execute(context);
