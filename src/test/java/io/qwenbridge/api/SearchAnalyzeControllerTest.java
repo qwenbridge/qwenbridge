@@ -59,6 +59,27 @@ class SearchAnalyzeControllerTest {
     }
 
     @Test
+    void shouldReturnExecutionPlanAndExecutionResult() throws Exception {
+        when(aiRewriteService.rewrite("table")).thenReturn("table");
+
+        mockMvc.perform(post("/api/v1/search/analyze")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"query\":\"table\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.decision").value("ALLOW"))
+                .andExpect(jsonPath("$.executionPlan.available").value(true))
+                .andExpect(jsonPath("$.executionPlan.mode").exists())
+                .andExpect(jsonPath("$.executionPlan.backend").exists())
+                .andExpect(jsonPath("$.executionPlan.steps").isArray())
+                .andExpect(jsonPath("$.executionPlan.steps[0].operation").exists())
+                .andExpect(jsonPath("$.executionResult.available").value(true))
+                .andExpect(jsonPath("$.executionResult.executed").value(true))
+                .andExpect(jsonPath("$.executionResult.operations").isArray())
+                .andExpect(jsonPath("$.executionResult.results").isArray())
+                .andExpect(jsonPath("$.executionResult.reason").exists());
+    }
+
+    @Test
     void shouldRejectBlankQuery() throws Exception {
         mockMvc.perform(post("/api/v1/search/analyze")
                         .contentType(MediaType.APPLICATION_JSON)
