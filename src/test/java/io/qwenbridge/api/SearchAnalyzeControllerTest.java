@@ -50,7 +50,12 @@ class SearchAnalyzeControllerTest {
                 .andExpect(jsonPath("$.originalQuery").value("table"))
                 .andExpect(jsonPath("$.language").value("en"))
                 .andExpect(jsonPath("$.decision").value("ALLOW"))
-                .andExpect(jsonPath("$.rewrites[0]").value("table"));
+                .andExpect(jsonPath("$.rewrites[0]").value("table"))
+                .andExpect(jsonPath("$.executionPlan.available").value(true))
+                .andExpect(jsonPath("$.executionPlan.mode").exists())
+                .andExpect(jsonPath("$.executionPlan.backend").exists())
+                .andExpect(jsonPath("$.executionPlan.steps").isArray())
+                .andExpect(jsonPath("$.executionPlan.steps[0].operation").exists());
     }
 
     @Test

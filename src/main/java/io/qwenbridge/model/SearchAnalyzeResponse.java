@@ -19,5 +19,6 @@ public record SearchAnalyzeResponse(
         double semanticScore,
         boolean policyPassed,
         List<String> policyViolations,
+        ExecutionPlanResponse executionPlan,
         List<PipelineTraceItem> pipelineTrace
 ) {}

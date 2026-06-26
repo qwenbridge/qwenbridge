@@ -11,6 +11,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
+import io.qwenbridge.model.ExecutionPlanResponse;
+import io.qwenbridge.model.ExecutionStepResponse;
+
 @Service
 public class SearchPipeline {
 
@@ -34,6 +37,7 @@ public class SearchPipeline {
         PolicyResult policy = context.get(PolicyResult.class);
         ConfidenceResult confidence = context.get(ConfidenceResult.class);
         DecisionResult decision = context.get(DecisionResult.class);
+        ExecutionPlanResult executionPlan = context.get(ExecutionPlanResult.class);
 
         DecisionType finalDecision = resolveFinalDecision(threat, policy, decision);
         double finalConfidence = resolveFinalConfidence(threat, policy, confidence);
@@ -57,7 +61,28 @@ public class SearchPipeline {
                 semantic.score(),
                 policy.passed(),
                 policy.violations(),
+                toExecutionPlanResponse(executionPlan),
                 context.trace()
+        );
+    }
+
+    private ExecutionPlanResponse toExecutionPlanResponse(ExecutionPlanResult result) {
+        if (result == null || !result.available()) {
+            return ExecutionPlanResponse.unavailable();
+        }
+
+        return new ExecutionPlanResponse(
+                true,
+                result.plan().mode(),
+                result.plan().backend(),
+                result.plan().steps().stream()
+                        .map(step -> new ExecutionStepResponse(
+                                step.order(),
+                                step.operation(),
+                                step.reason()
+                        ))
+                        .toList(),
+                result.plan().reason()
         );
     }
 
