@@ -14,6 +14,7 @@ class SemanticPromptBuilderTest {
 
         assertThat(prompt).contains("cheap iphone for my son");
         assertThat(prompt).contains("Return only valid JSON");
+        assertThat(prompt).contains("Do not wrap the response in markdown");
         assertThat(prompt).contains("originalQuery");
         assertThat(prompt).contains("normalizedQuery");
         assertThat(prompt).contains("semanticMeaning");
@@ -21,5 +22,17 @@ class SemanticPromptBuilderTest {
         assertThat(prompt).contains("domainHints");
         assertThat(prompt).contains("ambiguity");
         assertThat(prompt).contains("confidence");
+    }
+
+    @Test
+    void shouldTellAIToUseExactlyOneValidEntityType() {
+        SemanticPromptBuilder builder = new SemanticPromptBuilder();
+
+        String prompt = builder.build("table");
+
+        assertThat(prompt).contains("type must be exactly one of");
+        assertThat(prompt).contains("type must never contain multiple values");
+        assertThat(prompt).contains("never return values like PRODUCT|CATEGORY");
+        assertThat(prompt).contains("if unsure, use UNKNOWN");
     }
 }
