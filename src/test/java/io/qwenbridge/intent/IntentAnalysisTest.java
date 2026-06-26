@@ -12,6 +12,7 @@ class IntentAnalysisTest {
         IntentAnalysis analysis = IntentAnalysis.productSearch();
 
         assertThat(analysis.type()).isEqualTo(IntentType.PRODUCT_SEARCH);
+        assertThat(analysis.reason()).isEqualTo("Default product search intent.");
         assertThat(analysis.confidence()).isEqualTo(0.5);
     }
 
@@ -20,6 +21,24 @@ class IntentAnalysisTest {
         assertThat(IntentType.from("PRODUCT_SEARCH")).isEqualTo(IntentType.PRODUCT_SEARCH);
         assertThat(IntentType.from("PRODUCT_SEARCH|FILTER")).isEqualTo(IntentType.UNKNOWN);
         assertThat(IntentType.from(null)).isEqualTo(IntentType.UNKNOWN);
+    }
+
+    @Test
+    void shouldFallbackToUnknownTypeWhenTypeIsNull() {
+        IntentAnalysis analysis = new IntentAnalysis(null, "reason", 0.4);
+
+        assertThat(analysis.type()).isEqualTo(IntentType.UNKNOWN);
+    }
+
+    @Test
+    void shouldFallbackToDefaultReasonWhenReasonIsBlank() {
+        IntentAnalysis analysis = new IntentAnalysis(
+                IntentType.PRODUCT_SEARCH,
+                " ",
+                0.7
+        );
+
+        assertThat(analysis.reason()).isEqualTo("No intent reason provided.");
     }
 
     @Test

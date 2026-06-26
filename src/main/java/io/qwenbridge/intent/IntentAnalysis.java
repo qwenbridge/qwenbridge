@@ -9,11 +9,10 @@ public record IntentAnalysis(
 ) {
 
     public IntentAnalysis {
-        Objects.requireNonNull(type, "type must not be null");
-        Objects.requireNonNull(reason, "reason must not be null");
+        type = Objects.requireNonNullElse(type, IntentType.UNKNOWN);
 
-        if (reason.isBlank()) {
-            throw new IllegalArgumentException("reason must not be blank");
+        if (reason == null || reason.isBlank()) {
+            reason = "No intent reason provided.";
         }
 
         if (confidence < 0.0 || confidence > 1.0) {
