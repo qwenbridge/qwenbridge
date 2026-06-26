@@ -1,5 +1,6 @@
 package io.qwenbridge.pipeline.step;
 
+import io.qwenbridge.intent.IntentAnalysis;
 import io.qwenbridge.intent.IntentService;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.result.IntentResult;
@@ -19,8 +20,7 @@ public class IntentStep implements PipelineStep<IntentResult> {
     public Class<IntentResult> resultType() { return IntentResult.class; }
 
     public IntentResult execute(ExecutionContext context) {
-        return new IntentResult(
-                intentService.detect(context.request().originalQuery())
-        );
+        IntentAnalysis analysis = intentService.analyze(context.request().originalQuery());
+        return IntentResult.from(analysis);
     }
 }
