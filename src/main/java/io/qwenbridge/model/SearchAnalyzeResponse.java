@@ -20,5 +20,6 @@ public record SearchAnalyzeResponse(
         boolean policyPassed,
         List<String> policyViolations,
         ExecutionPlanResponse executionPlan,
+        ExecutionResultResponse executionResult,
         List<PipelineTraceItem> pipelineTrace
 ) {}

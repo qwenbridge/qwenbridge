@@ -1,6 +1,9 @@
 package io.qwenbridge.pipeline;
 
 import io.qwenbridge.decision.DecisionType;
+import io.qwenbridge.model.ExecutionPlanResponse;
+import io.qwenbridge.model.ExecutionResultResponse;
+import io.qwenbridge.model.ExecutionStepResponse;
 import io.qwenbridge.model.SearchAnalyzeRequest;
 import io.qwenbridge.model.SearchAnalyzeResponse;
 import io.qwenbridge.pipeline.result.*;
@@ -9,10 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
-
-import io.qwenbridge.model.ExecutionPlanResponse;
-import io.qwenbridge.model.ExecutionStepResponse;
 
 @Service
 public class SearchPipeline {
@@ -38,6 +37,7 @@ public class SearchPipeline {
         ConfidenceResult confidence = context.get(ConfidenceResult.class);
         DecisionResult decision = context.get(DecisionResult.class);
         ExecutionPlanResult executionPlan = context.get(ExecutionPlanResult.class);
+        ExecutionResultResult executionResult = context.get(ExecutionResultResult.class);
 
         DecisionType finalDecision = resolveFinalDecision(threat, policy, decision);
         double finalConfidence = resolveFinalConfidence(threat, policy, confidence);
@@ -62,6 +62,7 @@ public class SearchPipeline {
                 policy.passed(),
                 policy.violations(),
                 toExecutionPlanResponse(executionPlan),
+                toExecutionResultResponse(executionResult),
                 context.trace()
         );
     }
@@ -83,6 +84,20 @@ public class SearchPipeline {
                         ))
                         .toList(),
                 result.plan().reason()
+        );
+    }
+
+    private ExecutionResultResponse toExecutionResultResponse(ExecutionResultResult result) {
+        if (result == null || !result.available()) {
+            return ExecutionResultResponse.unavailable();
+        }
+
+        return new ExecutionResultResponse(
+                true,
+                result.result().executed(),
+                result.result().operations(),
+                result.result().results(),
+                result.result().reason()
         );
     }
 
