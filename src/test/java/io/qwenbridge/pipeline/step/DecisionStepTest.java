@@ -5,11 +5,15 @@ import io.qwenbridge.decision.DecisionType;
 import io.qwenbridge.decision.SearchBackend;
 import io.qwenbridge.decision.SearchDecision;
 import io.qwenbridge.decision.SearchMode;
+import io.qwenbridge.execution.DefaultExecutionEngine;
 import io.qwenbridge.execution.ExecutionPlanFactory;
+import io.qwenbridge.execution.executor.DirectAnswerExecutor;
+import io.qwenbridge.execution.executor.KeywordSearchExecutor;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.result.DecisionResult;
 import org.junit.jupiter.api.Test;
-import io.qwenbridge.execution.DefaultExecutionEngine;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,7 +40,10 @@ class DecisionStepTest {
         DecisionStep step = new DecisionStep(
                 decisionService,
                 new ExecutionPlanFactory(),
-                new DefaultExecutionEngine()
+                new DefaultExecutionEngine(List.of(
+                        new KeywordSearchExecutor(),
+                        new DirectAnswerExecutor()
+                ))
         );
 
         DecisionResult result = step.execute(context);
@@ -54,7 +61,10 @@ class DecisionStepTest {
         DecisionStep step = new DecisionStep(
                 decisionService,
                 new ExecutionPlanFactory(),
-                new DefaultExecutionEngine()
+                new DefaultExecutionEngine(List.of(
+                        new KeywordSearchExecutor(),
+                        new DirectAnswerExecutor()
+                ))
         );
 
         DecisionResult result = step.execute(context);
