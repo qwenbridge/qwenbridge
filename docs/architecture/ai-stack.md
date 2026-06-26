@@ -1,76 +1,29 @@
 # AI Stack
 
-QwenBridge is AI-native but vendor agnostic.
+QwenBridge follows an AI-first, provider-agnostic architecture.
 
-The current V1 implementation uses mock services.
+## Current Stack
 
-Future versions will integrate real AI models.
+Ollama ↓ Qwen ↓ BGE-M3 ↓ QwenBridge Pipeline
 
-## Planned Stack
+## Responsibilities
 
-Ollama
+### Qwen
 
-↓
+-   Intent analysis
+-   Query rewrite
+-   Decision generation
+-   Structured JSON output
 
-Qwen
+### BGE-M3
 
-↓
+-   Embeddings
+-   Semantic similarity
+-   Semantic validation
 
-BGE-M3
+### Ollama
 
-## Ollama
+-   Local model runtime
 
-Responsible for local model execution.
-
-## Qwen
-
-Responsibilities
-
-- Query Rewrite
-- Intent Detection
-- Query Expansion
-- Canonical Query
-- JSON Generation
-
-Qwen generates candidate rewrites.
-
-## BGE-M3
-
-Responsibilities
-
-- Semantic Understanding
-- Multilingual Understanding
-- Semantic Validation
-- Semantic Drift Detection
-
-BGE-M3 never rewrites text.
-
-It validates the meaning of rewritten queries.
-
-## Flow
-
-User Query
-
-↓
-
-Qwen
-
-↓
-
-Candidate Queries
-
-↓
-
-BGE-M3
-
-↓
-
-Semantic Validation
-
-↓
-
-Rules
-
-↓
-
-Decision
+The provider abstraction allows replacing models without changing
+business logic.

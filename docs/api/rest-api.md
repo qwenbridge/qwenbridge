@@ -1,68 +1,171 @@
 # REST API
 
-## POST /api/v1/search/analyze
+## Overview
 
-Analyzes a search-box query and returns the pipeline decision.
+The QwenBridge REST API exposes the AI-native search pipeline through a
+single endpoint.
 
-## Request
+The pipeline performs:
 
-Method: POST
+-   Language detection
+-   Intent analysis
+-   Policy evaluation
+-   Threat analysis
+-   Query rewrite
+-   Semantic analysis
+-   AI decision making
+-   Execution plan generation
+-   Execution execution
+-   Confidence scoring
+-   Pipeline tracing
 
-Path:
+------------------------------------------------------------------------
 
-    /api/v1/search/analyze
+# Analyze Search Query
 
-Content-Type:
+**Method**
 
-    application/json
+``` http
+POST /api/search/analyze
+```
 
-Body:
+**Content-Type**
 
-    {
-      "query": "میز"
-    }
+``` text
+application/json
+```
 
-## Successful Response
+------------------------------------------------------------------------
 
-    {
-      "requestId": "uuid",
-      "processingTimeMs": 1,
-      "originalQuery": "میز",
-      "language": "fa",
-      "intent": "PRODUCT_SEARCH",
-      "decision": "REWRITE",
-      "confidence": 0.94,
-      "rewrites": ["desk", "table", "office desk"],
-      "threatReasons": [],
-      "semanticValidated": true,
-      "semanticScore": 0.96,
-      "policyPassed": true,
-      "policyViolations": [],
-      "pipelineTrace": []
-    }
+# Request
 
-## Decision Types
+``` json
+{
+  "query": "wireless gaming mouse"
+}
+```
 
-- ALLOW
-- REWRITE
-- CLARIFY
-- BLOCK
+------------------------------------------------------------------------
 
-## Threat Example
+# Processing Pipeline
 
-Request:
+``` text
+Query
+ │
+ ▼
+Language
+ │
+Intent
+ │
+Policy
+ │
+Threat
+ │
+Rewrite
+ │
+Semantic
+ │
+Decision
+ │
+Execution Plan
+ │
+Execution Engine
+ │
+Execution Result
+```
 
-    {
-      "query": "desk union select password from users"
-    }
+------------------------------------------------------------------------
 
-Expected result:
+# Successful Response
 
-    {
-      "decision": "BLOCK",
-      "threatReasons": ["SQL_INJECTION"]
-    }
+``` json
+{
+  "requestId": "uuid",
+  "processingTimeMs": 14,
+  "originalQuery": "wireless gaming mouse",
+  "language": "en",
+  "intent": {},
+  "rewrite": {},
+  "semantic": {},
+  "decision": {},
+  "executionPlan": {
+    "steps": [
+      {
+        "order": 1,
+        "operation": "VECTOR_SEARCH",
+        "description": "Search vector index"
+      }
+    ]
+  },
+  "executionResult": {
+    "executed": true,
+    "operations": [
+      "VECTOR_SEARCH"
+    ],
+    "results": [
+      "vector-search-placeholder-result"
+    ],
+    "reason": "Execution plan executed successfully."
+  },
+  "confidence": {},
+  "pipelineTrace": []
+}
+```
 
-## Validation
+------------------------------------------------------------------------
 
-Blank query returns HTTP 400.
+# Decision Types
+
+-   DIRECT_ANSWER
+-   KEYWORD_SEARCH
+-   VECTOR_SEARCH
+-   HYBRID_SEARCH
+
+------------------------------------------------------------------------
+
+# Execution Operations
+
+-   DIRECT_ANSWER
+-   KEYWORD_SEARCH
+-   VECTOR_SEARCH
+-   HYBRID_SEARCH
+-   FACET
+-   RERANK
+-   RETURN_RESULTS
+
+------------------------------------------------------------------------
+
+# Validation
+
+Invalid request:
+
+``` json
+{
+  "query": ""
+}
+```
+
+Returns:
+
+``` text
+HTTP 400 Bad Request
+```
+
+------------------------------------------------------------------------
+
+# HTTP Status Codes
+
+    Status Description
+  -------- -------------------------
+       200 Successful request
+       400 Validation failed
+       500 Unexpected server error
+
+------------------------------------------------------------------------
+
+# Future Endpoints
+
+-   POST /api/search/analyze
+-   POST /api/search/chat
+-   POST /api/search/rewrite
+-   POST /api/search/semantic

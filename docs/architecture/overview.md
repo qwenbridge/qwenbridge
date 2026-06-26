@@ -1,33 +1,40 @@
 # Architecture Overview
 
-QwenBridge is an AI-native intelligence layer that sits between a Search Box and a Search Engine.
-
-V1 focuses only on Search Box Intelligence.
+QwenBridge is an AI-native Search Decision Engine that transforms a raw
+user query into a structured execution plan and executes it through a
+modular execution engine.
 
 ## Goals
 
-- Understand user intent
-- Improve search quality
-- Detect malicious input
-- Rewrite queries safely
-- Validate semantic meaning
-- Produce one final decision
+-   Understand user intent
+-   Rewrite ambiguous queries
+-   Validate semantic meaning
+-   Select the optimal search strategy
+-   Produce an executable plan
+-   Execute the selected operations
+-   Return structured execution results
 
-## Principles
+## Core Principles
 
-- Stateless
-- Real-time
-- AI Native
-- Vendor Agnostic
-- Search Engine Agnostic
-- Database Agnostic
-- Language Agnostic
-- Observable
-- Testable
+-   AI-first
+-   Stateless
+-   Modular
+-   Provider agnostic
+-   Search engine agnostic
+-   Testable
+-   Observable
+-   Extensible
 
-## Final Decisions
+## High-Level Flow
 
-- ALLOW
-- REWRITE
-- CLARIFY
-- BLOCK
+User Query ↓ Pipeline ↓ AI Decision ↓ Execution Plan ↓ Execution Engine
+↓ Execution Result ↓ REST API Response
+
+## V2 Components
+
+-   Pipeline Engine
+-   Decision Engine
+-   Execution Plan Factory
+-   Execution Engine
+-   Operation Executors
+-   REST API

@@ -1,47 +1,15 @@
 # Pipeline
 
-The pipeline executes independent processing steps.
+## Processing Flow
 
-User Query
+User Query ↓ Language ↓ Intent ↓ Policy ↓ Threat ↓ Rewrite ↓ Semantic ↓
+Decision ↓ Confidence ↓ Execution Plan ↓ Execution Engine ↓ Execution
+Result
 
-↓
+Each stage is isolated and produces its own immutable Result object.
 
-LanguageStep
+ExecutionContext transports results between stages while keeping steps
+independent.
 
-↓
-
-IntentStep
-
-↓
-
-ThreatStep
-
-↓
-
-RewriteStep
-
-↓
-
-SemanticStep
-
-↓
-
-PolicyStep
-
-↓
-
-ConfidenceStep
-
-↓
-
-DecisionStep
-
-↓
-
-Search Engine
-
-Every step returns its own Result object.
-
-ExecutionContext stores results by type.
-
-PipelineEngine never knows internal business logic.
+The Execution Engine dispatches every ExecutionStep to an
+ExecutionOperationExecutor implementation.

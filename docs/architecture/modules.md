@@ -2,71 +2,44 @@
 
 ## api
 
-REST API layer.
+REST endpoints.
 
 ## pipeline
 
-Pipeline engine.
-
-Execution context.
-
-Pipeline steps.
-
-Pipeline results.
+Pipeline engine, context, steps and result models.
 
 ## language
 
 Language detection.
 
-Language detection never blocks requests.
-
 ## intent
 
-Intent detection.
-
-Current intents
-
-- PRODUCT_SEARCH
-- DISCOVERY
-- COMPARISON
-- QUESTION
-- UNKNOWN
-
-## threat
-
-Threat detection.
-
-Current threats
-
-- SQL Injection
-- XSS
-- Prompt Injection
-- Command Injection
-- Path Traversal
+Intent analysis.
 
 ## rewrite
 
-Query rewrite.
+AI query rewriting.
 
 ## semantic
 
-Semantic validation.
-
-## policy
-
-Business rules.
-
-## confidence
-
-Confidence calculation.
+Semantic understanding and validation.
 
 ## decision
 
-Final decision generation.
+AI search strategy selection.
 
-Possible decisions
+## execution
 
-- ALLOW
-- REWRITE
-- CLARIFY
-- BLOCK
+Execution plan, execution engine and operation executors.
+
+Executors: - DirectAnswerExecutor - KeywordSearchExecutor -
+VectorSearchExecutor - HybridSearchExecutor - FacetExecutor -
+RerankExecutor - ReturnResultsExecutor
+
+## ai
+
+Provider abstraction and AI integrations.
+
+## model
+
+REST request/response models.
