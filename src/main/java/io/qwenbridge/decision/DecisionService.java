@@ -1,13 +1,30 @@
 package io.qwenbridge.decision;
 
+import io.qwenbridge.decision.ai.AIDecisionService;
+import io.qwenbridge.pipeline.ExecutionContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 public class DecisionService {
-    public DecisionType decide(double confidence, List<String> rewrites) {
-        if (confidence < 0.50) return DecisionType.CLARIFY;
-        if (rewrites.size() > 1) return DecisionType.REWRITE;
-        return DecisionType.ALLOW;
+
+    private static final Logger log = LoggerFactory.getLogger(DecisionService.class);
+
+    private final AIDecisionService aiDecisionService;
+
+    public DecisionService(AIDecisionService aiDecisionService) {
+        this.aiDecisionService = aiDecisionService;
+    }
+
+    public SearchDecision decide(ExecutionContext context) {
+        try {
+            return aiDecisionService.decide(context);
+        } catch (Exception ex) {
+            log.warn("AI decision failed. Falling back to safe keyword search decision. query={}",
+                    context.request().originalQuery(), ex);
+
+            return SearchDecision.keyword();
+        }
     }
 }

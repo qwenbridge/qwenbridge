@@ -2,28 +2,34 @@ package io.qwenbridge.pipeline.step;
 
 import io.qwenbridge.decision.DecisionService;
 import io.qwenbridge.decision.DecisionType;
+import io.qwenbridge.decision.SearchDecision;
 import io.qwenbridge.pipeline.ExecutionContext;
-import io.qwenbridge.pipeline.result.ConfidenceResult;
 import io.qwenbridge.pipeline.result.DecisionResult;
-import io.qwenbridge.pipeline.result.RewriteResult;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DecisionStepTest {
 
     @Test
-    void shouldReturnRewriteDecisionWhenMultipleRewritesExist() {
+    void shouldReturnRewriteDecisionWhenSearchDecisionRequiresRewrite() {
         ExecutionContext context = new ExecutionContext("میز");
-        context.store(ConfidenceResult.class, new ConfidenceResult(0.94));
-        context.store(
-                RewriteResult.class,
-                new RewriteResult(true, "mock", List.of("desk", "table"))
-        );
 
-        DecisionStep step = new DecisionStep(new DecisionService());
+        DecisionService decisionService = new DecisionService(ctx -> new SearchDecision(
+                io.qwenbridge.decision.SearchMode.KEYWORD,
+                io.qwenbridge.decision.SearchBackend.IN_MEMORY,
+                true,
+                false,
+                false,
+                true,
+                false,
+                true,
+                false,
+                0.75,
+                "Rewrite is required before search execution."
+        ));
+
+        DecisionStep step = new DecisionStep(decisionService);
 
         DecisionResult result = step.execute(context);
 
@@ -31,15 +37,12 @@ class DecisionStepTest {
     }
 
     @Test
-    void shouldReturnAllowDecisionWhenSingleRewriteExists() {
+    void shouldReturnAllowDecisionWhenSearchDecisionDoesNotRequireRewrite() {
         ExecutionContext context = new ExecutionContext("desk");
-        context.store(ConfidenceResult.class, new ConfidenceResult(0.80));
-        context.store(
-                RewriteResult.class,
-                new RewriteResult(true, "mock", List.of("desk"))
-        );
 
-        DecisionStep step = new DecisionStep(new DecisionService());
+        DecisionService decisionService = new DecisionService(ctx -> SearchDecision.keyword());
+
+        DecisionStep step = new DecisionStep(decisionService);
 
         DecisionResult result = step.execute(context);
 
