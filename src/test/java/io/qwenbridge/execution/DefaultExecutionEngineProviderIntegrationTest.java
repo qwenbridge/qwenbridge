@@ -46,7 +46,8 @@ class DefaultExecutionEngineProviderIntegrationTest {
 
         assertThat(result.executed()).isTrue();
         assertThat(result.operations()).containsExactly(ExecutionOperation.KEYWORD_SEARCH);
-        assertThat(result.results()).isEmpty();
+        assertThat(result.results()).hasSize(1);
+        assertThat(result.results().getFirst()).contains("iPhone 16 Pro");
         assertThat(result.reason())
                 .isEqualTo("Execution plan executed successfully using search provider: inmemory");
     }
