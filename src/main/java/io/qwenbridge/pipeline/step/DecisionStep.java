@@ -37,7 +37,7 @@ public class DecisionStep implements PipelineStep<DecisionResult> {
     public DecisionResult execute(ExecutionContext context) {
         SearchDecision decision = decisionService.decide(context);
         ExecutionPlan plan = executionPlanFactory.from(decision);
-        ExecutionResult executionResult = executionEngine.execute(plan);
+        ExecutionResult executionResult = executionEngine.execute(plan, context);
 
         context.store(ExecutionPlanResult.class, new ExecutionPlanResult(plan));
         context.store(ExecutionResultResult.class, new ExecutionResultResult(executionResult));

@@ -1,11 +1,14 @@
 package io.qwenbridge.pipeline;
 
 import io.qwenbridge.decision.DecisionType;
+import io.qwenbridge.execution.provider.model.SearchResponse;
 import io.qwenbridge.model.ExecutionPlanResponse;
 import io.qwenbridge.model.ExecutionResultResponse;
 import io.qwenbridge.model.ExecutionStepResponse;
 import io.qwenbridge.model.SearchAnalyzeRequest;
 import io.qwenbridge.model.SearchAnalyzeResponse;
+import io.qwenbridge.model.SearchHitResponse;
+import io.qwenbridge.model.SearchResultResponse;
 import io.qwenbridge.pipeline.result.*;
 import io.qwenbridge.threat.ThreatResult;
 import org.springframework.stereotype.Service;
@@ -63,6 +66,7 @@ public class SearchPipeline {
                 policy.violations(),
                 toExecutionPlanResponse(executionPlan),
                 toExecutionResultResponse(executionResult),
+                toSearchResultResponse(context),
                 context.trace()
         );
     }
@@ -98,6 +102,29 @@ public class SearchPipeline {
                 result.result().operations(),
                 result.result().results(),
                 result.result().reason()
+        );
+    }
+
+    private SearchResultResponse toSearchResultResponse(ExecutionContext context) {
+        SearchResponse response = context.get(SearchResponse.class);
+
+        if (response == null) {
+            return SearchResultResponse.unavailable();
+        }
+
+        return new SearchResultResponse(
+                true,
+                response.results().totalHits(),
+                response.results().tookMillis(),
+                response.results()
+                        .hits()
+                        .stream()
+                        .map(hit -> new SearchHitResponse(
+                                hit.id(),
+                                hit.score(),
+                                hit.document()
+                        ))
+                        .toList()
         );
     }
 

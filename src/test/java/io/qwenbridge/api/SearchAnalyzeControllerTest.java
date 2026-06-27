@@ -76,7 +76,15 @@ class SearchAnalyzeControllerTest {
                 .andExpect(jsonPath("$.executionResult.executed").value(true))
                 .andExpect(jsonPath("$.executionResult.operations").isArray())
                 .andExpect(jsonPath("$.executionResult.results").isArray())
-                .andExpect(jsonPath("$.executionResult.reason").exists());
+                .andExpect(jsonPath("$.executionResult.reason").exists())
+                .andExpect(jsonPath("$.search.available").value(true))
+                .andExpect(jsonPath("$.search.totalHits").exists())
+                .andExpect(jsonPath("$.search.tookMillis").exists())
+                .andExpect(jsonPath("$.search.hits").isArray())
+                .andExpect(jsonPath("$.search.available").value(true))
+                .andExpect(jsonPath("$.search.totalHits").exists())
+                .andExpect(jsonPath("$.search.tookMillis").exists())
+                .andExpect(jsonPath("$.search.hits").isArray());
     }
 
     @Test

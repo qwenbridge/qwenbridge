@@ -21,5 +21,6 @@ public record SearchAnalyzeResponse(
         List<String> policyViolations,
         ExecutionPlanResponse executionPlan,
         ExecutionResultResponse executionResult,
+        SearchResultResponse search,
         List<PipelineTraceItem> pipelineTrace
 ) {}
