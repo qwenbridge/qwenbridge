@@ -1,6 +1,7 @@
 package io.qwenbridge.pipeline;
 
 import io.qwenbridge.decision.DecisionType;
+import io.qwenbridge.pipeline.context.ContextKey;
 import io.qwenbridge.pipeline.result.*;
 import io.qwenbridge.threat.ThreatResult;
 
@@ -13,6 +14,7 @@ public class ExecutionContext {
 
     private final RequestContext request;
     private final Map<Class<?>, Object> results = new ConcurrentHashMap<>();
+    private final Map<ContextKey<?>, Object> extensions = new ConcurrentHashMap<>();
     private final List<PipelineTraceItem> trace = new ArrayList<>();
 
     public ExecutionContext(String originalQuery) {
@@ -40,6 +42,14 @@ public class ExecutionContext {
 
     public <T> T get(Class<T> type) {
         return type.cast(results.get(type));
+    }
+
+    public <T> void store(ContextKey<T> key, T value) {
+        extensions.put(key, key.type().cast(value));
+    }
+
+    public <T> T get(ContextKey<T> key) {
+        return key.type().cast(extensions.get(key));
     }
 
     public void addTrace(PipelineTraceItem item) {
