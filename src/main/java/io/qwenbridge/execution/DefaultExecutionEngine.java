@@ -75,6 +75,7 @@ public class DefaultExecutionEngine implements ExecutionEngine {
         SearchRequest searchRequest = SearchRequestFactory.from(context);
         SearchProvider provider = searchProviderResolver.resolve(context);
         SearchResponse response = provider.search(searchRequest);
+        context.store(SearchResponse.class, response);
 
         List<String> results = response.results()
                 .hits()
