@@ -1,5 +1,6 @@
 package io.qwenbridge.execution.provider.resolver;
 
+import io.qwenbridge.decision.SearchBackend;
 import io.qwenbridge.execution.provider.spi.SearchProvider;
 import io.qwenbridge.execution.provider.spi.SearchProviderRegistry;
 import io.qwenbridge.execution.provider.spi.SearchProviderResolver;
@@ -20,20 +21,33 @@ public class DefaultSearchProviderResolver implements SearchProviderResolver {
 
     @Override
     public SearchProvider resolve(ExecutionContext context) {
-
         String providerName = DEFAULT_PROVIDER;
 
         if (context.get(ContextKeys.EXECUTION_HINTS) != null) {
             providerName = context.get(ContextKeys.EXECUTION_HINTS).provider();
         }
 
-        var provider = registry.find(providerName);
+        return resolveByProviderName(providerName);
+    }
 
-        if (provider.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Unknown search provider: " + providerName);
-        }
+    @Override
+    public SearchProvider resolve(SearchBackend backend) {
+        String providerName = switch (backend) {
+            case IN_MEMORY -> "inmemory";
+            case OPENSEARCH -> "opensearch";
+            case CUSTOM -> "custom";
+            case NONE -> throw new IllegalStateException(
+                    "No SearchProvider registered for backend: " + backend
+            );
+        };
 
-        return provider.get();
+        return resolveByProviderName(providerName);
+    }
+
+    private SearchProvider resolveByProviderName(String providerName) {
+        return registry.find(providerName)
+                .orElseThrow(() -> new IllegalStateException(
+                        "No SearchProvider registered with name: " + providerName
+                ));
     }
 }
