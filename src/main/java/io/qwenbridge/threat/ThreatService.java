@@ -1,5 +1,12 @@
 package io.qwenbridge.threat;
 
+import io.qwenbridge.threat.decision.ThreatDecisionEngine;
+import io.qwenbridge.threat.detector.ThreatDetector;
+import io.qwenbridge.threat.detector.ThreatDetectorRegistry;
+import io.qwenbridge.threat.model.ThreatAnalysis;
+import io.qwenbridge.threat.model.ThreatDecision;
+import io.qwenbridge.threat.model.ThreatFinding;
+import io.qwenbridge.threat.scoring.ThreatScoringService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -8,29 +15,47 @@ import java.util.List;
 @Service
 public class ThreatService {
 
+    private final ThreatDetectorRegistry detectorRegistry;
+    private final ThreatScoringService scoringService;
+    private final ThreatDecisionEngine decisionEngine;
+
+    public ThreatService(
+            ThreatDetectorRegistry detectorRegistry,
+            ThreatScoringService scoringService,
+            ThreatDecisionEngine decisionEngine
+    ) {
+        this.detectorRegistry = detectorRegistry;
+        this.scoringService = scoringService;
+        this.decisionEngine = decisionEngine;
+    }
+
     public ThreatResult analyze(String query) {
-        String normalized = query.toLowerCase();
+        ThreatAnalysis analysis = analyzeDetailed(query);
 
-        List<String> reasons = new ArrayList<>();
+        return new ThreatResult(
+                analysis.safe(),
+                analysis.findings().stream()
+                        .map(ThreatFinding::reason)
+                        .filter(reason -> reason != null && !reason.isBlank())
+                        .toList()
+        );
+    }
 
-        if (normalized.matches(".*('.*--|or\\s+1=1|union\\s+select|drop\\s+table).*")) {
-            reasons.add("SQL_INJECTION");
+    public ThreatAnalysis analyzeDetailed(String query) {
+        String safeQuery = query == null ? "" : query;
+        List<ThreatFinding> findings = new ArrayList<>();
+
+        for (ThreatDetector detector : detectorRegistry.detectors()) {
+            List<ThreatFinding> detectorFindings = detector.detect(safeQuery);
+
+            if (detectorFindings != null && !detectorFindings.isEmpty()) {
+                findings.addAll(detectorFindings);
+            }
         }
 
-        if (normalized.matches(".*(<script|javascript:|onerror=|onload=).*")) {
-            reasons.add("XSS");
-        }
+        double score = scoringService.score(findings);
+        ThreatDecision decision = decisionEngine.decide(score);
 
-        if (normalized.matches(".*(ignore previous instructions|system prompt|developer message).*")) {
-            reasons.add("PROMPT_INJECTION");
-        }
-
-        if (normalized.matches(".*(\\.\\./|/etc/passwd|cmd.exe|powershell).*")) {
-            reasons.add("COMMAND_OR_PATH_ABUSE");
-        }
-
-        return reasons.isEmpty()
-                ? ThreatResult.noThreat()
-                : ThreatResult.detected(reasons);
+        return ThreatAnalysis.from(findings, decision);
     }
 }
