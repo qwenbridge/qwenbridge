@@ -36,8 +36,10 @@ public class ThreatService {
     }
 
     public ThreatResult analyze(String query) {
-        ThreatAnalysis analysis = analyzeDetailed(query);
+        return toResult(analyzeDetailed(query));
+    }
 
+    public ThreatResult toResult(ThreatAnalysis analysis) {
         List<String> reasons = new ArrayList<>();
 
         reasons.addAll(analysis.findings().stream()

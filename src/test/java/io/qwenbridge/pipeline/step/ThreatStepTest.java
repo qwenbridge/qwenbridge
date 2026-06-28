@@ -3,6 +3,7 @@ package io.qwenbridge.pipeline.step;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.threat.ThreatResult;
 import io.qwenbridge.threat.ThreatService;
+import io.qwenbridge.threat.model.ThreatAnalysis;
 import io.qwenbridge.threat.correlation.ThreatCorrelationService;
 import io.qwenbridge.threat.correlation.ThreatRiskProfile;
 import io.qwenbridge.threat.decision.ThreatDecisionEngine;
@@ -43,6 +44,23 @@ class ThreatStepTest {
 
         assertThat(result.safe()).isTrue();
         assertThat(result.reasons()).isEmpty();
+    }
+
+
+    @Test
+    void shouldStoreDetailedThreatAnalysisInContext() {
+        ExecutionContext context =
+                new ExecutionContext("desk union select password from users");
+
+        ThreatStep step = new ThreatStep(threatServiceWith(new FakeSqlInjectionDetector()));
+
+        ThreatResult result = step.execute(context);
+        ThreatAnalysis analysis = context.get(ThreatAnalysis.class);
+
+        assertThat(result.safe()).isFalse();
+        assertThat(analysis).isNotNull();
+        assertThat(analysis.safe()).isFalse();
+        assertThat(analysis.findings()).isNotEmpty();
     }
 
     private static ThreatService threatServiceWith(ThreatDetector detector) {
