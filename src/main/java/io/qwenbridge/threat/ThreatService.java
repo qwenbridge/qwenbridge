@@ -38,12 +38,21 @@ public class ThreatService {
     public ThreatResult analyze(String query) {
         ThreatAnalysis analysis = analyzeDetailed(query);
 
+        List<String> reasons = new ArrayList<>();
+
+        reasons.addAll(analysis.findings().stream()
+                .map(ThreatFinding::reason)
+                .filter(reason -> reason != null && !reason.isBlank())
+                .toList());
+
+        reasons.addAll(analysis.riskProfile().correlations().stream()
+                .map(correlation -> correlation.reason())
+                .filter(reason -> reason != null && !reason.isBlank())
+                .toList());
+
         return new ThreatResult(
                 analysis.safe(),
-                analysis.findings().stream()
-                        .map(ThreatFinding::reason)
-                        .filter(reason -> reason != null && !reason.isBlank())
-                        .toList()
+                reasons
         );
     }
 
