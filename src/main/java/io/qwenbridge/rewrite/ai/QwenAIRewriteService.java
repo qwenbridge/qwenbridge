@@ -6,6 +6,7 @@ import io.qwenbridge.ai.service.AIService;
 import org.springframework.stereotype.Service;
 
 @Service
+
 public class QwenAIRewriteService implements AIRewriteService {
 
     private final AIService aiService;

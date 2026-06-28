@@ -7,6 +7,7 @@ import io.qwenbridge.semantic.SemanticAnalysis;
 import org.springframework.stereotype.Service;
 
 @Service
+
 public class QwenAISemanticService implements AISemanticService {
 
     private final AIService aiService;

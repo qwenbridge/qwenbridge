@@ -7,6 +7,7 @@ import io.qwenbridge.intent.IntentAnalysis;
 import org.springframework.stereotype.Service;
 
 @Service
+
 public class QwenAIIntentService implements AIIntentService {
 
     private final AIService aiService;

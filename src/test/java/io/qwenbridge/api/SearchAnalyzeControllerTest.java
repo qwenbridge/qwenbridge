@@ -6,7 +6,9 @@ import io.qwenbridge.decision.SearchBackend;
 import io.qwenbridge.decision.SearchMode;
 import io.qwenbridge.execution.provider.opensearch.client.OpenSearchClient;
 import io.qwenbridge.intent.IntentType;
-import io.qwenbridge.rewrite.ai.AIRewriteService;
+import io.qwenbridge.ai.contract.ChatRequest;
+import io.qwenbridge.ai.contract.ChatResponse;
+import io.qwenbridge.ai.service.AIService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -32,7 +34,7 @@ class SearchAnalyzeControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private AIRewriteService aiRewriteService;
+    private AIService aiService;
 
     @MockBean
     private OpenSearchClient openSearchClient;
@@ -42,7 +44,7 @@ class SearchAnalyzeControllerTest {
 
     @Test
     void shouldAnalyzePersianQuery() throws Exception {
-        when(aiRewriteService.rewrite("میز")).thenReturn("table");
+        when(aiService.chat(org.mockito.ArgumentMatchers.any(ChatRequest.class))).thenReturn(new ChatResponse(analysisJson("fa", "میز", "table")));
         when(searchAnalysisService.analyze("میز")).thenReturn(searchAnalysis("fa", "table"));
         when(openSearchClient.search(anyString(), anyMap())).thenReturn(emptyOpenSearchResponse());
 
@@ -61,7 +63,7 @@ class SearchAnalyzeControllerTest {
 
     @Test
     void shouldAnalyzeEnglishQuery() throws Exception {
-        when(aiRewriteService.rewrite("table")).thenReturn("table");
+        when(aiService.chat(org.mockito.ArgumentMatchers.any(ChatRequest.class))).thenReturn(new ChatResponse(analysisJson("en", "table", "table")));
         when(searchAnalysisService.analyze("table")).thenReturn(searchAnalysis("en", "table"));
         when(openSearchClient.search(anyString(), anyMap())).thenReturn(emptyOpenSearchResponse());
 
@@ -84,7 +86,7 @@ class SearchAnalyzeControllerTest {
 
     @Test
     void shouldReturnExecutionPlanAndExecutionResult() throws Exception {
-        when(aiRewriteService.rewrite("table")).thenReturn("table");
+        when(aiService.chat(org.mockito.ArgumentMatchers.any(ChatRequest.class))).thenReturn(new ChatResponse(analysisJson("en", "table", "table")));
         when(searchAnalysisService.analyze("table")).thenReturn(searchAnalysis("en", "table"));
         when(openSearchClient.search(anyString(), anyMap())).thenReturn(emptyOpenSearchResponse());
 
@@ -135,6 +137,34 @@ class SearchAnalyzeControllerTest {
                 0.85,
                 "Use OpenSearch keyword search."
         );
+    }
+
+
+    private String analysisJson(String language, String original, String rewrite) {
+        return """
+                {
+                  "language": "%s",
+                  "intent": "PRODUCT_SEARCH",
+                  "intentConfidence": 0.85,
+                  "intentReason": "Product search.",
+                  "rewrites": ["%s"],
+                  "semanticValidated": true,
+                  "semanticScore": 0.90,
+                  "semanticMeaning": "Product search.",
+                  "entities": ["%s"],
+                  "searchMode": "KEYWORD",
+                  "backend": "OPENSEARCH",
+                  "keywordSearch": true,
+                  "vectorSearch": false,
+                  "hybridSearch": false,
+                  "facets": true,
+                  "rerank": false,
+                  "rewriteAgain": false,
+                  "answer": false,
+                  "decisionConfidence": 0.80,
+                  "decisionReason": "Keyword search is enough."
+                }
+                """.formatted(language, rewrite, rewrite);
     }
 
     private Map<String, Object> emptyOpenSearchResponse() {

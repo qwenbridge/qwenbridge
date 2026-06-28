@@ -7,6 +7,7 @@ import io.qwenbridge.pipeline.ExecutionContext;
 import org.springframework.stereotype.Service;
 
 @Service
+
 public class QwenAIDecisionService implements AIDecisionService {
 
     private final AIService aiService;

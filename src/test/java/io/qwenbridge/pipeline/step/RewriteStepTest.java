@@ -1,62 +1,63 @@
 package io.qwenbridge.pipeline.step;
 
+import io.qwenbridge.analysis.model.SearchAnalysis;
+import io.qwenbridge.decision.SearchBackend;
+import io.qwenbridge.decision.SearchMode;
+import io.qwenbridge.intent.IntentType;
 import io.qwenbridge.pipeline.ExecutionContext;
-import io.qwenbridge.pipeline.result.IntentResult;
-import io.qwenbridge.pipeline.result.LanguageResult;
 import io.qwenbridge.pipeline.result.RewriteResult;
-import io.qwenbridge.rewrite.RewriteService;
-import io.qwenbridge.rewrite.ai.AIRewriteService;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class RewriteStepTest {
 
     @Test
-    void shouldRewriteQueryUsingAIRewriteService() {
-        AIRewriteService aiRewriteService = query -> "table";
-        RewriteStep step = new RewriteStep(new RewriteService(aiRewriteService));
+    void shouldMapRewriteFromSearchAnalysis() {
+        ExecutionContext context = new ExecutionContext("tabel");
+        context.store(SearchAnalysis.class, analysis(List.of("table")));
 
-        RewriteResult result = step.execute(context("tabel"));
+        RewriteResult result = new RewriteStep().execute(context);
 
         assertThat(result.performed()).isTrue();
-        assertThat(result.provider()).isEqualTo("ai");
+        assertThat(result.provider()).isEqualTo("qwen-analysis");
         assertThat(result.rewrites()).containsExactly("table");
     }
 
     @Test
-    void shouldKeepOriginalQueryWhenAIReturnsBlank() {
-        AIRewriteService aiRewriteService = query -> " ";
-        RewriteStep step = new RewriteStep(new RewriteService(aiRewriteService));
+    void shouldReturnNoneWhenSearchAnalysisIsMissing() {
+        ExecutionContext context = new ExecutionContext("table");
 
-        RewriteResult result = step.execute(context("table"));
+        RewriteResult result = new RewriteStep().execute(context);
 
-        assertThat(result.performed()).isTrue();
-        assertThat(result.provider()).isEqualTo("ai");
-        assertThat(result.rewrites()).containsExactly("table");
+        assertThat(result.performed()).isFalse();
+        assertThat(result.rewrites()).isEmpty();
     }
 
-    @Test
-    void shouldFallbackToOriginalQueryWhenAIRewriteFails() {
-        AIRewriteService aiRewriteService = query -> {
-            throw new RuntimeException("ollama unavailable");
-        };
-
-        RewriteStep step = new RewriteStep(new RewriteService(aiRewriteService));
-
-        RewriteResult result = step.execute(context("tabel"));
-
-        assertThat(result.performed()).isTrue();
-        assertThat(result.provider()).isEqualTo("ai");
-        assertThat(result.rewrites()).containsExactly("tabel");
-    }
-
-    private static ExecutionContext context(String query) {
-        ExecutionContext context = new ExecutionContext(query);
-
-        context.store(LanguageResult.class, new LanguageResult("en"));
-        context.store(IntentResult.class, new IntentResult("PRODUCT_SEARCH"));
-
-        return context;
+    private static SearchAnalysis analysis(List<String> rewrites) {
+        return new SearchAnalysis(
+                "en",
+                IntentType.PRODUCT_SEARCH,
+                0.80,
+                "Product search.",
+                rewrites,
+                true,
+                0.90,
+                "User searches for a table.",
+                List.of("table"),
+                SearchMode.KEYWORD,
+                SearchBackend.IN_MEMORY,
+                true,
+                false,
+                false,
+                true,
+                false,
+                false,
+                false,
+                0.80,
+                "Keyword search is enough."
+        );
     }
 }

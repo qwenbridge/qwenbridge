@@ -1,7 +1,6 @@
 package io.qwenbridge.pipeline.step;
 
 import io.qwenbridge.analysis.model.SearchAnalysis;
-import io.qwenbridge.decision.DecisionService;
 import io.qwenbridge.decision.DecisionType;
 import io.qwenbridge.decision.SearchDecision;
 import io.qwenbridge.execution.ExecutionEngine;
@@ -17,29 +16,39 @@ import org.springframework.stereotype.Component;
 @Component
 public class DecisionStep implements PipelineStep<DecisionResult> {
 
-    private final DecisionService decisionService;
     private final ExecutionPlanFactory executionPlanFactory;
     private final ExecutionEngine executionEngine;
 
     public DecisionStep(
-            DecisionService decisionService,
             ExecutionPlanFactory executionPlanFactory,
             ExecutionEngine executionEngine
     ) {
-        this.decisionService = decisionService;
         this.executionPlanFactory = executionPlanFactory;
         this.executionEngine = executionEngine;
     }
 
-    public String name() { return "DecisionStep"; }
-    public int order() { return 80; }
-    public Class<DecisionResult> resultType() { return DecisionResult.class; }
+    @Override
+    public String name() {
+        return "DecisionStep";
+    }
 
+    @Override
+    public int order() {
+        return 80;
+    }
+
+    @Override
+    public Class<DecisionResult> resultType() {
+        return DecisionResult.class;
+    }
+
+    @Override
     public DecisionResult execute(ExecutionContext context) {
-        SearchAnalysis searchAnalysis = context.get(SearchAnalysis.class);
-        SearchDecision decision = searchAnalysis != null
-                ? searchAnalysis.toSearchDecision()
-                : decisionService.decide(context);
+        SearchAnalysis analysis = context.get(SearchAnalysis.class);
+        SearchDecision decision = analysis == null
+                ? SearchDecision.keyword()
+                : analysis.toSearchDecision();
+
         ExecutionPlan plan = executionPlanFactory.from(decision);
         ExecutionResult executionResult = executionEngine.execute(plan, context);
 
@@ -53,6 +62,7 @@ public class DecisionStep implements PipelineStep<DecisionResult> {
         if (decision.rewriteAgain()) {
             return DecisionType.REWRITE;
         }
+
         return DecisionType.ALLOW;
     }
 }

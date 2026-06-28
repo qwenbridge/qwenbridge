@@ -21,7 +21,7 @@ public class AIAnalysisStep implements PipelineStep<SearchAnalysis> {
 
     @Override
     public int order() {
-        return 20;
+        return 25;
     }
 
     @Override

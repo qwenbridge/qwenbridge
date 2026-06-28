@@ -1,8 +1,6 @@
 package io.qwenbridge.pipeline.step;
 
 import io.qwenbridge.analysis.model.SearchAnalysis;
-import io.qwenbridge.intent.IntentAnalysis;
-import io.qwenbridge.intent.IntentService;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.result.IntentResult;
 import org.springframework.stereotype.Component;
@@ -10,23 +8,29 @@ import org.springframework.stereotype.Component;
 @Component
 public class IntentStep implements PipelineStep<IntentResult> {
 
-    private final IntentService intentService;
-
-    public IntentStep(IntentService intentService) {
-        this.intentService = intentService;
+    @Override
+    public String name() {
+        return "IntentStep";
     }
 
-    public String name() { return "IntentStep"; }
-    public int order() { return 30; }
-    public Class<IntentResult> resultType() { return IntentResult.class; }
+    @Override
+    public int order() {
+        return 30;
+    }
 
+    @Override
+    public Class<IntentResult> resultType() {
+        return IntentResult.class;
+    }
+
+    @Override
     public IntentResult execute(ExecutionContext context) {
-        SearchAnalysis searchAnalysis = context.get(SearchAnalysis.class);
-        if (searchAnalysis != null) {
-            return searchAnalysis.toIntentResult();
+        SearchAnalysis analysis = context.get(SearchAnalysis.class);
+
+        if (analysis == null) {
+            return IntentResult.unknown();
         }
 
-        IntentAnalysis analysis = intentService.analyze(context.request().originalQuery());
-        return IntentResult.from(analysis);
+        return analysis.toIntentResult();
     }
 }
