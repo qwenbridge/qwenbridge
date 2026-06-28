@@ -2,13 +2,14 @@ package io.qwenbridge.threat.detector.xss;
 
 import io.qwenbridge.threat.model.ThreatSeverity;
 import io.qwenbridge.threat.model.ThreatType;
+import io.qwenbridge.threat.rule.ThreatRuleLoader;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class XssDetectorTest {
 
-    private final XssDetector detector = new XssDetector();
+    private final XssDetector detector = new XssDetector(new ThreatRuleLoader());
 
     @Test
     void shouldDetectScriptTag() {

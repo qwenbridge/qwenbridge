@@ -1,0 +1,32 @@
+rules:
+  - id: xss-script-tag
+    regex: "(?i)<\\s*/?\\s*script\\b[^>]*>"
+    severity: CRITICAL
+    score: 0.92
+    confidence: 0.90
+    evidence: "script tag"
+    reason: "Script tag detected."
+
+  - id: xss-javascript-uri
+    regex: "(?i)\\bjavascript\\s*:"
+    severity: HIGH
+    score: 0.88
+    confidence: 0.90
+    evidence: "javascript:"
+    reason: "JavaScript URI detected."
+
+  - id: xss-event-handler
+    regex: "(?i)\\bon\\w+\\s*="
+    severity: HIGH
+    score: 0.80
+    confidence: 0.90
+    evidence: "on* handler"
+    reason: "HTML event handler detected."
+
+  - id: xss-dangerous-html-tag
+    regex: "(?i)<\\s*(iframe|object|embed|svg|math|link|meta)\\b[^>]*>"
+    severity: HIGH
+    score: 0.78
+    confidence: 0.90
+    evidence: "dangerous html tag"
+    reason: "Dangerous HTML tag detected."

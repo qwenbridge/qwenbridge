@@ -1,0 +1,32 @@
+rules:
+  - id: sql-union-select
+    regex: "(?i)\\bunion\\s+select\\b"
+    severity: CRITICAL
+    score: 0.92
+    confidence: 0.90
+    evidence: "union select"
+    reason: "UNION SELECT pattern detected."
+
+  - id: sql-boolean-bypass
+    regex: "(?i)(\\bor\\b|\\band\\b)\\s+['\"]?\\d+['\"]?\\s*=\\s*['\"]?\\d+['\"]?"
+    severity: HIGH
+    score: 0.85
+    confidence: 0.90
+    evidence: "or/and equality condition"
+    reason: "SQL boolean bypass pattern detected."
+
+  - id: sql-comment-sequence
+    regex: "(?i)(--|#|/\\*)"
+    severity: MEDIUM
+    score: 0.55
+    confidence: 0.85
+    evidence: "SQL comment marker"
+    reason: "SQL comment sequence detected."
+
+  - id: sql-destructive-statement
+    regex: "(?i)\\b(drop|delete|truncate|alter)\\s+(table|database|schema)\\b"
+    severity: CRITICAL
+    score: 0.90
+    confidence: 0.90
+    evidence: "destructive SQL keyword"
+    reason: "Destructive SQL statement detected."

@@ -2,13 +2,14 @@ package io.qwenbridge.threat.detector.sql;
 
 import io.qwenbridge.threat.model.ThreatSeverity;
 import io.qwenbridge.threat.model.ThreatType;
+import io.qwenbridge.threat.rule.ThreatRuleLoader;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class SqlInjectionDetectorTest {
 
-    private final SqlInjectionDetector detector = new SqlInjectionDetector();
+    private final SqlInjectionDetector detector = new SqlInjectionDetector(new ThreatRuleLoader());
 
     @Test
     void shouldDetectUnionSelectAttack() {
