@@ -9,6 +9,7 @@ import io.qwenbridge.threat.correlation.ThreatRiskProfile;
 import io.qwenbridge.threat.decision.ThreatDecisionEngine;
 import io.qwenbridge.threat.detector.DefaultThreatDetectorRegistry;
 import io.qwenbridge.threat.detector.ThreatDetector;
+import io.qwenbridge.threat.explanation.DefaultThreatExplanationBuilder;
 import io.qwenbridge.threat.model.ThreatFinding;
 import io.qwenbridge.threat.model.ThreatSeverity;
 import io.qwenbridge.threat.model.ThreatType;
@@ -68,7 +69,8 @@ class ThreatStepTest {
                 new DefaultThreatDetectorRegistry(List.of(detector)),
                 new ThreatScoringService(),
                 new ThreatDecisionEngine(),
-                findings -> ThreatRiskProfile.none()
+                findings -> ThreatRiskProfile.none(),
+                new DefaultThreatExplanationBuilder()
         );
     }
 

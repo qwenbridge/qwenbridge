@@ -6,6 +6,7 @@ import io.qwenbridge.threat.correlation.ThreatRiskProfile;
 import io.qwenbridge.threat.decision.ThreatDecisionEngine;
 import io.qwenbridge.threat.detector.ThreatDetector;
 import io.qwenbridge.threat.detector.ThreatDetectorRegistry;
+import io.qwenbridge.threat.explanation.ThreatExplanationBuilder;
 import io.qwenbridge.threat.model.ThreatAnalysis;
 import io.qwenbridge.threat.model.ThreatDecision;
 import io.qwenbridge.threat.model.ThreatFinding;
@@ -22,17 +23,20 @@ public class ThreatService {
     private final ThreatScoringService scoringService;
     private final ThreatDecisionEngine decisionEngine;
     private final ThreatCorrelationService correlationService;
+    private final ThreatExplanationBuilder explanationBuilder;
 
     public ThreatService(
             ThreatDetectorRegistry detectorRegistry,
             ThreatScoringService scoringService,
             ThreatDecisionEngine decisionEngine,
-            ThreatCorrelationService correlationService
+            ThreatCorrelationService correlationService,
+            ThreatExplanationBuilder explanationBuilder
     ) {
         this.detectorRegistry = detectorRegistry;
         this.scoringService = scoringService;
         this.decisionEngine = decisionEngine;
         this.correlationService = correlationService;
+        this.explanationBuilder = explanationBuilder;
     }
 
     public ThreatResult analyze(String query) {
@@ -76,7 +80,9 @@ public class ThreatService {
 
         ThreatDecision decision = decide(effectiveScore, riskProfile.riskLevel());
 
-        return ThreatAnalysis.from(findings, decision, riskProfile);
+        ThreatAnalysis analysis = ThreatAnalysis.from(findings, decision, riskProfile);
+
+        return analysis.withExplanation(explanationBuilder.build(analysis));
     }
 
     private ThreatDecision decide(double score, ThreatRiskLevel riskLevel) {

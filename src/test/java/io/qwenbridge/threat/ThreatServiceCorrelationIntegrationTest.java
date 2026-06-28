@@ -6,6 +6,7 @@ import io.qwenbridge.threat.correlation.rule.ThreatCorrelationRuleLoader;
 import io.qwenbridge.threat.decision.ThreatDecisionEngine;
 import io.qwenbridge.threat.detector.DefaultThreatDetectorRegistry;
 import io.qwenbridge.threat.detector.ThreatDetector;
+import io.qwenbridge.threat.explanation.DefaultThreatExplanationBuilder;
 import io.qwenbridge.threat.detector.jailbreak.JailbreakDetector;
 import io.qwenbridge.threat.detector.prompt.PromptInjectionDetector;
 import io.qwenbridge.threat.model.ThreatAnalysis;
@@ -37,7 +38,8 @@ class ThreatServiceCorrelationIntegrationTest {
                 new DefaultThreatCorrelationService(
                         new ThreatCorrelationRuleLoader(),
                         new DefaultThreatCorrelationEvaluator()
-                )
+                ),
+                new DefaultThreatExplanationBuilder()
         );
 
         ThreatAnalysis analysis = service.analyzeDetailed(
