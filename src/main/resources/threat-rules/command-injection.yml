@@ -1,0 +1,40 @@
+rules:
+  - id: command-shell-chain
+    regex: "(?i)(;|&&|\\|\\||\\|)\\s*(cat|ls|whoami|id|uname|curl|wget|nc|bash|sh|powershell|cmd)\\b"
+    severity: CRITICAL
+    score: 0.92
+    confidence: 0.90
+    evidence: "shell command chaining"
+    reason: "Shell command chaining pattern detected."
+
+  - id: command-substitution-dollar
+    regex: "(?i)\\$\\((cat|ls|whoami|id|uname|curl|wget|nc|bash|sh)[^)]*\\)"
+    severity: CRITICAL
+    score: 0.90
+    confidence: 0.90
+    evidence: "$(...) command substitution"
+    reason: "Shell command substitution pattern detected."
+
+  - id: command-backtick-substitution
+    regex: "(?i)`\\s*(cat|ls|whoami|id|uname|curl|wget|nc|bash|sh)[^`]*`"
+    severity: CRITICAL
+    score: 0.90
+    confidence: 0.90
+    evidence: "backtick command substitution"
+    reason: "Backtick command substitution pattern detected."
+
+  - id: command-windows-shell
+    regex: "(?i)\\b(cmd\\.exe|powershell|pwsh)\\s+(/c|-Command|-EncodedCommand)\\b"
+    severity: CRITICAL
+    score: 0.92
+    confidence: 0.90
+    evidence: "windows shell execution"
+    reason: "Windows shell execution pattern detected."
+
+  - id: command-sensitive-file-read
+    regex: "(?i)\\b(cat|less|more|head|tail)\\s+(/etc/passwd|/etc/shadow|/proc/self/environ)\\b"
+    severity: CRITICAL
+    score: 0.94
+    confidence: 0.92
+    evidence: "sensitive file read"
+    reason: "Sensitive system file read command detected."
