@@ -2,6 +2,7 @@ package io.qwenbridge.pipeline.step;
 
 import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.analysis.service.SearchAnalysisService;
+import io.qwenbridge.normalization.model.NormalizedInput;
 import io.qwenbridge.pipeline.ExecutionContext;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +32,11 @@ public class AIAnalysisStep implements PipelineStep<SearchAnalysis> {
 
     @Override
     public SearchAnalysis execute(ExecutionContext context) {
-        return searchAnalysisService.analyze(context.request().originalQuery());
+        NormalizedInput normalizedInput = context.get(NormalizedInput.class);
+        String query = normalizedInput == null
+                ? context.request().originalQuery()
+                : normalizedInput.normalizedQuery();
+
+        return searchAnalysisService.analyze(query);
     }
 }
