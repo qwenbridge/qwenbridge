@@ -34,6 +34,8 @@ qwenbridge:
       enabled: true
       type: redis
       key-prefix: qwenbridge:analysis
+      provider: ollama
+      model: qwen2.5
       version: v4
       ttl: 10m
       redis:

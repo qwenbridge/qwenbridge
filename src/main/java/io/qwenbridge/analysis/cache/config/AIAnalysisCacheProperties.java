@@ -10,6 +10,8 @@ public class AIAnalysisCacheProperties {
     private boolean enabled = true;
     private String type = "redis";
     private String keyPrefix = "qwenbridge:analysis";
+    private String provider = "ollama";
+    private String model = "qwen2.5";
     private String version = "v4";
     private Duration ttl = Duration.ofMinutes(10);
     private Redis redis = new Redis();
@@ -36,6 +38,22 @@ public class AIAnalysisCacheProperties {
 
     public void setKeyPrefix(String keyPrefix) {
         this.keyPrefix = safe(keyPrefix, "qwenbridge:analysis");
+    }
+
+    public String provider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = safe(provider, "ollama");
+    }
+
+    public String model() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = safe(model, "qwen2.5");
     }
 
     public String version() {
