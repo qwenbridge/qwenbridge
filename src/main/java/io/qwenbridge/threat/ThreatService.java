@@ -1,5 +1,8 @@
 package io.qwenbridge.threat;
 
+import io.qwenbridge.threat.correlation.ThreatCorrelationService;
+import io.qwenbridge.threat.correlation.ThreatRiskLevel;
+import io.qwenbridge.threat.correlation.ThreatRiskProfile;
 import io.qwenbridge.threat.decision.ThreatDecisionEngine;
 import io.qwenbridge.threat.detector.ThreatDetector;
 import io.qwenbridge.threat.detector.ThreatDetectorRegistry;
@@ -18,15 +21,18 @@ public class ThreatService {
     private final ThreatDetectorRegistry detectorRegistry;
     private final ThreatScoringService scoringService;
     private final ThreatDecisionEngine decisionEngine;
+    private final ThreatCorrelationService correlationService;
 
     public ThreatService(
             ThreatDetectorRegistry detectorRegistry,
             ThreatScoringService scoringService,
-            ThreatDecisionEngine decisionEngine
+            ThreatDecisionEngine decisionEngine,
+            ThreatCorrelationService correlationService
     ) {
         this.detectorRegistry = detectorRegistry;
         this.scoringService = scoringService;
         this.decisionEngine = decisionEngine;
+        this.correlationService = correlationService;
     }
 
     public ThreatResult analyze(String query) {
@@ -53,9 +59,28 @@ public class ThreatService {
             }
         }
 
-        double score = scoringService.score(findings);
-        ThreatDecision decision = decisionEngine.decide(score);
+        double baseScore = scoringService.score(findings);
+        ThreatRiskProfile riskProfile = correlationService.correlate(findings);
+        double effectiveScore = Math.max(baseScore, riskProfile.correlatedScore());
+
+        ThreatDecision decision = decide(effectiveScore, riskProfile.riskLevel());
 
         return ThreatAnalysis.from(findings, decision);
+    }
+
+    private ThreatDecision decide(double score, ThreatRiskLevel riskLevel) {
+        if (riskLevel == ThreatRiskLevel.CRITICAL) {
+            return ThreatDecision.BLOCK;
+        }
+
+        if (riskLevel == ThreatRiskLevel.HIGH) {
+            return ThreatDecision.BLOCK;
+        }
+
+        if (riskLevel == ThreatRiskLevel.MEDIUM) {
+            return ThreatDecision.REVIEW;
+        }
+
+        return decisionEngine.decide(score);
     }
 }

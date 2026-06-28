@@ -3,6 +3,8 @@ package io.qwenbridge.pipeline.step;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.threat.ThreatResult;
 import io.qwenbridge.threat.ThreatService;
+import io.qwenbridge.threat.correlation.ThreatCorrelationService;
+import io.qwenbridge.threat.correlation.ThreatRiskProfile;
 import io.qwenbridge.threat.decision.ThreatDecisionEngine;
 import io.qwenbridge.threat.detector.DefaultThreatDetectorRegistry;
 import io.qwenbridge.threat.detector.ThreatDetector;
@@ -47,7 +49,8 @@ class ThreatStepTest {
         return new ThreatService(
                 new DefaultThreatDetectorRegistry(List.of(detector)),
                 new ThreatScoringService(),
-                new ThreatDecisionEngine()
+                new ThreatDecisionEngine(),
+                findings -> ThreatRiskProfile.none()
         );
     }
 
