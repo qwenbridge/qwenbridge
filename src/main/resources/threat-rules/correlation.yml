@@ -1,48 +1,54 @@
 rules:
   - id: prompt-plus-jailbreak
-    types:
-      - PROMPT_INJECTION
-      - JAILBREAK
+    when:
+      allOf:
+        - PROMPT_INJECTION
+        - JAILBREAK
     scoreBoost: 0.18
     riskLevel: CRITICAL
     reason: "Prompt injection combined with jailbreak behavior."
 
   - id: sql-plus-unicode-obfuscation
-    types:
-      - SQL_INJECTION
-      - UNICODE_OBFUSCATION
+    when:
+      allOf:
+        - SQL_INJECTION
+        - UNICODE_OBFUSCATION
     scoreBoost: 0.16
     riskLevel: HIGH
     reason: "SQL injection combined with Unicode obfuscation."
 
   - id: xss-plus-unicode-obfuscation
-    types:
-      - XSS
-      - UNICODE_OBFUSCATION
+    when:
+      allOf:
+        - XSS
+        - UNICODE_OBFUSCATION
     scoreBoost: 0.14
     riskLevel: HIGH
     reason: "XSS combined with Unicode obfuscation."
 
   - id: command-plus-path-traversal
-    types:
-      - COMMAND_INJECTION
-      - PATH_TRAVERSAL
+    when:
+      allOf:
+        - COMMAND_INJECTION
+        - PATH_TRAVERSAL
     scoreBoost: 0.20
     riskLevel: CRITICAL
     reason: "Command injection combined with path traversal."
 
   - id: prompt-plus-secret-leakage
-    types:
-      - PROMPT_INJECTION
-      - SECRET_LEAKAGE
+    when:
+      allOf:
+        - PROMPT_INJECTION
+        - SECRET_LEAKAGE
     scoreBoost: 0.20
     riskLevel: CRITICAL
     reason: "Prompt injection combined with secret leakage."
 
   - id: ssrf-plus-secret-leakage
-    types:
-      - SSRF
-      - SECRET_LEAKAGE
+    when:
+      allOf:
+        - SSRF
+        - SECRET_LEAKAGE
     scoreBoost: 0.18
     riskLevel: CRITICAL
     reason: "SSRF combined with secret exposure."

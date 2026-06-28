@@ -27,7 +27,7 @@ public class ThreatCorrelationRuleLoader {
         return rules.stream()
                 .map(rule -> new ThreatCorrelationRule(
                         text(rule, "id"),
-                        types(rule),
+                        condition(rule),
                         decimal(rule, "scoreBoost"),
                         ThreatRiskLevel.valueOf(text(rule, "riskLevel")),
                         text(rule, "reason")
@@ -36,8 +36,24 @@ public class ThreatCorrelationRuleLoader {
     }
 
     @SuppressWarnings("unchecked")
-    private List<ThreatType> types(Map<String, Object> rule) {
-        Object value = rule.get("types");
+    private ThreatCorrelationCondition condition(Map<String, Object> rule) {
+        Object whenValue = rule.get("when");
+
+        if (!(whenValue instanceof Map<?, ?> rawWhen)) {
+            return new ThreatCorrelationCondition(List.of(), List.of(), List.of());
+        }
+
+        Map<String, Object> when = (Map<String, Object>) rawWhen;
+
+        return new ThreatCorrelationCondition(
+                types(when, "allOf"),
+                types(when, "anyOf"),
+                types(when, "noneOf")
+        );
+    }
+
+    private List<ThreatType> types(Map<String, Object> source, String key) {
+        Object value = source.get(key);
 
         if (!(value instanceof List<?> rawTypes)) {
             return List.of();
