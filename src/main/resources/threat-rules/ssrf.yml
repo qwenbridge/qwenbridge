@@ -1,0 +1,40 @@
+rules:
+  - id: ssrf-localhost
+    regex: "(?i)https?://(localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0)(:[0-9]+)?"
+    severity: CRITICAL
+    score: 0.95
+    confidence: 0.95
+    evidence: "localhost request"
+    reason: "Request targeting localhost detected."
+
+  - id: ssrf-private-ip
+    regex: "(?i)https?://(10\\.|192\\.168\\.|172\\.(1[6-9]|2[0-9]|3[0-1])\\.)"
+    severity: CRITICAL
+    score: 0.94
+    confidence: 0.94
+    evidence: "private network"
+    reason: "Request targeting private network detected."
+
+  - id: ssrf-metadata-aws
+    regex: "(?i)169\\.254\\.169\\.254"
+    severity: CRITICAL
+    score: 1.00
+    confidence: 1.00
+    evidence: "AWS Metadata"
+    reason: "AWS metadata endpoint detected."
+
+  - id: ssrf-file-scheme
+    regex: "(?i)\\b(file|gopher|dict|ftp|jar|php|data)://"
+    severity: HIGH
+    score: 0.88
+    confidence: 0.90
+    evidence: "dangerous URI scheme"
+    reason: "Dangerous URI scheme detected."
+
+  - id: ssrf-internal-host
+    regex: "(?i)https?://(internal|backend|kubernetes|docker|host\\.docker\\.internal)"
+    severity: HIGH
+    score: 0.86
+    confidence: 0.88
+    evidence: "internal hostname"
+    reason: "Internal hostname access detected."
