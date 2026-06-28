@@ -1,5 +1,6 @@
 package io.qwenbridge.pipeline;
 
+import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTrace;
 import io.qwenbridge.decision.DecisionType;
 import io.qwenbridge.pipeline.context.ContextKey;
 import io.qwenbridge.pipeline.result.*;
@@ -20,6 +21,7 @@ public class ExecutionContext {
     public ExecutionContext(String originalQuery) {
         this.request = RequestContext.of(originalQuery);
 
+        store(AIAnalysisCacheTrace.class, AIAnalysisCacheTrace.disabled());
         store(LanguageResult.class, LanguageResult.unknown());
         store(IntentResult.class, IntentResult.unknown());
         store(ThreatResult.class, ThreatResult.noThreat());
