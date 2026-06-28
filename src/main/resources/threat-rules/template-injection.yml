@@ -1,0 +1,40 @@
+rules:
+  - id: template-double-curly-expression
+    regex: "\\{\\{\\s*[^}]+\\s*\\}\\}"
+    severity: MEDIUM
+    score: 0.58
+    confidence: 0.80
+    evidence: "{{ expression }}"
+    reason: "Template expression pattern detected."
+
+  - id: template-jinja-config
+    regex: "(?i)\\{\\{\\s*(config|self|request|application|cycler|joiner|namespace)\\b"
+    severity: HIGH
+    score: 0.82
+    confidence: 0.88
+    evidence: "Jinja template object"
+    reason: "Jinja-style server-side template object access detected."
+
+  - id: template-expression-language
+    regex: "\\$\\{\\s*[^}]+\\s*\\}"
+    severity: MEDIUM
+    score: 0.62
+    confidence: 0.82
+    evidence: "${ expression }"
+    reason: "Expression language template pattern detected."
+
+  - id: template-freemarker-expression
+    regex: "<#\\s*(assign|include|import|list|if)\\b"
+    severity: HIGH
+    score: 0.78
+    confidence: 0.86
+    evidence: "FreeMarker directive"
+    reason: "FreeMarker template directive detected."
+
+  - id: template-thymeleaf-expression
+    regex: "(?i)\\bth:(text|utext|if|each|href|src)\\s*="
+    severity: MEDIUM
+    score: 0.60
+    confidence: 0.82
+    evidence: "Thymeleaf attribute"
+    reason: "Thymeleaf template expression detected."
