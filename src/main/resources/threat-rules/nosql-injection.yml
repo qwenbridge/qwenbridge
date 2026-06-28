@@ -1,0 +1,40 @@
+rules:
+  - id: nosql-dollar-operator
+    regex: "(?i)[\"']?\\$(ne|gt|gte|lt|lte|in|nin|regex|where|exists|type|size)[\"']?\\s*:"
+    severity: HIGH
+    score: 0.82
+    confidence: 0.88
+    evidence: "NoSQL dollar operator"
+    reason: "NoSQL query operator injection pattern detected."
+
+  - id: nosql-where-javascript
+    regex: "(?i)[\"']?\\$where[\"']?\\s*:\\s*[\"'][^\"']*(function|return|this\\.)"
+    severity: CRITICAL
+    score: 0.92
+    confidence: 0.90
+    evidence: "$where JavaScript"
+    reason: "NoSQL JavaScript execution pattern detected."
+
+  - id: nosql-regex-bypass
+    regex: "(?i)[\"']?\\$regex[\"']?\\s*:\\s*[\"']?\\.\\*"
+    severity: HIGH
+    score: 0.80
+    confidence: 0.86
+    evidence: "$regex wildcard"
+    reason: "NoSQL regex wildcard bypass pattern detected."
+
+  - id: nosql-json-operator-object
+    regex: "(?i)\\{\\s*[\"']?\\w+[\"']?\\s*:\\s*\\{\\s*[\"']?\\$(ne|gt|regex|where|exists)[\"']?\\s*:"
+    severity: HIGH
+    score: 0.84
+    confidence: 0.88
+    evidence: "nested NoSQL operator object"
+    reason: "Nested NoSQL operator object detected."
+
+  - id: nosql-mongodb-objectid-probing
+    regex: "(?i)ObjectId\\s*\\("
+    severity: MEDIUM
+    score: 0.55
+    confidence: 0.78
+    evidence: "ObjectId("
+    reason: "MongoDB ObjectId probing pattern detected."
