@@ -1,0 +1,40 @@
+rules:
+  - id: prompt-ignore-instructions
+    regex: "(?i)\\b(ignore|disregard|forget)\\s+(all\\s+)?(previous|prior|above|system|developer)\\s+instructions?\\b"
+    severity: HIGH
+    score: 0.78
+    confidence: 0.88
+    evidence: "ignore/disregard/forget instructions"
+    reason: "Prompt injection instruction override pattern detected."
+
+  - id: prompt-reveal-system-prompt
+    regex: "(?i)\\b(reveal|show|print|display|dump|repeat)\\s+(the\\s+)?(system|developer|hidden)\\s+(prompt|message|instructions?)\\b"
+    severity: HIGH
+    score: 0.82
+    confidence: 0.90
+    evidence: "reveal system/developer prompt"
+    reason: "Prompt disclosure attempt detected."
+
+  - id: prompt-override-role
+    regex: "(?i)\\b(you\\s+are\\s+now|act\\s+as|pretend\\s+to\\s+be|roleplay\\s+as)\\b"
+    severity: MEDIUM
+    score: 0.52
+    confidence: 0.78
+    evidence: "role override"
+    reason: "Prompt role override pattern detected."
+
+  - id: prompt-disable-safety
+    regex: "(?i)\\b(disable|bypass|remove|ignore)\\s+(all\\s+|every\\s+|the\\s+|your\\s+)?(safety|guardrails?|filters?|policy|policies|restrictions?)\\b"
+    severity: HIGH
+    score: 0.80
+    confidence: 0.88
+    evidence: "disable/bypass safety"
+    reason: "Safety bypass instruction detected."
+
+  - id: prompt-hidden-chain
+    regex: "(?i)\\b(show|reveal|print|dump)\\s+(your\\s+)?(chain\\s+of\\s+thought|hidden\\s+reasoning|scratchpad)\\b"
+    severity: HIGH
+    score: 0.76
+    confidence: 0.86
+    evidence: "hidden reasoning disclosure"
+    reason: "Hidden reasoning disclosure attempt detected."
