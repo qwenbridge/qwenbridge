@@ -1,0 +1,40 @@
+rules:
+  - id: path-dot-dot-slash
+    regex: "(?i)(\\.\\./|\\.\\.\\\\)"
+    severity: HIGH
+    score: 0.82
+    confidence: 0.90
+    evidence: "../ or ..\\"
+    reason: "Path traversal parent directory sequence detected."
+
+  - id: path-encoded-dot-dot-slash
+    regex: "(?i)(%2e%2e%2f|%2e%2e%5c|%252e%252e%252f|%252e%252e%255c)"
+    severity: HIGH
+    score: 0.84
+    confidence: 0.88
+    evidence: "encoded ../"
+    reason: "Encoded path traversal sequence detected."
+
+  - id: path-sensitive-unix-file
+    regex: "(?i)(/etc/passwd|/etc/shadow|/proc/self/environ|/var/log/)"
+    severity: CRITICAL
+    score: 0.92
+    confidence: 0.92
+    evidence: "sensitive unix path"
+    reason: "Sensitive Unix path access attempt detected."
+
+  - id: path-sensitive-windows-file
+    regex: "(?i)(c:\\\\windows\\\\|boot\\.ini|win\\.ini|system32\\\\config)"
+    severity: CRITICAL
+    score: 0.90
+    confidence: 0.90
+    evidence: "sensitive windows path"
+    reason: "Sensitive Windows path access attempt detected."
+
+  - id: path-file-uri
+    regex: "(?i)\\bfile\\s*:\\s*(//)?"
+    severity: HIGH
+    score: 0.76
+    confidence: 0.85
+    evidence: "file URI"
+    reason: "File URI access pattern detected."
