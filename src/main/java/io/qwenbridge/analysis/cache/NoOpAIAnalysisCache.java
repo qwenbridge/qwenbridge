@@ -1,11 +1,17 @@
 package io.qwenbridge.analysis.cache;
 
 import io.qwenbridge.analysis.model.SearchAnalysis;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 @Component
+@ConditionalOnProperty(
+        prefix = "qwenbridge.analysis.cache",
+        name = "enabled",
+        havingValue = "false"
+)
 public class NoOpAIAnalysisCache implements AIAnalysisCache {
 
     @Override
