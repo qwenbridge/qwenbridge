@@ -5,6 +5,9 @@ import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.analysis.cache.AIAnalysisCache;
 import io.qwenbridge.analysis.cache.AIAnalysisCacheKeyBuilder;
 import io.qwenbridge.analysis.cache.CacheKey;
+import io.qwenbridge.analysis.cache.config.AIAnalysisCacheProperties;
+import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTrace;
+import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTraceHolder;
 import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.analysis.parser.SearchAnalysisJsonParser;
 import io.qwenbridge.analysis.prompt.SearchAnalysisPromptBuilder;
@@ -19,29 +22,47 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
     private final SearchAnalysisJsonParser parser;
     private final AIAnalysisCache cache;
     private final AIAnalysisCacheKeyBuilder cacheKeyBuilder;
+    private final AIAnalysisCacheProperties cacheProperties;
+    private final AIAnalysisCacheTraceHolder cacheTraceHolder;
 
     public QwenSearchAnalysisService(
             AIService aiService,
             SearchAnalysisPromptBuilder promptBuilder,
             SearchAnalysisJsonParser parser,
             AIAnalysisCache cache,
-            AIAnalysisCacheKeyBuilder cacheKeyBuilder
+            AIAnalysisCacheKeyBuilder cacheKeyBuilder,
+            AIAnalysisCacheProperties cacheProperties,
+            AIAnalysisCacheTraceHolder cacheTraceHolder
     ) {
         this.aiService = aiService;
         this.promptBuilder = promptBuilder;
         this.parser = parser;
         this.cache = cache;
         this.cacheKeyBuilder = cacheKeyBuilder;
+        this.cacheProperties = cacheProperties;
+        this.cacheTraceHolder = cacheTraceHolder;
     }
 
     @Override
     public SearchAnalysis analyze(String query) {
         CacheKey cacheKey = cacheKeyBuilder.build(query);
+        cacheTraceHolder.set(AIAnalysisCacheTrace.miss(
+                cacheKey.value(),
+                cacheProperties.provider(),
+                cacheProperties.model(),
+                cacheProperties.version()
+        ));
 
         try {
             var cached = cache.get(cacheKey);
 
             if (cached.isPresent()) {
+                cacheTraceHolder.set(AIAnalysisCacheTrace.hit(
+                        cacheKey.value(),
+                        cacheProperties.provider(),
+                        cacheProperties.model(),
+                        cacheProperties.version()
+                ));
                 return cached.get();
             }
         } catch (Exception ignored) {

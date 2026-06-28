@@ -6,6 +6,8 @@ import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.analysis.cache.AIAnalysisCache;
 import io.qwenbridge.analysis.cache.AIAnalysisCacheKeyBuilder;
 import io.qwenbridge.analysis.cache.CacheKey;
+import io.qwenbridge.analysis.cache.config.AIAnalysisCacheProperties;
+import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTraceHolder;
 import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.analysis.parser.SearchAnalysisJsonParser;
 import io.qwenbridge.analysis.prompt.SearchAnalysisPromptBuilder;
@@ -24,6 +26,8 @@ class QwenSearchAnalysisServiceCacheTest {
     private final SearchAnalysisJsonParser parser = mock(SearchAnalysisJsonParser.class);
     private final AIAnalysisCache cache = mock(AIAnalysisCache.class);
     private final AIAnalysisCacheKeyBuilder keyBuilder = mock(AIAnalysisCacheKeyBuilder.class);
+    private final AIAnalysisCacheProperties cacheProperties = new AIAnalysisCacheProperties();
+    private final AIAnalysisCacheTraceHolder cacheTraceHolder = new AIAnalysisCacheTraceHolder();
 
     private final QwenSearchAnalysisService service =
             new QwenSearchAnalysisService(
@@ -31,7 +35,9 @@ class QwenSearchAnalysisServiceCacheTest {
                     promptBuilder,
                     parser,
                     cache,
-                    keyBuilder
+                    keyBuilder,
+                    cacheProperties,
+                    cacheTraceHolder
             );
 
     @Test
@@ -45,6 +51,8 @@ class QwenSearchAnalysisServiceCacheTest {
         SearchAnalysis result = service.analyze("desk");
 
         assertThat(result).isEqualTo(cached);
+        assertThat(cacheTraceHolder.get().hit()).isTrue();
+        assertThat(cacheTraceHolder.get().key()).isEqualTo("cache-key");
         verifyNoInteractions(aiService);
         verify(cache, never()).put(any(), any());
     }
@@ -63,6 +71,8 @@ class QwenSearchAnalysisServiceCacheTest {
         SearchAnalysis result = service.analyze("desk");
 
         assertThat(result).isEqualTo(parsed);
+        assertThat(cacheTraceHolder.get().miss()).isTrue();
+        assertThat(cacheTraceHolder.get().key()).isEqualTo("cache-key");
         verify(aiService).chat(any(ChatRequest.class));
         verify(cache).put(key, parsed);
     }
