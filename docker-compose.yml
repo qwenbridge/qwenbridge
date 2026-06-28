@@ -28,6 +28,10 @@ services:
     depends_on:
       ollama:
         condition: service_healthy
+      opensearch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
     ports:
       - "8080:8080"
@@ -36,6 +40,8 @@ services:
       QWENBRIDGE_AI_PROVIDER: ollama
       QWENBRIDGE_AI_OLLAMA_BASE_URL: http://ollama:11434
       QWENBRIDGE_SEARCH_OPENSEARCH_BASE_URL: http://opensearch:9200
+      QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST: redis
+      QWENBRIDGE_ANALYSIS_CACHE_REDIS_PORT: 6379
 
   opensearch:
     image: opensearchproject/opensearch:2.15.0
@@ -50,6 +56,18 @@ services:
       - "9600:9600"
     healthcheck:
       test: [ "CMD-SHELL", "curl -fs http://localhost:9200 >/dev/null || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: qwenbridge-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 30

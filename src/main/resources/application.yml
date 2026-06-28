@@ -29,6 +29,19 @@ qwenbridge:
       connect-timeout: 5s
       read-timeout: 30s
 
+  analysis:
+    cache:
+      enabled: true
+      type: redis
+      key-prefix: qwenbridge:analysis
+      version: v4
+      ttl: 10m
+      redis:
+        host: localhost
+        port: 6379
+        connect-timeout: 2s
+        command-timeout: 2s
+
 springdoc:
   api-docs:
     path: /v3/api-docs
