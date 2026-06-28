@@ -1,0 +1,32 @@
+rules:
+  - id: unicode-zero-width
+    regex: "[\\u200B\\u200C\\u200D\\uFEFF]"
+    severity: MEDIUM
+    score: 0.60
+    confidence: 0.86
+    evidence: "zero-width character"
+    reason: "Zero-width Unicode obfuscation detected."
+
+  - id: unicode-bidi-override
+    regex: "[\\u202A-\\u202E\\u2066-\\u2069]"
+    severity: HIGH
+    score: 0.76
+    confidence: 0.88
+    evidence: "bidirectional override"
+    reason: "Unicode bidirectional override detected."
+
+  - id: unicode-fullwidth-suspicious
+    regex: "[\\uFF01-\\uFF5E]{3,}"
+    severity: MEDIUM
+    score: 0.58
+    confidence: 0.80
+    evidence: "fullwidth characters"
+    reason: "Fullwidth Unicode obfuscation detected."
+
+  - id: unicode-control-format
+    regex: "\\p{Cf}"
+    severity: MEDIUM
+    score: 0.55
+    confidence: 0.78
+    evidence: "format control character"
+    reason: "Unicode format control character detected."

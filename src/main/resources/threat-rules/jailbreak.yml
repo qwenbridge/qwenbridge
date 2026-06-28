@@ -1,0 +1,32 @@
+rules:
+  - id: jailbreak-dan
+    regex: "(?i)\\b(do\\s+anything\\s+now|DAN\\s+mode)\\b"
+    severity: HIGH
+    score: 0.80
+    confidence: 0.88
+    evidence: "DAN jailbreak"
+    reason: "Known jailbreak persona pattern detected."
+
+  - id: jailbreak-developer-mode
+    regex: "(?i)\\b(enable|simulate|enter)\\s+(developer\\s+mode|god\\s+mode|unrestricted\\s+mode)\\b"
+    severity: HIGH
+    score: 0.78
+    confidence: 0.86
+    evidence: "developer/god mode"
+    reason: "Jailbreak mode escalation pattern detected."
+
+  - id: jailbreak-policy-bypass
+    regex: "(?i)\\b(ignore|bypass|override)\\s+(openai|system|safety|content)\\s+(policy|policies|rules|guidelines)\\b"
+    severity: HIGH
+    score: 0.82
+    confidence: 0.88
+    evidence: "policy bypass"
+    reason: "Policy bypass jailbreak pattern detected."
+
+  - id: jailbreak-fictional-escape
+    regex: "(?i)\\b(for\\s+educational\\s+purposes|hypothetically|in\\s+a\\s+fictional\\s+world)\\b.*\\b(ignore|bypass|override|disable)\\b"
+    severity: MEDIUM
+    score: 0.62
+    confidence: 0.76
+    evidence: "fictional framing bypass"
+    reason: "Fictional or educational jailbreak framing detected."
