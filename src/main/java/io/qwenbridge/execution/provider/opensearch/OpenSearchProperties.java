@@ -8,6 +8,7 @@ import java.time.Duration;
 public record OpenSearchProperties(
         String baseUrl,
         String index,
+        int defaultSize,
         Duration connectTimeout,
         Duration readTimeout
 ) {
@@ -18,6 +19,10 @@ public record OpenSearchProperties(
 
         if (index == null || index.isBlank()) {
             index = "qwenbridge-products";
+        }
+
+        if (defaultSize <= 0) {
+            defaultSize = 10;
         }
 
         if (connectTimeout == null) {

@@ -23,6 +23,7 @@ qwenbridge:
 
   search:
     opensearch:
+      default-size: 10
       base-url: http://localhost:9200
       index: qwenbridge-products
       connect-timeout: 5s

@@ -72,8 +72,12 @@ public class DefaultExecutionEngine implements ExecutionEngine {
 
     @Override
     public ExecutionResult execute(ExecutionPlan plan, ExecutionContext context) {
+        if (plan.backend() == io.qwenbridge.decision.SearchBackend.NONE) {
+            return execute(plan);
+        }
+
         SearchRequest searchRequest = SearchRequestFactory.from(context);
-        SearchProvider provider = searchProviderResolver.resolve(context);
+        SearchProvider provider = searchProviderResolver.resolve(plan.backend());
         SearchResponse response = provider.search(searchRequest);
         context.store(SearchResponse.class, response);
 

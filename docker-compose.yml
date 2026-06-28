@@ -35,6 +35,24 @@ services:
     environment:
       QWENBRIDGE_AI_PROVIDER: ollama
       QWENBRIDGE_AI_OLLAMA_BASE_URL: http://ollama:11434
+      QWENBRIDGE_SEARCH_OPENSEARCH_BASE_URL: http://opensearch:9200
+
+  opensearch:
+    image: opensearchproject/opensearch:2.15.0
+    container_name: qwenbridge-opensearch
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      DISABLE_SECURITY_PLUGIN: "true"
+      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -fs http://localhost:9200 >/dev/null || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
 
 volumes:
   ollama-data:
