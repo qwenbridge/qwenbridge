@@ -12,7 +12,7 @@ import java.util.List;
 public class PolicyStep implements PipelineStep<PolicyResult> {
 
     public String name() { return "PolicyStep"; }
-    public int order() { return 60; }
+    public int order() { return 70; }
     public Class<PolicyResult> resultType() { return PolicyResult.class; }
 
     public PolicyResult execute(ExecutionContext context) {

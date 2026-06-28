@@ -16,7 +16,7 @@ public class ConfidenceStep implements PipelineStep<ConfidenceResult> {
     }
 
     public String name() { return "ConfidenceStep"; }
-    public int order() { return 70; }
+    public int order() { return 90; }
     public Class<ConfidenceResult> resultType() { return ConfidenceResult.class; }
 
     public ConfidenceResult execute(ExecutionContext context) {

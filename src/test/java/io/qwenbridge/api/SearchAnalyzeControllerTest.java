@@ -1,6 +1,11 @@
 package io.qwenbridge.api;
 
+import io.qwenbridge.analysis.model.SearchAnalysis;
+import io.qwenbridge.analysis.service.SearchAnalysisService;
+import io.qwenbridge.decision.SearchBackend;
+import io.qwenbridge.decision.SearchMode;
 import io.qwenbridge.execution.provider.opensearch.client.OpenSearchClient;
+import io.qwenbridge.intent.IntentType;
 import io.qwenbridge.rewrite.ai.AIRewriteService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,9 +37,13 @@ class SearchAnalyzeControllerTest {
     @MockBean
     private OpenSearchClient openSearchClient;
 
+    @MockBean
+    private SearchAnalysisService searchAnalysisService;
+
     @Test
     void shouldAnalyzePersianQuery() throws Exception {
         when(aiRewriteService.rewrite("میز")).thenReturn("table");
+        when(searchAnalysisService.analyze("میز")).thenReturn(searchAnalysis("fa", "table"));
         when(openSearchClient.search(anyString(), anyMap())).thenReturn(emptyOpenSearchResponse());
 
         mockMvc.perform(post("/api/v1/search/analyze")
@@ -53,6 +62,7 @@ class SearchAnalyzeControllerTest {
     @Test
     void shouldAnalyzeEnglishQuery() throws Exception {
         when(aiRewriteService.rewrite("table")).thenReturn("table");
+        when(searchAnalysisService.analyze("table")).thenReturn(searchAnalysis("en", "table"));
         when(openSearchClient.search(anyString(), anyMap())).thenReturn(emptyOpenSearchResponse());
 
         mockMvc.perform(post("/api/v1/search/analyze")
@@ -75,6 +85,7 @@ class SearchAnalyzeControllerTest {
     @Test
     void shouldReturnExecutionPlanAndExecutionResult() throws Exception {
         when(aiRewriteService.rewrite("table")).thenReturn("table");
+        when(searchAnalysisService.analyze("table")).thenReturn(searchAnalysis("en", "table"));
         when(openSearchClient.search(anyString(), anyMap())).thenReturn(emptyOpenSearchResponse());
 
         mockMvc.perform(post("/api/v1/search/analyze")
@@ -99,6 +110,31 @@ class SearchAnalyzeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"query\":\"\"}"))
                 .andExpect(status().isBadRequest());
+    }
+
+    private SearchAnalysis searchAnalysis(String language, String rewrite) {
+        return new SearchAnalysis(
+                language,
+                IntentType.PRODUCT_SEARCH,
+                0.90,
+                "User is searching for a product.",
+                List.of(rewrite),
+                true,
+                0.85,
+                "Product search query.",
+                List.of(rewrite),
+                SearchMode.KEYWORD,
+                SearchBackend.OPENSEARCH,
+                true,
+                false,
+                false,
+                true,
+                false,
+                false,
+                false,
+                0.85,
+                "Use OpenSearch keyword search."
+        );
     }
 
     private Map<String, Object> emptyOpenSearchResponse() {

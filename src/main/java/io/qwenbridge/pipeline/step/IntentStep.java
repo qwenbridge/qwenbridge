@@ -1,5 +1,6 @@
 package io.qwenbridge.pipeline.step;
 
+import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.intent.IntentAnalysis;
 import io.qwenbridge.intent.IntentService;
 import io.qwenbridge.pipeline.ExecutionContext;
@@ -16,10 +17,15 @@ public class IntentStep implements PipelineStep<IntentResult> {
     }
 
     public String name() { return "IntentStep"; }
-    public int order() { return 20; }
+    public int order() { return 30; }
     public Class<IntentResult> resultType() { return IntentResult.class; }
 
     public IntentResult execute(ExecutionContext context) {
+        SearchAnalysis searchAnalysis = context.get(SearchAnalysis.class);
+        if (searchAnalysis != null) {
+            return searchAnalysis.toIntentResult();
+        }
+
         IntentAnalysis analysis = intentService.analyze(context.request().originalQuery());
         return IntentResult.from(analysis);
     }

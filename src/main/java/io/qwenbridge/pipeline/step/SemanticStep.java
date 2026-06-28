@@ -1,5 +1,6 @@
 package io.qwenbridge.pipeline.step;
 
+import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.result.SemanticResult;
 import io.qwenbridge.semantic.SemanticAnalysis;
@@ -16,10 +17,15 @@ public class SemanticStep implements PipelineStep<SemanticResult> {
     }
 
     public String name() { return "SemanticStep"; }
-    public int order() { return 50; }
+    public int order() { return 60; }
     public Class<SemanticResult> resultType() { return SemanticResult.class; }
 
     public SemanticResult execute(ExecutionContext context) {
+        SearchAnalysis searchAnalysis = context.get(SearchAnalysis.class);
+        if (searchAnalysis != null) {
+            return searchAnalysis.toSemanticResult(context.request().originalQuery());
+        }
+
         SemanticAnalysis analysis = semanticService.analyze(context.request().originalQuery());
         return SemanticResult.validated(analysis);
     }

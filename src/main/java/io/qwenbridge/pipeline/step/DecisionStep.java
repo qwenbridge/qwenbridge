@@ -1,5 +1,6 @@
 package io.qwenbridge.pipeline.step;
 
+import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.decision.DecisionService;
 import io.qwenbridge.decision.DecisionType;
 import io.qwenbridge.decision.SearchDecision;
@@ -31,11 +32,14 @@ public class DecisionStep implements PipelineStep<DecisionResult> {
     }
 
     public String name() { return "DecisionStep"; }
-    public int order() { return 70; }
+    public int order() { return 80; }
     public Class<DecisionResult> resultType() { return DecisionResult.class; }
 
     public DecisionResult execute(ExecutionContext context) {
-        SearchDecision decision = decisionService.decide(context);
+        SearchAnalysis searchAnalysis = context.get(SearchAnalysis.class);
+        SearchDecision decision = searchAnalysis != null
+                ? searchAnalysis.toSearchDecision()
+                : decisionService.decide(context);
         ExecutionPlan plan = executionPlanFactory.from(decision);
         ExecutionResult executionResult = executionEngine.execute(plan, context);
 

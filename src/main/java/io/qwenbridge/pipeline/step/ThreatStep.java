@@ -15,7 +15,7 @@ public class ThreatStep implements PipelineStep<ThreatResult> {
     }
 
     public String name() { return "ThreatStep"; }
-    public int order() { return 30; }
+    public int order() { return 40; }
     public Class<ThreatResult> resultType() { return ThreatResult.class; }
 
     public ThreatResult execute(ExecutionContext context) {
