@@ -50,5 +50,9 @@ class ThreatServiceCorrelationIntegrationTest {
         assertThat(analysis.findings())
                 .extracting(finding -> finding.type())
                 .contains(ThreatType.PROMPT_INJECTION, ThreatType.JAILBREAK);
+
+        assertThat(analysis.riskProfile().correlations())
+                .extracting(correlation -> correlation.id())
+                .contains("prompt-plus-jailbreak");
     }
 }

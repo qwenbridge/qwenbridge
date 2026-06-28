@@ -65,7 +65,7 @@ public class ThreatService {
 
         ThreatDecision decision = decide(effectiveScore, riskProfile.riskLevel());
 
-        return ThreatAnalysis.from(findings, decision);
+        return ThreatAnalysis.from(findings, decision, riskProfile);
     }
 
     private ThreatDecision decide(double score, ThreatRiskLevel riskLevel) {
