@@ -1,0 +1,40 @@
+rules:
+  - id: ldap-wildcard-filter
+    regex: "(?i)\\([^)]*\\*[^)]*\\)"
+    severity: MEDIUM
+    score: 0.58
+    confidence: 0.78
+    evidence: "LDAP wildcard filter"
+    reason: "LDAP wildcard filter pattern detected."
+
+  - id: ldap-filter-boolean-or
+    regex: "(?i)\\(\\|\\s*\\([^)]*=\\*\\)"
+    severity: HIGH
+    score: 0.80
+    confidence: 0.86
+    evidence: "LDAP OR wildcard filter"
+    reason: "LDAP boolean OR wildcard bypass pattern detected."
+
+  - id: ldap-filter-boolean-and
+    regex: "(?i)\\(&\\s*\\([^)]*=\\*\\)"
+    severity: HIGH
+    score: 0.78
+    confidence: 0.84
+    evidence: "LDAP AND wildcard filter"
+    reason: "LDAP boolean AND wildcard pattern detected."
+
+  - id: ldap-escaped-filter-breakout
+    regex: "(?i)(\\)\\s*\\(|\\)\\s*\\(|\\*\\)\\s*\\()"
+    severity: HIGH
+    score: 0.76
+    confidence: 0.82
+    evidence: "LDAP filter breakout"
+    reason: "LDAP filter breakout pattern detected."
+
+  - id: ldap-objectclass-probing
+    regex: "(?i)\\(objectClass=\\*\\)"
+    severity: HIGH
+    score: 0.82
+    confidence: 0.88
+    evidence: "objectClass=*"
+    reason: "LDAP objectClass wildcard probing detected."
