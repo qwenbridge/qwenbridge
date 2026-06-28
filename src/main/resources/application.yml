@@ -21,15 +21,16 @@ qwenbridge:
       connect-timeout: 5s
       read-timeout: 60s
 
-springdoc:
-  api-docs:
-    path: /v3/api-docs
-
-  swagger-ui:
-    path: /swagger
   search:
     opensearch:
       base-url: http://localhost:9200
       index: qwenbridge-products
       connect-timeout: 5s
       read-timeout: 30s
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+
+  swagger-ui:
+    path: /swagger
