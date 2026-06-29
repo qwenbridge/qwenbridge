@@ -7,6 +7,7 @@ import io.qwenbridge.analysis.cache.AIAnalysisCache;
 import io.qwenbridge.analysis.cache.AIAnalysisCacheKeyBuilder;
 import io.qwenbridge.analysis.cache.CacheKey;
 import io.qwenbridge.analysis.cache.config.AIAnalysisCacheProperties;
+import io.qwenbridge.analysis.cache.coalescing.AIAnalysisSingleFlight;
 import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTraceHolder;
 import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.analysis.parser.SearchAnalysisJsonParser;
@@ -28,6 +29,7 @@ class QwenSearchAnalysisServiceCacheTest {
     private final AIAnalysisCacheKeyBuilder keyBuilder = mock(AIAnalysisCacheKeyBuilder.class);
     private final AIAnalysisCacheProperties cacheProperties = new AIAnalysisCacheProperties();
     private final AIAnalysisCacheTraceHolder cacheTraceHolder = new AIAnalysisCacheTraceHolder();
+    private final AIAnalysisSingleFlight singleFlight = new AIAnalysisSingleFlight();
 
     private final QwenSearchAnalysisService service =
             new QwenSearchAnalysisService(
@@ -37,7 +39,8 @@ class QwenSearchAnalysisServiceCacheTest {
                     cache,
                     keyBuilder,
                     cacheProperties,
-                    cacheTraceHolder
+                    cacheTraceHolder,
+                    singleFlight
             );
 
     @Test

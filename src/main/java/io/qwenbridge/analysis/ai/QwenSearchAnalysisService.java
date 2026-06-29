@@ -6,6 +6,7 @@ import io.qwenbridge.analysis.cache.AIAnalysisCache;
 import io.qwenbridge.analysis.cache.AIAnalysisCacheKeyBuilder;
 import io.qwenbridge.analysis.cache.CacheKey;
 import io.qwenbridge.analysis.cache.config.AIAnalysisCacheProperties;
+import io.qwenbridge.analysis.cache.coalescing.AIAnalysisSingleFlight;
 import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTrace;
 import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTraceHolder;
 import io.qwenbridge.analysis.model.SearchAnalysis;
@@ -24,6 +25,7 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
     private final AIAnalysisCacheKeyBuilder cacheKeyBuilder;
     private final AIAnalysisCacheProperties cacheProperties;
     private final AIAnalysisCacheTraceHolder cacheTraceHolder;
+    private final AIAnalysisSingleFlight singleFlight;
 
     public QwenSearchAnalysisService(
             AIService aiService,
@@ -32,7 +34,8 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
             AIAnalysisCache cache,
             AIAnalysisCacheKeyBuilder cacheKeyBuilder,
             AIAnalysisCacheProperties cacheProperties,
-            AIAnalysisCacheTraceHolder cacheTraceHolder
+            AIAnalysisCacheTraceHolder cacheTraceHolder,
+            AIAnalysisSingleFlight singleFlight
     ) {
         this.aiService = aiService;
         this.promptBuilder = promptBuilder;
@@ -41,6 +44,7 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
         this.cacheKeyBuilder = cacheKeyBuilder;
         this.cacheProperties = cacheProperties;
         this.cacheTraceHolder = cacheTraceHolder;
+        this.singleFlight = singleFlight;
     }
 
     @Override
@@ -69,15 +73,17 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
             // Cache failures must never break AI analysis.
         }
 
-        SearchAnalysis analysis = analyzeWithAI(query);
+        return singleFlight.execute(cacheKey, () -> {
+            SearchAnalysis analysis = analyzeWithAI(query);
 
-        try {
-            cache.put(cacheKey, analysis);
-        } catch (Exception ignored) {
-            // Cache failures must never break AI analysis.
-        }
+            try {
+                cache.put(cacheKey, analysis);
+            } catch (Exception ignored) {
+                // Cache failures must never break AI analysis.
+            }
 
-        return analysis;
+            return analysis;
+        });
     }
 
     private SearchAnalysis analyzeWithAI(String query) {
