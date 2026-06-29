@@ -1,16 +1,14 @@
 package io.qwenbridge.decision;
 
+import lombok.extern.slf4j.Slf4j;
 import io.qwenbridge.decision.ai.AIDecisionService;
 import io.qwenbridge.pipeline.ExecutionContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 
+@Slf4j
 public class DecisionService {
-
-    private static final Logger log = LoggerFactory.getLogger(DecisionService.class);
 
     private final AIDecisionService aiDecisionService;
 

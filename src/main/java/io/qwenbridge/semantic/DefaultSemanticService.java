@@ -1,14 +1,12 @@
 package io.qwenbridge.semantic;
 
+import lombok.extern.slf4j.Slf4j;
 import io.qwenbridge.semantic.ai.AISemanticService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class DefaultSemanticService implements SemanticService {
-
-    private static final Logger log = LoggerFactory.getLogger(DefaultSemanticService.class);
 
     private final AISemanticService aiSemanticService;
 

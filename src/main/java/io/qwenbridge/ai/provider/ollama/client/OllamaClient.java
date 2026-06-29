@@ -1,20 +1,18 @@
 package io.qwenbridge.ai.provider.ollama.client;
 
+import lombok.extern.slf4j.Slf4j;
 import io.qwenbridge.ai.exception.AIException;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaChatRequest;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaChatResponse;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaEmbeddingRequest;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaEmbeddingResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
+@Slf4j
 public class OllamaClient {
-
-    private static final Logger log = LoggerFactory.getLogger(OllamaClient.class);
 
     private final WebClient webClient;
 
