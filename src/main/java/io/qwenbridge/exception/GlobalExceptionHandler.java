@@ -90,15 +90,15 @@ public class GlobalExceptionHandler {
             String message,
             HttpServletRequest request
     ) {
-        ApiError error = new ApiError(
-                Instant.now(),
-                status.value(),
-                status.getReasonPhrase(),
-                code.name(),
-                message,
-                request.getRequestURI(),
-                requestId(request)
-        );
+        ApiError error = ApiError.builder()
+                .timestamp(Instant.now())
+                .status(status.value())
+                .error(status.getReasonPhrase())
+                .code(code.name())
+                .message(message)
+                .path(request.getRequestURI())
+                .requestId(requestId(request))
+                .build();
 
         return ResponseEntity.status(status).body(error);
     }

@@ -46,10 +46,10 @@ public class ApiHealthController {
     )
     @GetMapping
     public ApiHealthResponse health() {
-        return new ApiHealthResponse(
-                "UP",
-                applicationName,
-                "v1"
-        );
+        return ApiHealthResponse.builder()
+                .status("UP")
+                .service(applicationName)
+                .apiVersion("v1")
+                .build();
     }
 }

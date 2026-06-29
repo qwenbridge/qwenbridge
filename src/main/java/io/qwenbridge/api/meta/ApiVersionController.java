@@ -49,11 +49,11 @@ public class ApiVersionController {
     )
     @GetMapping
     public ApiVersionResponse version() {
-        return new ApiVersionResponse(
-                applicationName,
-                applicationVersion,
-                "v1",
-                Runtime.version().toString()
-        );
+        return ApiVersionResponse.builder()
+                .name(applicationName)
+                .version(applicationVersion)
+                .apiVersion("v1")
+                .javaVersion(Runtime.version().toString())
+                .build();
     }
 }

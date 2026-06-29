@@ -76,15 +76,15 @@ public class SearchPipeline {
 
     private AIAnalysisCacheResponse toCacheResponse(AIAnalysisCacheTrace trace) {
         if (trace == null) {
-            return new AIAnalysisCacheResponse(
-                    false,
-                    false,
-                    true,
-                    "",
-                    "",
-                    "",
-                    ""
-            );
+            return AIAnalysisCacheResponse.builder()
+                    .enabled(false)
+                    .hit(false)
+                    .miss(true)
+                    .key("")
+                    .provider("")
+                    .model("")
+                    .version("")
+                    .build();
         }
 
         return AIAnalysisCacheResponse.builder()
@@ -139,20 +139,20 @@ public class SearchPipeline {
             return SearchResultResponse.unavailable();
         }
 
-        return new SearchResultResponse(
-                true,
-                response.results().totalHits(),
-                response.results().tookMillis(),
-                response.results()
+        return SearchResultResponse.builder()
+                .available(true)
+                .totalHits(response.results().totalHits())
+                .tookMillis(response.results().tookMillis())
+                .hits(response.results()
                         .hits()
                         .stream()
-                        .map(hit -> new SearchHitResponse(
-                                hit.id(),
-                                hit.score(),
-                                hit.document()
-                        ))
-                        .toList()
-        );
+                        .map(hit -> SearchHitResponse.builder()
+                                .id(hit.id())
+                                .score(hit.score())
+                                .document(hit.document())
+                                .build())
+                        .toList())
+                .build();
     }
 
     private DecisionType resolveFinalDecision(
