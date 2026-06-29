@@ -1,15 +1,20 @@
 package io.qwenbridge.pipeline.context;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
 import java.util.Objects;
 
+@Getter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public final class ContextKey<T> {
 
+    @EqualsAndHashCode.Include
     private final String name;
 
     private final Class<T> type;
 
     private ContextKey(String name, Class<T> type) {
-
         this.name = Objects.requireNonNull(name, "name must not be null");
         this.type = Objects.requireNonNull(type, "type must not be null");
     }
@@ -27,28 +32,8 @@ public final class ContextKey<T> {
     }
 
     @Override
-    public boolean equals(Object object) {
-
-        if (this == object) {
-            return true;
-        }
-
-        if (!(object instanceof ContextKey<?> other)) {
-            return false;
-        }
-
-        return name.equals(other.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return name.hashCode();
-    }
-
-    @Override
     public String toString() {
         return "ContextKey[name=%s, type=%s]"
                 .formatted(name, type.getSimpleName());
     }
-
 }
