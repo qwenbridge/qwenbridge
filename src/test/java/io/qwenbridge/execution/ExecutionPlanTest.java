@@ -13,16 +13,16 @@ class ExecutionPlanTest {
 
     @Test
     void shouldCreateExecutionPlanWithSortedSteps() {
-        ExecutionPlan plan = new ExecutionPlan(
-                SearchMode.HYBRID,
-                SearchBackend.IN_MEMORY,
-                List.of(
+        ExecutionPlan plan = ExecutionPlan.builder()
+                .mode(SearchMode.HYBRID)
+                .backend(SearchBackend.IN_MEMORY)
+                .steps(List.of(
                         new ExecutionStep(30, ExecutionOperation.RERANK_RESULTS, "rerank"),
                         new ExecutionStep(10, ExecutionOperation.KEYWORD_SEARCH, "keyword"),
                         new ExecutionStep(20, ExecutionOperation.VECTOR_SEARCH, "vector")
-                ),
-                "Hybrid execution plan"
-        );
+                ))
+                .reason("Hybrid execution plan")
+                .build();
 
         assertThat(plan.steps())
                 .extracting(ExecutionStep::operation)
@@ -35,15 +35,15 @@ class ExecutionPlanTest {
 
     @Test
     void shouldDetectOperationInPlan() {
-        ExecutionPlan plan = new ExecutionPlan(
-                SearchMode.KEYWORD,
-                SearchBackend.IN_MEMORY,
-                List.of(
+        ExecutionPlan plan = ExecutionPlan.builder()
+                .mode(SearchMode.KEYWORD)
+                .backend(SearchBackend.IN_MEMORY)
+                .steps(List.of(
                         new ExecutionStep(10, ExecutionOperation.KEYWORD_SEARCH, "keyword"),
                         new ExecutionStep(20, ExecutionOperation.RETURN_RESULTS, "return")
-                ),
-                "Keyword execution plan"
-        );
+                ))
+                .reason("Keyword execution plan")
+                .build();
 
         assertThat(plan.contains(ExecutionOperation.KEYWORD_SEARCH)).isTrue();
         assertThat(plan.contains(ExecutionOperation.VECTOR_SEARCH)).isFalse();
@@ -51,12 +51,12 @@ class ExecutionPlanTest {
 
     @Test
     void shouldRejectEmptySteps() {
-        assertThatThrownBy(() -> new ExecutionPlan(
-                SearchMode.KEYWORD,
-                SearchBackend.IN_MEMORY,
-                List.of(),
-                "Invalid plan"
-        )).isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> ExecutionPlan.builder()
+                .mode(SearchMode.KEYWORD)
+                .backend(SearchBackend.IN_MEMORY)
+                .steps(List.of())
+                .reason("Invalid plan")
+                .build()).isInstanceOf(IllegalArgumentException.class)
           .hasMessageContaining("steps must not be empty");
     }
 }

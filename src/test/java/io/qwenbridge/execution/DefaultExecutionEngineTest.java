@@ -59,18 +59,18 @@ class DefaultExecutionEngineTest {
     void shouldIgnoreOperationsWithoutRegisteredExecutor() {
 
         ExecutionPlan plan =
-                new ExecutionPlan(
-                        io.qwenbridge.decision.SearchMode.KEYWORD,
-                        io.qwenbridge.decision.SearchBackend.IN_MEMORY,
-                        List.of(
+                ExecutionPlan.builder()
+                        .mode(io.qwenbridge.decision.SearchMode.KEYWORD)
+                        .backend(io.qwenbridge.decision.SearchBackend.IN_MEMORY)
+                        .steps(List.of(
                                 new ExecutionStep(
                                         1,
                                         ExecutionOperation.RETURN_RESULTS,
                                         "return"
                                 )
-                        ),
-                        "test"
-                );
+                        ))
+                        .reason("test")
+                        .build();
 
         ExecutionResult result = engine.execute(plan);
         assertThat(result.executed()).isTrue();

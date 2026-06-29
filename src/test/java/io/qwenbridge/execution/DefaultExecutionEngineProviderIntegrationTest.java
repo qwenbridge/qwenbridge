@@ -29,18 +29,18 @@ class DefaultExecutionEngineProviderIntegrationTest {
         DefaultExecutionEngine engine =
                 new DefaultExecutionEngine(List.<ExecutionOperationExecutor>of(), resolver);
 
-        ExecutionPlan plan = new ExecutionPlan(
-                SearchMode.KEYWORD,
-                SearchBackend.IN_MEMORY,
-                List.of(
+        ExecutionPlan plan = ExecutionPlan.builder()
+                .mode(SearchMode.KEYWORD)
+                .backend(SearchBackend.IN_MEMORY)
+                .steps(List.of(
                         new ExecutionStep(
                                 1,
                                 ExecutionOperation.KEYWORD_SEARCH,
                                 "keyword search"
                         )
-                ),
-                "keyword search plan"
-        );
+                ))
+                .reason("keyword search plan")
+                .build();
 
         ExecutionResult result =
                 engine.execute(plan, new ExecutionContext("iphone"));
@@ -65,18 +65,18 @@ class DefaultExecutionEngineProviderIntegrationTest {
         DefaultExecutionEngine engine =
                 new DefaultExecutionEngine(List.<ExecutionOperationExecutor>of(), resolver);
 
-        ExecutionPlan plan = new ExecutionPlan(
-                SearchMode.KEYWORD,
-                SearchBackend.IN_MEMORY,
-                List.of(
+        ExecutionPlan plan = ExecutionPlan.builder()
+                .mode(SearchMode.KEYWORD)
+                .backend(SearchBackend.IN_MEMORY)
+                .steps(List.of(
                         new ExecutionStep(
                                 1,
                                 ExecutionOperation.KEYWORD_SEARCH,
                                 "keyword search"
                         )
-                ),
-                "keyword search plan"
-        );
+                ))
+                .reason("keyword search plan")
+                .build();
 
         ExecutionContext context = new ExecutionContext("iphone");
 
