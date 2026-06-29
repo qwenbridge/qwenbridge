@@ -1,6 +1,6 @@
 package io.qwenbridge.analysis.cache.config;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
@@ -8,11 +8,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceClientConfigurat
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 
 @Configuration
-@ConditionalOnProperty(
-        prefix = "qwenbridge.analysis.cache",
-        name = "type",
-        havingValue = "redis"
-)
+@ConditionalOnExpression("'${qwenbridge.analysis.cache.enabled:true}' == 'true' && '${qwenbridge.analysis.cache.type:redis}' == 'redis'")
 public class RedisAIAnalysisCacheConfiguration {
 
     @Bean

@@ -5,18 +5,14 @@ import io.qwenbridge.analysis.cache.AIAnalysisCache;
 import io.qwenbridge.analysis.cache.CacheKey;
 import io.qwenbridge.analysis.cache.config.AIAnalysisCacheProperties;
 import io.qwenbridge.analysis.model.SearchAnalysis;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 @Component
-@ConditionalOnProperty(
-        prefix = "qwenbridge.analysis.cache",
-        name = "type",
-        havingValue = "redis"
-)
+@ConditionalOnExpression("'${qwenbridge.analysis.cache.enabled:true}' == 'true' && '${qwenbridge.analysis.cache.type:redis}' == 'redis'")
 public class RedisAIAnalysisCache implements AIAnalysisCache {
 
     private final StringRedisTemplate redisTemplate;
@@ -35,7 +31,7 @@ public class RedisAIAnalysisCache implements AIAnalysisCache {
 
     @Override
     public Optional<SearchAnalysis> get(CacheKey key) {
-        if (!properties.enabled()) {
+        if (!properties.enabled() || !isRedis()) {
             return Optional.empty();
         }
 
@@ -54,18 +50,13 @@ public class RedisAIAnalysisCache implements AIAnalysisCache {
 
     @Override
     public void put(CacheKey key, SearchAnalysis value) {
-        if (!properties.enabled() || value == null) {
+        if (!properties.enabled() || !isRedis() || value == null) {
             return;
         }
 
         try {
             String payload = objectMapper.writeValueAsString(value);
-
-            redisTemplate.opsForValue().set(
-                    redisKey(key),
-                    payload,
-                    properties.ttl()
-            );
+            redisTemplate.opsForValue().set(redisKey(key), payload, properties.ttl());
         } catch (Exception ignored) {
             // Redis/cache failures must never break the AI pipeline.
         }
@@ -73,6 +64,10 @@ public class RedisAIAnalysisCache implements AIAnalysisCache {
 
     @Override
     public void evict(CacheKey key) {
+        if (!properties.enabled() || !isRedis()) {
+            return;
+        }
+
         try {
             redisTemplate.delete(redisKey(key));
         } catch (Exception ignored) {
@@ -83,7 +78,10 @@ public class RedisAIAnalysisCache implements AIAnalysisCache {
     @Override
     public void clear() {
         // Intentionally no global Redis flush.
-        // Cache namespace cleanup can be added later with SCAN by prefix.
+    }
+
+    private boolean isRedis() {
+        return "redis".equalsIgnoreCase(properties.type());
     }
 
     private String redisKey(CacheKey key) {
