@@ -123,28 +123,28 @@ class SearchAnalyzeControllerTest {
     }
 
     private SearchAnalysis searchAnalysis(String language, String rewrite) {
-        return new SearchAnalysis(
-                language,
-                IntentType.PRODUCT_SEARCH,
-                0.90,
-                "User is searching for a product.",
-                List.of(rewrite),
-                true,
-                0.85,
-                "Product search query.",
-                List.of(rewrite),
-                SearchMode.KEYWORD,
-                SearchBackend.OPENSEARCH,
-                true,
-                false,
-                false,
-                true,
-                false,
-                false,
-                false,
-                0.85,
-                "Use OpenSearch keyword search."
-        );
+        return SearchAnalysis.builder()
+                .language(language)
+                .intent(IntentType.PRODUCT_SEARCH)
+                .intentConfidence(0.90)
+                .intentReason("User is searching for a product.")
+                .rewrites(List.of(rewrite))
+                .semanticValidated(true)
+                .semanticScore(0.85)
+                .semanticMeaning("Product search query.")
+                .entities(List.of(rewrite))
+                .searchMode(SearchMode.KEYWORD)
+                .backend(SearchBackend.OPENSEARCH)
+                .keywordSearch(true)
+                .vectorSearch(false)
+                .hybridSearch(false)
+                .facets(true)
+                .rerank(false)
+                .rewriteAgain(false)
+                .answer(false)
+                .decisionConfidence(0.85)
+                .decisionReason("Use OpenSearch keyword search.")
+                .build();
     }
 
 
