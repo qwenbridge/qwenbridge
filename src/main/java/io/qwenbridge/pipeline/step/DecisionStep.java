@@ -1,5 +1,7 @@
 package io.qwenbridge.pipeline.step;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.decision.DecisionType;
 import io.qwenbridge.decision.SearchDecision;
@@ -14,18 +16,11 @@ import io.qwenbridge.pipeline.result.ExecutionResultResult;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class DecisionStep implements PipelineStep<DecisionResult> {
 
     private final ExecutionPlanFactory executionPlanFactory;
     private final ExecutionEngine executionEngine;
-
-    public DecisionStep(
-            ExecutionPlanFactory executionPlanFactory,
-            ExecutionEngine executionEngine
-    ) {
-        this.executionPlanFactory = executionPlanFactory;
-        this.executionEngine = executionEngine;
-    }
 
     @Override
     public String name() {

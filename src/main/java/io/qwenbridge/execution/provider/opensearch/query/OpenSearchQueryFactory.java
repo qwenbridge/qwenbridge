@@ -1,5 +1,7 @@
 package io.qwenbridge.execution.provider.opensearch.query;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.execution.provider.model.SearchRequest;
 import io.qwenbridge.execution.provider.opensearch.OpenSearchProperties;
 import io.qwenbridge.execution.provider.opensearch.dto.OpenSearchSearchRequest;
@@ -9,13 +11,10 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+@RequiredArgsConstructor
 public class OpenSearchQueryFactory {
 
     private final OpenSearchProperties properties;
-
-    public OpenSearchQueryFactory(OpenSearchProperties properties) {
-        this.properties = properties;
-    }
 
     public OpenSearchSearchRequest from(SearchRequest request) {
         return new OpenSearchSearchRequest(

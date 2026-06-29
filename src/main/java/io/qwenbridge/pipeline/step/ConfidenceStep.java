@@ -1,5 +1,7 @@
 package io.qwenbridge.pipeline.step;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.confidence.ConfidenceService;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.result.ConfidenceResult;
@@ -7,13 +9,10 @@ import io.qwenbridge.pipeline.result.RewriteResult;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class ConfidenceStep implements PipelineStep<ConfidenceResult> {
 
     private final ConfidenceService confidenceService;
-
-    public ConfidenceStep(ConfidenceService confidenceService) {
-        this.confidenceService = confidenceService;
-    }
 
     public String name() { return "ConfidenceStep"; }
     public int order() {

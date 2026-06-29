@@ -1,20 +1,19 @@
 package io.qwenbridge.decision;
 
+import lombok.RequiredArgsConstructor;
+
 import lombok.extern.slf4j.Slf4j;
 import io.qwenbridge.decision.ai.AIDecisionService;
 import io.qwenbridge.pipeline.ExecutionContext;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 
 @Slf4j
 public class DecisionService {
 
     private final AIDecisionService aiDecisionService;
-
-    public DecisionService(AIDecisionService aiDecisionService) {
-        this.aiDecisionService = aiDecisionService;
-    }
 
     public SearchDecision decide(ExecutionContext context) {
         try {

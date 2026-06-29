@@ -1,5 +1,7 @@
 package io.qwenbridge.ai.provider.resolver;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.ai.config.AIProperties;
 import io.qwenbridge.ai.exception.AIException;
 import io.qwenbridge.ai.provider.spi.AIProvider;
@@ -9,18 +11,11 @@ import io.qwenbridge.ai.value.ProviderId;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class DefaultAIProviderResolver implements AIProviderResolver {
 
     private final AIProviderRegistry registry;
     private final AIProperties properties;
-
-    public DefaultAIProviderResolver(
-            AIProviderRegistry registry,
-            AIProperties properties
-    ) {
-        this.registry = registry;
-        this.properties = properties;
-    }
 
     @Override
     public AIProvider resolve(ProviderId providerId) {

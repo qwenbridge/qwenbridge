@@ -1,5 +1,7 @@
 package io.qwenbridge.analysis.ai;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.ai.contract.ChatRequest;
 import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.analysis.cache.AIAnalysisCache;
@@ -16,6 +18,7 @@ import io.qwenbridge.analysis.service.SearchAnalysisService;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class QwenSearchAnalysisService implements SearchAnalysisService {
 
     private final AIService aiService;
@@ -26,26 +29,6 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
     private final AIAnalysisCacheProperties cacheProperties;
     private final AIAnalysisCacheTraceHolder cacheTraceHolder;
     private final AIAnalysisSingleFlight singleFlight;
-
-    public QwenSearchAnalysisService(
-            AIService aiService,
-            SearchAnalysisPromptBuilder promptBuilder,
-            SearchAnalysisJsonParser parser,
-            AIAnalysisCache cache,
-            AIAnalysisCacheKeyBuilder cacheKeyBuilder,
-            AIAnalysisCacheProperties cacheProperties,
-            AIAnalysisCacheTraceHolder cacheTraceHolder,
-            AIAnalysisSingleFlight singleFlight
-    ) {
-        this.aiService = aiService;
-        this.promptBuilder = promptBuilder;
-        this.parser = parser;
-        this.cache = cache;
-        this.cacheKeyBuilder = cacheKeyBuilder;
-        this.cacheProperties = cacheProperties;
-        this.cacheTraceHolder = cacheTraceHolder;
-        this.singleFlight = singleFlight;
-    }
 
     @Override
     public SearchAnalysis analyze(String query) {

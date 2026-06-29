@@ -1,5 +1,7 @@
 package io.qwenbridge.execution.provider.resolver;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.decision.SearchBackend;
 import io.qwenbridge.execution.provider.spi.SearchProvider;
 import io.qwenbridge.execution.provider.spi.SearchProviderRegistry;
@@ -9,15 +11,12 @@ import io.qwenbridge.pipeline.context.ContextKeys;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class DefaultSearchProviderResolver implements SearchProviderResolver {
 
     private static final String DEFAULT_PROVIDER = "inmemory";
 
     private final SearchProviderRegistry registry;
-
-    public DefaultSearchProviderResolver(SearchProviderRegistry registry) {
-        this.registry = registry;
-    }
 
     @Override
     public SearchProvider resolve(ExecutionContext context) {

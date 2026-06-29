@@ -1,5 +1,7 @@
 package io.qwenbridge.api;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.exception.ApiError;
 import io.qwenbridge.model.SearchAnalyzeRequest;
 import io.qwenbridge.model.SearchAnalyzeResponse;
@@ -14,15 +16,12 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/search")
 @Tag(name = "Search", description = "AI-native search analysis APIs")
 public class SearchAnalyzeController {
 
     private final SearchPipeline searchPipeline;
-
-    public SearchAnalyzeController(SearchPipeline searchPipeline) {
-        this.searchPipeline = searchPipeline;
-    }
 
     @Operation(
             summary = "Analyze a search query",

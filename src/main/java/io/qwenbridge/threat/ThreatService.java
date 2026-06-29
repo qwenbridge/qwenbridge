@@ -1,5 +1,7 @@
 package io.qwenbridge.threat;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.threat.correlation.ThreatCorrelationService;
 import io.qwenbridge.threat.correlation.ThreatRiskLevel;
 import io.qwenbridge.threat.correlation.ThreatRiskProfile;
@@ -17,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ThreatService {
 
     private final ThreatDetectorRegistry detectorRegistry;
@@ -24,20 +27,6 @@ public class ThreatService {
     private final ThreatDecisionEngine decisionEngine;
     private final ThreatCorrelationService correlationService;
     private final ThreatExplanationBuilder explanationBuilder;
-
-    public ThreatService(
-            ThreatDetectorRegistry detectorRegistry,
-            ThreatScoringService scoringService,
-            ThreatDecisionEngine decisionEngine,
-            ThreatCorrelationService correlationService,
-            ThreatExplanationBuilder explanationBuilder
-    ) {
-        this.detectorRegistry = detectorRegistry;
-        this.scoringService = scoringService;
-        this.decisionEngine = decisionEngine;
-        this.correlationService = correlationService;
-        this.explanationBuilder = explanationBuilder;
-    }
 
     public ThreatResult analyze(String query) {
         return toResult(analyzeDetailed(query));

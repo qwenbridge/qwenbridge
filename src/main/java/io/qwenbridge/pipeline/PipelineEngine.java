@@ -1,5 +1,7 @@
 package io.qwenbridge.pipeline;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.pipeline.result.PipelineTraceItem;
 import io.qwenbridge.pipeline.step.PipelineStep;
 import org.springframework.stereotype.Component;
@@ -10,15 +12,10 @@ import java.util.Comparator;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class PipelineEngine {
 
     private final List<PipelineStep<?>> steps;
-
-    public PipelineEngine(List<PipelineStep<?>> steps) {
-        this.steps = steps.stream()
-                .sorted(Comparator.comparingInt(PipelineStep::order))
-                .toList();
-    }
 
     public void execute(ExecutionContext context) {
         for (PipelineStep<?> step : steps) {

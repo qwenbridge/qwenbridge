@@ -80,6 +80,18 @@ class AIAnalysisSingleFlightTest {
         assertThat(first).isNotNull();
         assertThat(second).isNotNull();
         assertThat(calls).hasValue(2);
+        waitUntilNoInFlight();
+    }
+
+    private void waitUntilNoInFlight() {
+        for (int i = 0; i < 20; i++) {
+            if (singleFlight.inFlightCount() == 0) {
+                return;
+            }
+
+            sleep(25);
+        }
+
         assertThat(singleFlight.inFlightCount()).isZero();
     }
 

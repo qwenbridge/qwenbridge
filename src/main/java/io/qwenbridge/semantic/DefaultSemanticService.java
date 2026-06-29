@@ -1,18 +1,17 @@
 package io.qwenbridge.semantic;
 
+import lombok.RequiredArgsConstructor;
+
 import lombok.extern.slf4j.Slf4j;
 import io.qwenbridge.semantic.ai.AISemanticService;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class DefaultSemanticService implements SemanticService {
 
     private final AISemanticService aiSemanticService;
-
-    public DefaultSemanticService(AISemanticService aiSemanticService) {
-        this.aiSemanticService = aiSemanticService;
-    }
 
     @Override
     public SemanticAnalysis analyze(String query) {

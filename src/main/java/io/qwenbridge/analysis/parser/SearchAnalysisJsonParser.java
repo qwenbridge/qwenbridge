@@ -1,5 +1,7 @@
 package io.qwenbridge.analysis.parser;
 
+import lombok.RequiredArgsConstructor;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qwenbridge.analysis.model.SearchAnalysis;
@@ -12,13 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class SearchAnalysisJsonParser {
 
     private final ObjectMapper objectMapper;
-
-    public SearchAnalysisJsonParser(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     public SearchAnalysis parse(String content, String originalQuery) {
         try {

@@ -1,5 +1,7 @@
 package io.qwenbridge.normalization.service;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.normalization.model.NormalizationTraceItem;
 import io.qwenbridge.normalization.model.NormalizedInput;
 import io.qwenbridge.normalization.rule.InputNormalizationRule;
@@ -10,17 +12,10 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class DefaultInputNormalizer implements InputNormalizer {
 
     private final List<InputNormalizationRule> rules;
-
-    public DefaultInputNormalizer(List<InputNormalizationRule> rules) {
-        this.rules = rules == null
-                ? List.of()
-                : rules.stream()
-                        .sorted(Comparator.comparing(InputNormalizationRule::name))
-                        .toList();
-    }
 
     @Override
     public NormalizedInput normalize(String input) {

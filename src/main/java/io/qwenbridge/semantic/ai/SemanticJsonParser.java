@@ -1,17 +1,16 @@
 package io.qwenbridge.semantic.ai;
 
+import lombok.RequiredArgsConstructor;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qwenbridge.semantic.SemanticAnalysis;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class SemanticJsonParser {
 
     private final ObjectMapper objectMapper;
-
-    public SemanticJsonParser(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     public SemanticAnalysis parse(String json) {
         try {

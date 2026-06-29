@@ -1,21 +1,16 @@
 package io.qwenbridge.analysis.cache;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.analysis.cache.config.AIAnalysisCacheProperties;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class AIAnalysisCacheKeyBuilder {
 
     private final AIAnalysisCacheProperties properties;
     private final CacheKeyBuilder delegate;
-
-    public AIAnalysisCacheKeyBuilder(
-            AIAnalysisCacheProperties properties,
-            CacheKeyBuilder delegate
-    ) {
-        this.properties = properties;
-        this.delegate = delegate;
-    }
 
     public CacheKey build(String normalizedQuery) {
         return delegate.build(

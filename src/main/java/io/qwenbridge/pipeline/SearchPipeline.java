@@ -1,5 +1,7 @@
 package io.qwenbridge.pipeline;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTrace;
 import io.qwenbridge.decision.DecisionType;
 import io.qwenbridge.execution.provider.model.SearchResponse;
@@ -19,13 +21,10 @@ import java.time.Duration;
 import java.time.Instant;
 
 @Service
+@RequiredArgsConstructor
 public class SearchPipeline {
 
     private final PipelineEngine pipelineEngine;
-
-    public SearchPipeline(PipelineEngine pipelineEngine) {
-        this.pipelineEngine = pipelineEngine;
-    }
 
     public SearchAnalyzeResponse analyze(SearchAnalyzeRequest request) {
         ExecutionContext context = new ExecutionContext(request.query());

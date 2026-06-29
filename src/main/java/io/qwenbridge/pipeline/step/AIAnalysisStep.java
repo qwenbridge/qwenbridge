@@ -1,5 +1,7 @@
 package io.qwenbridge.pipeline.step;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTrace;
 import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTraceHolder;
 import io.qwenbridge.analysis.model.SearchAnalysis;
@@ -9,18 +11,11 @@ import io.qwenbridge.pipeline.ExecutionContext;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class AIAnalysisStep implements PipelineStep<SearchAnalysis> {
 
     private final SearchAnalysisService searchAnalysisService;
     private final AIAnalysisCacheTraceHolder cacheTraceHolder;
-
-    public AIAnalysisStep(
-            SearchAnalysisService searchAnalysisService,
-            AIAnalysisCacheTraceHolder cacheTraceHolder
-    ) {
-        this.searchAnalysisService = searchAnalysisService;
-        this.cacheTraceHolder = cacheTraceHolder;
-    }
 
     @Override
     public String name() {

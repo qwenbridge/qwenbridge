@@ -1,5 +1,7 @@
 package io.qwenbridge.ai.api;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.ai.contract.ChatRequest;
 import io.qwenbridge.ai.contract.ChatResponse;
 import io.qwenbridge.ai.service.AIService;
@@ -14,15 +16,12 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/ai")
 @Tag(name = "AI", description = "AI provider bridge APIs")
 public class AIChatController {
 
     private final AIService aiService;
-
-    public AIChatController(AIService aiService) {
-        this.aiService = aiService;
-    }
 
     @Operation(
             summary = "Chat with the configured AI provider",
