@@ -22,5 +22,6 @@ public record SearchAnalyzeResponse(
         ExecutionPlanResponse executionPlan,
         ExecutionResultResponse executionResult,
         SearchResultResponse search,
+        AIAnalysisCacheResponse cache,
         List<PipelineTraceItem> pipelineTrace
 ) {}

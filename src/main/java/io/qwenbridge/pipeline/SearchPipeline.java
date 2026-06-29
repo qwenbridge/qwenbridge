@@ -1,9 +1,11 @@
 package io.qwenbridge.pipeline;
 
+import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTrace;
 import io.qwenbridge.decision.DecisionType;
 import io.qwenbridge.execution.provider.model.SearchResponse;
 import io.qwenbridge.model.ExecutionPlanResponse;
 import io.qwenbridge.model.ExecutionResultResponse;
+import io.qwenbridge.model.AIAnalysisCacheResponse;
 import io.qwenbridge.model.ExecutionStepResponse;
 import io.qwenbridge.model.SearchAnalyzeRequest;
 import io.qwenbridge.model.SearchAnalyzeResponse;
@@ -41,6 +43,7 @@ public class SearchPipeline {
         DecisionResult decision = context.get(DecisionResult.class);
         ExecutionPlanResult executionPlan = context.get(ExecutionPlanResult.class);
         ExecutionResultResult executionResult = context.get(ExecutionResultResult.class);
+        AIAnalysisCacheTrace cacheTrace = context.get(AIAnalysisCacheTrace.class);
 
         DecisionType finalDecision = resolveFinalDecision(threat, policy, decision);
         double finalConfidence = resolveFinalConfidence(threat, policy, confidence);
@@ -67,7 +70,32 @@ public class SearchPipeline {
                 toExecutionPlanResponse(executionPlan),
                 toExecutionResultResponse(executionResult),
                 toSearchResultResponse(context),
+                toCacheResponse(cacheTrace),
                 context.trace()
+        );
+    }
+
+    private AIAnalysisCacheResponse toCacheResponse(AIAnalysisCacheTrace trace) {
+        if (trace == null) {
+            return new AIAnalysisCacheResponse(
+                    false,
+                    false,
+                    true,
+                    "",
+                    "",
+                    "",
+                    ""
+            );
+        }
+
+        return new AIAnalysisCacheResponse(
+                trace.enabled(),
+                trace.hit(),
+                trace.miss(),
+                trace.key(),
+                trace.provider(),
+                trace.model(),
+                trace.version()
         );
     }
 
