@@ -1,12 +1,17 @@
 package io.qwenbridge.pipeline.result;
 
+import lombok.Builder;
+
 import io.qwenbridge.execution.ExecutionPlan;
 
+@Builder
 public record ExecutionPlanResult(
         ExecutionPlan plan
 ) {
     public static ExecutionPlanResult none() {
-        return new ExecutionPlanResult(null);
+        return ExecutionPlanResult.builder()
+                .plan(null)
+                .build();
     }
 
     public boolean available() {

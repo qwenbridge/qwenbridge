@@ -1,9 +1,12 @@
 package io.qwenbridge.model;
 
+import lombok.Builder;
+
 import io.qwenbridge.execution.ExecutionOperation;
 
 import java.util.List;
 
+@Builder
 public record ExecutionResultResponse(
         boolean available,
         boolean executed,
@@ -12,6 +15,12 @@ public record ExecutionResultResponse(
         String reason
 ) {
     public static ExecutionResultResponse unavailable() {
-        return new ExecutionResultResponse(false, false, List.of(), List.of(), null);
+        return ExecutionResultResponse.builder()
+                .available(false)
+                .executed(false)
+                .operations(List.of())
+                .results(List.of())
+                .reason(null)
+                .build();
     }
 }
