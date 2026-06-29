@@ -1,8 +1,11 @@
 package io.qwenbridge.model;
 
+import lombok.Builder;
+
 import java.util.Map;
 import java.util.Objects;
 
+@Builder
 public record SearchHitResponse(
         String id,
         double score,

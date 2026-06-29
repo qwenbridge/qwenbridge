@@ -1,5 +1,8 @@
 package io.qwenbridge.model;
 
+import lombok.Builder;
+
+@Builder
 public record AIAnalysisCacheResponse(
         boolean enabled,
         boolean hit,

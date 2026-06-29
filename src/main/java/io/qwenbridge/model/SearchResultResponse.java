@@ -1,8 +1,11 @@
 package io.qwenbridge.model;
 
+import lombok.Builder;
+
 import java.util.List;
 import java.util.Objects;
 
+@Builder
 public record SearchResultResponse(
         boolean available,
         long totalHits,
@@ -14,6 +17,11 @@ public record SearchResultResponse(
     }
 
     public static SearchResultResponse unavailable() {
-        return new SearchResultResponse(false, 0, 0, List.of());
+        return SearchResultResponse.builder()
+                .available(false)
+                .totalHits(0)
+                .tookMillis(0)
+                .hits(List.of())
+                .build();
     }
 }

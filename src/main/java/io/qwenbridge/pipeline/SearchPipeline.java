@@ -87,15 +87,15 @@ public class SearchPipeline {
             );
         }
 
-        return new AIAnalysisCacheResponse(
-                trace.enabled(),
-                trace.hit(),
-                trace.miss(),
-                trace.key(),
-                trace.provider(),
-                trace.model(),
-                trace.version()
-        );
+        return AIAnalysisCacheResponse.builder()
+                .enabled(trace.enabled())
+                .hit(trace.hit())
+                .miss(trace.miss())
+                .key(trace.key())
+                .provider(trace.provider())
+                .model(trace.model())
+                .version(trace.version())
+                .build();
     }
 
     private ExecutionPlanResponse toExecutionPlanResponse(ExecutionPlanResult result) {
