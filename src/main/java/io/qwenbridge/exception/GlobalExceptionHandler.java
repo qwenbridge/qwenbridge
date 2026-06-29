@@ -1,5 +1,6 @@
 package io.qwenbridge.exception;
 
+import io.qwenbridge.api.header.ApiHeaders;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -93,7 +93,7 @@ public class GlobalExceptionHandler {
                 code.name(),
                 message,
                 request.getRequestURI(),
-                requestId()
+                requestId(request)
         );
 
         return ResponseEntity.status(status).body(error);
@@ -115,7 +115,18 @@ public class GlobalExceptionHandler {
         return exception.getMessage();
     }
 
-    private String requestId() {
-        return UUID.randomUUID().toString();
+    private String requestId(HttpServletRequest request) {
+        Object requestId = request.getAttribute(ApiHeaders.REQUEST_ID);
+
+        if (requestId instanceof String value && !value.isBlank()) {
+            return value;
+        }
+
+        String headerValue = request.getHeader(ApiHeaders.REQUEST_ID);
+        if (headerValue != null && !headerValue.isBlank()) {
+            return headerValue.trim();
+        }
+
+        return "";
     }
 }

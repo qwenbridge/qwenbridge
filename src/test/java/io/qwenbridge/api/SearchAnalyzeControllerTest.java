@@ -118,6 +118,7 @@ class SearchAnalyzeControllerTest {
                 .andExpect(jsonPath("$.message").value("query query must not be blank"))
                 .andExpect(jsonPath("$.path").value("/api/v1/search/analyze"))
                 .andExpect(jsonPath("$.requestId").exists())
+                .andExpect(header().exists("X-Request-ID"))
                 .andExpect(jsonPath("$.timestamp").exists());
     }
 
