@@ -20,7 +20,12 @@ public class ExecutionPlanFactory {
 
         if (decision.answer()) {
             steps.add(new ExecutionStep(order, ExecutionOperation.DIRECT_ANSWER, "Decision requested direct answer."));
-            return new ExecutionPlan(decision.mode(), decision.backend(), steps, decision.reason());
+            return ExecutionPlan.builder()
+                    .mode(decision.mode())
+                    .backend(decision.backend())
+                    .steps(steps)
+                    .reason(decision.reason())
+                    .build();
         }
 
         if (decision.hybridSearch()) {
@@ -50,6 +55,11 @@ public class ExecutionPlanFactory {
 
         steps.add(new ExecutionStep(order, ExecutionOperation.RETURN_RESULTS, "Return search results."));
 
-        return new ExecutionPlan(decision.mode(), decision.backend(), steps, decision.reason());
+        return ExecutionPlan.builder()
+                    .mode(decision.mode())
+                    .backend(decision.backend())
+                    .steps(steps)
+                    .reason(decision.reason())
+                    .build();
     }
 }
