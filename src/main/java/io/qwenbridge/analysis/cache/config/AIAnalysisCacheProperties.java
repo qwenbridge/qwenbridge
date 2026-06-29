@@ -13,6 +13,7 @@ public class AIAnalysisCacheProperties {
     private String provider = "ollama";
     private String model = "qwen2.5";
     private String version = "v4";
+    private Duration analysisTimeout = Duration.ofSeconds(10);
     private Duration ttl = Duration.ofMinutes(10);
     private Redis redis = new Redis();
 
@@ -58,6 +59,14 @@ public class AIAnalysisCacheProperties {
 
     public String version() {
         return version;
+    }
+
+    public Duration analysisTimeout() {
+        return analysisTimeout;
+    }
+
+    public void setAnalysisTimeout(Duration analysisTimeout) {
+        this.analysisTimeout = analysisTimeout == null ? Duration.ofSeconds(10) : analysisTimeout;
     }
 
     public void setVersion(String version) {

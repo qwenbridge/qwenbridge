@@ -80,6 +80,7 @@ services:
       QWENBRIDGE_SEARCH_OPENSEARCH_BASE_URL: http://qwenbridge-opensearch:9200
       QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST: qwenbridge-redis
       QWENBRIDGE_ANALYSIS_CACHE_REDIS_PORT: 6379
+      QWENBRIDGE_ANALYSIS_CACHE_ANALYSIS_TIMEOUT: 10s
 
 volumes:
   ollama-data:

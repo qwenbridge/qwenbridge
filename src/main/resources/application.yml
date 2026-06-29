@@ -39,6 +39,7 @@ qwenbridge:
       provider: ollama
       model: qwen2.5
       version: v4
+      analysis-timeout: 10s
       ttl: 10m
       redis:
         host: localhost

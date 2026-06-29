@@ -17,6 +17,9 @@ import io.qwenbridge.analysis.prompt.SearchAnalysisPromptBuilder;
 import io.qwenbridge.analysis.service.SearchAnalysisService;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
 @Service
 @RequiredArgsConstructor
 public class QwenSearchAnalysisService implements SearchAnalysisService {
@@ -71,11 +74,19 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
 
     private SearchAnalysis analyzeWithAI(String query) {
         try {
-            String prompt = promptBuilder.build(query);
-            String content = aiService.chat(new ChatRequest(prompt)).content();
-            return parser.parse(content, query);
+            return CompletableFuture
+                    .supplyAsync(() -> analyzeWithAIBlocking(query))
+                    .orTimeout(cacheProperties.analysisTimeout().toMillis(), TimeUnit.MILLISECONDS)
+                    .exceptionally(ignored -> SearchAnalysis.fallback(query))
+                    .join();
         } catch (Exception ignored) {
             return SearchAnalysis.fallback(query);
         }
+    }
+
+    private SearchAnalysis analyzeWithAIBlocking(String query) {
+        String prompt = promptBuilder.build(query);
+        String content = aiService.chat(new ChatRequest(prompt)).content();
+        return parser.parse(content, query);
     }
 }

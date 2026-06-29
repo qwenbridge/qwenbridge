@@ -598,8 +598,8 @@ run_step "Application readiness" wait_for_app_readiness
 run_step "Actuator health endpoint" actuator_health_endpoint
 run_step "Public health endpoint" public_health_endpoint
 run_step "Version endpoint" version_endpoint
-run_step "Analyze API endpoint" analyze_api_endpoint
 run_step "AI chat endpoint" ai_chat_endpoint
+run_step "Analyze API endpoint" analyze_api_endpoint
 run_step "Validation error contract" validation_error_contract
 run_step "Custom request id propagation" custom_request_id_propagation
 run_step "CORS preflight validation" cors_preflight_validation
