@@ -1,5 +1,7 @@
 package io.qwenbridge.analysis.model;
 
+import lombok.Builder;
+
 import io.qwenbridge.decision.SearchBackend;
 import io.qwenbridge.decision.SearchDecision;
 import io.qwenbridge.decision.SearchMode;
@@ -15,6 +17,7 @@ import io.qwenbridge.semantic.SemanticEntityType;
 
 import java.util.List;
 
+@Builder
 public record SearchAnalysis(
         String language,
         IntentType intent,
