@@ -103,19 +103,19 @@ public class SearchPipeline {
             return ExecutionPlanResponse.unavailable();
         }
 
-        return new ExecutionPlanResponse(
-                true,
-                result.plan().mode(),
-                result.plan().backend(),
-                result.plan().steps().stream()
+        return ExecutionPlanResponse.builder()
+                .available(true)
+                .mode(result.plan().mode())
+                .backend(result.plan().backend())
+                .steps(result.plan().steps().stream()
                         .map(step -> new ExecutionStepResponse(
                                 step.order(),
                                 step.operation(),
                                 step.reason()
                         ))
-                        .toList(),
-                result.plan().reason()
-        );
+                        .toList())
+                .reason(result.plan().reason())
+                .build();
     }
 
     private ExecutionResultResponse toExecutionResultResponse(ExecutionResultResult result) {
@@ -123,13 +123,13 @@ public class SearchPipeline {
             return ExecutionResultResponse.unavailable();
         }
 
-        return new ExecutionResultResponse(
-                true,
-                result.result().executed(),
-                result.result().operations(),
-                result.result().results(),
-                result.result().reason()
-        );
+        return ExecutionResultResponse.builder()
+                .available(true)
+                .executed(result.result().executed())
+                .operations(result.result().operations())
+                .results(result.result().results())
+                .reason(result.result().reason())
+                .build();
     }
 
     private SearchResultResponse toSearchResultResponse(ExecutionContext context) {
