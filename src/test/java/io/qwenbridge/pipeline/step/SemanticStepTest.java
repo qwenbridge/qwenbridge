@@ -29,27 +29,27 @@ class SemanticStepTest {
     }
 
     private static SearchAnalysis analysis() {
-        return new SearchAnalysis(
-                "en",
-                IntentType.PRODUCT_SEARCH,
-                0.85,
-                "User searches for a product.",
-                List.of("cheap iphone"),
-                true,
-                0.90,
-                "User wants an affordable iPhone.",
-                List.of("iphone"),
-                SearchMode.KEYWORD,
-                SearchBackend.IN_MEMORY,
-                true,
-                false,
-                false,
-                true,
-                false,
-                false,
-                false,
-                0.80,
-                "Keyword search is enough."
-        );
+        return SearchAnalysis.builder()
+                .language("en")
+                .intent(IntentType.PRODUCT_SEARCH)
+                .intentConfidence(0.85)
+                .intentReason("User searches for a product.")
+                .rewrites(List.of("cheap iphone"))
+                .semanticValidated(true)
+                .semanticScore(0.90)
+                .semanticMeaning("User wants an affordable iPhone.")
+                .entities(List.of("iphone"))
+                .searchMode(SearchMode.KEYWORD)
+                .backend(SearchBackend.IN_MEMORY)
+                .keywordSearch(true)
+                .vectorSearch(false)
+                .hybridSearch(false)
+                .facets(true)
+                .rerank(false)
+                .rewriteAgain(false)
+                .answer(false)
+                .decisionConfidence(0.80)
+                .decisionReason("Keyword search is enough.")
+                .build();
     }
 }

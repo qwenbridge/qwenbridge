@@ -37,27 +37,27 @@ class RewriteStepTest {
     }
 
     private static SearchAnalysis analysis(List<String> rewrites) {
-        return new SearchAnalysis(
-                "en",
-                IntentType.PRODUCT_SEARCH,
-                0.80,
-                "Product search.",
-                rewrites,
-                true,
-                0.90,
-                "User searches for a table.",
-                List.of("table"),
-                SearchMode.KEYWORD,
-                SearchBackend.IN_MEMORY,
-                true,
-                false,
-                false,
-                true,
-                false,
-                false,
-                false,
-                0.80,
-                "Keyword search is enough."
-        );
+        return SearchAnalysis.builder()
+                .language("en")
+                .intent(IntentType.PRODUCT_SEARCH)
+                .intentConfidence(0.80)
+                .intentReason("Product search.")
+                .rewrites(rewrites)
+                .semanticValidated(true)
+                .semanticScore(0.90)
+                .semanticMeaning("User searches for a table.")
+                .entities(List.of("table"))
+                .searchMode(SearchMode.KEYWORD)
+                .backend(SearchBackend.IN_MEMORY)
+                .keywordSearch(true)
+                .vectorSearch(false)
+                .hybridSearch(false)
+                .facets(true)
+                .rerank(false)
+                .rewriteAgain(false)
+                .answer(false)
+                .decisionConfidence(0.80)
+                .decisionReason("Keyword search is enough.")
+                .build();
     }
 }
