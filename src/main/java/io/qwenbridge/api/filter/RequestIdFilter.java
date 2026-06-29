@@ -28,6 +28,7 @@ public class RequestIdFilter extends OncePerRequestFilter {
         MDC.put(MDC_REQUEST_ID, requestId);
         request.setAttribute(ApiHeaders.REQUEST_ID, requestId);
         response.setHeader(ApiHeaders.REQUEST_ID, requestId);
+        response.setHeader(ApiHeaders.QWENBRIDGE_VERSION, "0.1.0-SNAPSHOT");
 
         try {
             filterChain.doFilter(request, response);

@@ -12,6 +12,8 @@ management:
         include: health,info,metrics
 
 qwenbridge:
+  version: 0.1.0-SNAPSHOT
+
   ai:
     provider: ollama
     ollama:
