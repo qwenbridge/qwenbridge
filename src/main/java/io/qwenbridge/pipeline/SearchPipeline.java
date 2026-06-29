@@ -52,26 +52,26 @@ public class SearchPipeline {
                 Instant.now()
         ).toMillis();
 
-        return new SearchAnalyzeResponse(
-                requestContext.requestId(),
-                processingTimeMs,
-                requestContext.originalQuery(),
-                language.language(),
-                intent.intent(),
-                finalDecision,
-                finalConfidence,
-                rewrite.rewrites(),
-                threat.reasons(),
-                semantic.validated(),
-                semantic.score(),
-                policy.passed(),
-                policy.violations(),
-                toExecutionPlanResponse(executionPlan),
-                toExecutionResultResponse(executionResult),
-                toSearchResultResponse(context),
-                toCacheResponse(cacheTrace),
-                context.trace()
-        );
+        return SearchAnalyzeResponse.builder()
+                .requestId(requestContext.requestId())
+                .processingTimeMs(processingTimeMs)
+                .originalQuery(requestContext.originalQuery())
+                .language(language.language())
+                .intent(intent.intent())
+                .decision(finalDecision)
+                .confidence(finalConfidence)
+                .rewrites(rewrite.rewrites())
+                .threatReasons(threat.reasons())
+                .semanticValidated(semantic.validated())
+                .semanticScore(semantic.score())
+                .policyPassed(policy.passed())
+                .policyViolations(policy.violations())
+                .executionPlan(toExecutionPlanResponse(executionPlan))
+                .executionResult(toExecutionResultResponse(executionResult))
+                .search(toSearchResultResponse(context))
+                .cache(toCacheResponse(cacheTrace))
+                .pipelineTrace(context.trace())
+                .build();
     }
 
     private AIAnalysisCacheResponse toCacheResponse(AIAnalysisCacheTrace trace) {
