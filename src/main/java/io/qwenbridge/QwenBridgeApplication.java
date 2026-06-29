@@ -1,13 +1,10 @@
 package io.qwenbridge;
 
-import io.qwenbridge.analysis.cache.config.AIAnalysisCacheProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-
+import io.qwenbridge.execution.provider.opensearch.OpenSearchProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import io.qwenbridge.execution.provider.opensearch.OpenSearchProperties;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @ConfigurationPropertiesScan
 @SpringBootApplication
