@@ -111,7 +111,14 @@ class SearchAnalyzeControllerTest {
         mockMvc.perform(post("/api/v1/search/analyze")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"query\":\"\"}"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.message").value("query query must not be blank"))
+                .andExpect(jsonPath("$.path").value("/api/v1/search/analyze"))
+                .andExpect(jsonPath("$.requestId").exists())
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 
     private SearchAnalysis searchAnalysis(String language, String rewrite) {

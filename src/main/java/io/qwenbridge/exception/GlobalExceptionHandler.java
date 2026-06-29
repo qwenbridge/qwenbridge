@@ -1,0 +1,121 @@
+package io.qwenbridge.exception;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.time.Instant;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    ResponseEntity<ApiError> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException exception,
+            HttpServletRequest request
+    ) {
+        String message = exception.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(this::formatFieldError)
+                .collect(Collectors.joining(", "));
+
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                ErrorCode.VALIDATION_ERROR,
+                message.isBlank() ? "Validation failed" : message,
+                request
+        );
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    ResponseEntity<ApiError> handleConstraintViolation(
+            ConstraintViolationException exception,
+            HttpServletRequest request
+    ) {
+        String message = exception.getConstraintViolations()
+                .stream()
+                .map(this::formatConstraintViolation)
+                .collect(Collectors.joining(", "));
+
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                ErrorCode.VALIDATION_ERROR,
+                message.isBlank() ? "Validation failed" : message,
+                request
+        );
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    ResponseEntity<ApiError> handleIllegalArgument(
+            IllegalArgumentException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                ErrorCode.BAD_REQUEST,
+                safeMessage(exception, "Bad request"),
+                request
+        );
+    }
+
+    @ExceptionHandler(Exception.class)
+    ResponseEntity<ApiError> handleUnexpected(
+            Exception exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                ErrorCode.INTERNAL_ERROR,
+                "Unexpected server error",
+                request
+        );
+    }
+
+    private ResponseEntity<ApiError> buildError(
+            HttpStatus status,
+            ErrorCode code,
+            String message,
+            HttpServletRequest request
+    ) {
+        ApiError error = new ApiError(
+                Instant.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                code.name(),
+                message,
+                request.getRequestURI(),
+                requestId()
+        );
+
+        return ResponseEntity.status(status).body(error);
+    }
+
+    private String formatFieldError(FieldError error) {
+        return error.getField() + " " + error.getDefaultMessage();
+    }
+
+    private String formatConstraintViolation(ConstraintViolation<?> violation) {
+        return violation.getPropertyPath() + " " + violation.getMessage();
+    }
+
+    private String safeMessage(Exception exception, String fallback) {
+        if (exception.getMessage() == null || exception.getMessage().isBlank()) {
+            return fallback;
+        }
+
+        return exception.getMessage();
+    }
+
+    private String requestId() {
+        return UUID.randomUUID().toString();
+    }
+}
