@@ -1,5 +1,6 @@
 package io.qwenbridge.pipeline.step;
 
+import io.qwenbridge.event.model.PipelineStage;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.result.PolicyResult;
 import io.qwenbridge.pipeline.result.RewriteResult;
@@ -11,14 +12,33 @@ import java.util.List;
 @Component
 public class PolicyStep implements PipelineStep<PolicyResult> {
 
-    public String name() { return "PolicyStep"; }
-    public int order() { return 70; }
-    public Class<PolicyResult> resultType() { return PolicyResult.class; }
+    @Override
+    public PipelineStage stage() {
+        return PipelineStage.POLICY;
+    }
 
+    @Override
+    public String name() {
+        return "PolicyStep";
+    }
+
+    @Override
+    public int order() {
+        return 70;
+    }
+
+    @Override
+    public Class<PolicyResult> resultType() {
+        return PolicyResult.class;
+    }
+
+    @Override
     public PolicyResult execute(ExecutionContext context) {
+
         List<String> violations = new ArrayList<>();
 
         for (String rewrite : context.get(RewriteResult.class).rewrites()) {
+
             String normalized = rewrite.toLowerCase();
 
             if (normalized.contains("adult")) {
@@ -30,6 +50,9 @@ public class PolicyStep implements PipelineStep<PolicyResult> {
             }
         }
 
-        return new PolicyResult(violations.isEmpty(), violations);
+        return new PolicyResult(
+                violations.isEmpty(),
+                violations
+        );
     }
 }

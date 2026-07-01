@@ -9,6 +9,7 @@ import io.qwenbridge.execution.ExecutionEngine;
 import io.qwenbridge.execution.ExecutionPlan;
 import io.qwenbridge.execution.ExecutionPlanFactory;
 import io.qwenbridge.execution.ExecutionResult;
+import io.qwenbridge.event.model.PipelineStage;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.result.DecisionResult;
 import io.qwenbridge.pipeline.result.ExecutionPlanResult;
@@ -22,7 +23,13 @@ public class DecisionStep implements PipelineStep<DecisionResult> {
     private final ExecutionPlanFactory executionPlanFactory;
     private final ExecutionEngine executionEngine;
 
+    
+
     @Override
+    public PipelineStage stage() {
+        return PipelineStage.DECISION;
+    }
+@Override
     public String name() {
         return "DecisionStep";
     }

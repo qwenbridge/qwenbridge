@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 
 import io.qwenbridge.normalization.model.NormalizedInput;
 import io.qwenbridge.normalization.service.InputNormalizer;
+import io.qwenbridge.event.model.PipelineStage;
 import io.qwenbridge.pipeline.ExecutionContext;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +14,13 @@ public class NormalizationStep implements PipelineStep<NormalizedInput> {
 
     private final InputNormalizer inputNormalizer;
 
+    
+
     @Override
+    public PipelineStage stage() {
+        return PipelineStage.NORMALIZATION;
+    }
+@Override
     public String name() {
         return "NormalizationStep";
     }

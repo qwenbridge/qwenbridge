@@ -1,6 +1,7 @@
 package io.qwenbridge.pipeline.step;
 
 import io.qwenbridge.analysis.model.SearchAnalysis;
+import io.qwenbridge.event.model.PipelineStage;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.result.RewriteResult;
 import org.springframework.stereotype.Component;
@@ -8,7 +9,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class RewriteStep implements PipelineStep<RewriteResult> {
 
+    
+
     @Override
+    public PipelineStage stage() {
+        return PipelineStage.REWRITE;
+    }
+@Override
     public String name() {
         return "RewriteStep";
     }

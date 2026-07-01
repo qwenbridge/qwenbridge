@@ -1,5 +1,6 @@
 package io.qwenbridge.pipeline;
 
+import io.qwenbridge.event.model.PipelineStage;
 import io.qwenbridge.pipeline.step.PipelineStep;
 import io.qwenbridge.threat.ThreatResult;
 import org.junit.jupiter.api.Test;
@@ -16,20 +17,56 @@ class PipelineEngineTest {
         AtomicBoolean secondStepExecuted = new AtomicBoolean(false);
 
         PipelineStep<ThreatResult> threatStep = new PipelineStep<>() {
-            public String name() { return "FakeThreatStep"; }
-            public int order() { return 10; }
-            public Class<ThreatResult> resultType() { return ThreatResult.class; }
 
+            @Override
+            public PipelineStage stage() {
+                return PipelineStage.THREAT;
+            }
+
+            @Override
+            public String name() {
+                return "FakeThreatStep";
+            }
+
+            @Override
+            public int order() {
+                return 10;
+            }
+
+            @Override
+            public Class<ThreatResult> resultType() {
+                return ThreatResult.class;
+            }
+
+            @Override
             public ThreatResult execute(ExecutionContext context) {
                 return ThreatResult.detected(List.of("SQL_INJECTION"));
             }
         };
 
         PipelineStep<String> nextStep = new PipelineStep<>() {
-            public String name() { return "ShouldNotRunStep"; }
-            public int order() { return 20; }
-            public Class<String> resultType() { return String.class; }
 
+            @Override
+            public PipelineStage stage() {
+                return PipelineStage.SEARCH;
+            }
+
+            @Override
+            public String name() {
+                return "ShouldNotRunStep";
+            }
+
+            @Override
+            public int order() {
+                return 20;
+            }
+
+            @Override
+            public Class<String> resultType() {
+                return String.class;
+            }
+
+            @Override
             public String execute(ExecutionContext context) {
                 secondStepExecuted.set(true);
                 return "executed";
@@ -37,34 +74,73 @@ class PipelineEngineTest {
         };
 
         PipelineEngine engine = new PipelineEngine(List.of(threatStep, nextStep));
-        ExecutionContext context = new ExecutionContext("desk union select password from users");
+        ExecutionContext context =
+                new ExecutionContext("desk union select password from users");
 
         engine.execute(context);
 
         assertThat(secondStepExecuted).isFalse();
         assertThat(context.get(ThreatResult.class).safe()).isFalse();
-        assertThat(context.get(ThreatResult.class).reasons()).contains("SQL_INJECTION");
+        assertThat(context.get(ThreatResult.class).reasons())
+                .contains("SQL_INJECTION");
     }
 
     @Test
     void shouldExecuteNextStepWhenNoThreatIsDetected() {
+
         AtomicBoolean secondStepExecuted = new AtomicBoolean(false);
 
         PipelineStep<ThreatResult> threatStep = new PipelineStep<>() {
-            public String name() { return "FakeThreatStep"; }
-            public int order() { return 10; }
-            public Class<ThreatResult> resultType() { return ThreatResult.class; }
 
+            @Override
+            public PipelineStage stage() {
+                return PipelineStage.THREAT;
+            }
+
+            @Override
+            public String name() {
+                return "FakeThreatStep";
+            }
+
+            @Override
+            public int order() {
+                return 10;
+            }
+
+            @Override
+            public Class<ThreatResult> resultType() {
+                return ThreatResult.class;
+            }
+
+            @Override
             public ThreatResult execute(ExecutionContext context) {
                 return ThreatResult.noThreat();
             }
         };
 
         PipelineStep<String> nextStep = new PipelineStep<>() {
-            public String name() { return "ShouldRunStep"; }
-            public int order() { return 20; }
-            public Class<String> resultType() { return String.class; }
 
+            @Override
+            public PipelineStage stage() {
+                return PipelineStage.SEARCH;
+            }
+
+            @Override
+            public String name() {
+                return "ShouldRunStep";
+            }
+
+            @Override
+            public int order() {
+                return 20;
+            }
+
+            @Override
+            public Class<String> resultType() {
+                return String.class;
+            }
+
+            @Override
             public String execute(ExecutionContext context) {
                 secondStepExecuted.set(true);
                 return "executed";

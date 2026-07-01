@@ -7,6 +7,7 @@ import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTraceHolder;
 import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.analysis.service.SearchAnalysisService;
 import io.qwenbridge.normalization.model.NormalizedInput;
+import io.qwenbridge.event.model.PipelineStage;
 import io.qwenbridge.pipeline.ExecutionContext;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,13 @@ public class AIAnalysisStep implements PipelineStep<SearchAnalysis> {
     private final SearchAnalysisService searchAnalysisService;
     private final AIAnalysisCacheTraceHolder cacheTraceHolder;
 
+    
+
     @Override
+    public PipelineStage stage() {
+        return PipelineStage.AI_ANALYSIS;
+    }
+@Override
     public String name() {
         return "AIAnalysisStep";
     }
