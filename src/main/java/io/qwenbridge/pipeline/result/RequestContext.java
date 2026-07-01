@@ -9,10 +9,22 @@ public record RequestContext(
         String originalQuery
 ) {
     public static RequestContext of(String originalQuery) {
+        return of(null, originalQuery);
+    }
+
+    public static RequestContext of(String requestId, String originalQuery) {
         return new RequestContext(
-                UUID.randomUUID().toString(),
+                normalizeRequestId(requestId),
                 Instant.now(),
                 originalQuery
         );
+    }
+
+    private static String normalizeRequestId(String requestId) {
+        if (requestId == null || requestId.isBlank()) {
+            return UUID.randomUUID().toString();
+        }
+
+        return requestId;
     }
 }

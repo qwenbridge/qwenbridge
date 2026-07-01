@@ -27,7 +27,7 @@ public class SearchPipeline {
     private final PipelineEngine pipelineEngine;
 
     public SearchAnalyzeResponse analyze(SearchAnalyzeRequest request) {
-        ExecutionContext context = new ExecutionContext(request.query());
+        ExecutionContext context = new ExecutionContext(request.requestId(), request.query());
 
         pipelineEngine.execute(context);
 

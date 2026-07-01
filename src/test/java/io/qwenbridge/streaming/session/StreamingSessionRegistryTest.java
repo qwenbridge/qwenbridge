@@ -7,49 +7,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 class StreamingSessionRegistryTest {
 
     @Test
-    void shouldRegisterStreamingSession() {
+    void shouldRegisterSessionForRequestId() {
         StreamingSessionRegistry registry = new StreamingSessionRegistry();
 
-        StreamingSession session = registry.register();
+        StreamingSession session = registry.register("request-1");
 
         assertThat(session.sessionId()).isNotBlank();
-        assertThat(session.emitter()).isNotNull();
-        assertThat(session.closed()).isFalse();
+        assertThat(session.requestId()).isEqualTo("request-1");
         assertThat(registry.size()).isEqualTo(1);
-        assertThat(registry.find(session.sessionId())).contains(session);
-    }
-
-    @Test
-    void shouldRemoveStreamingSession() {
-        StreamingSessionRegistry registry = new StreamingSessionRegistry();
-        StreamingSession session = registry.register();
-
-        boolean removed = registry.remove(session.sessionId());
-
-        assertThat(removed).isTrue();
-        assertThat(session.closed()).isTrue();
-        assertThat(registry.size()).isZero();
-        assertThat(registry.find(session.sessionId())).isEmpty();
-    }
-
-    @Test
-    void shouldReturnFalseWhenRemovingUnknownSession() {
-        StreamingSessionRegistry registry = new StreamingSessionRegistry();
-
-        boolean removed = registry.remove("missing-session");
-
-        assertThat(removed).isFalse();
-    }
-
-    @Test
-    void shouldClearAllSessions() {
-        StreamingSessionRegistry registry = new StreamingSessionRegistry();
-
-        registry.register();
-        registry.register();
 
         registry.clear();
+    }
 
-        assertThat(registry.size()).isZero();
+    @Test
+    void shouldFindSessionsByRequestId() {
+        StreamingSessionRegistry registry = new StreamingSessionRegistry();
+
+        registry.register("request-1");
+        registry.register("request-1");
+        registry.register("request-2");
+
+        assertThat(registry.findByRequestId("request-1")).hasSize(2);
+        assertThat(registry.findByRequestId("request-2")).hasSize(1);
+
+        registry.clear();
     }
 }

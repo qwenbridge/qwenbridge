@@ -3,13 +3,9 @@ package io.qwenbridge.event.model;
 public record PipelineEventMetadata(
 
         String requestId,
-
         String sessionId,
-
         String correlationId,
-
         long sequenceNumber,
-
         String producer
 
 ) {

@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,44 +15,48 @@ public class StreamingSessionRegistry {
 
     private static final long DEFAULT_TIMEOUT_MS = 0L;
 
-    private final ConcurrentMap<String, StreamingSession> sessions =
-            new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, StreamingSession> sessionsById = new ConcurrentHashMap<>();
 
-    public StreamingSession register() {
-        return register(DEFAULT_TIMEOUT_MS);
+    public StreamingSession register(String requestId) {
+        return register(requestId, DEFAULT_TIMEOUT_MS);
     }
 
-    public StreamingSession register(long timeoutMs) {
+    public StreamingSession register(String requestId, long timeoutMs) {
         String sessionId = UUID.randomUUID().toString();
         SseEmitter emitter = new SseEmitter(timeoutMs);
 
-        StreamingSession session =
-                new StreamingSession(sessionId, emitter);
+        StreamingSession session = new StreamingSession(sessionId, requestId, emitter);
 
         emitter.onCompletion(() -> remove(sessionId));
         emitter.onTimeout(() -> remove(sessionId));
         emitter.onError(error -> remove(sessionId));
 
-        sessions.put(sessionId, session);
+        sessionsById.put(sessionId, session);
 
         return session;
     }
 
     public Optional<StreamingSession> find(String sessionId) {
-        return Optional.ofNullable(sessions.get(sessionId));
+        return Optional.ofNullable(sessionsById.get(sessionId));
     }
 
     public List<StreamingSession> all() {
-        Collection<StreamingSession> values = sessions.values();
-        return List.copyOf(values);
+        return List.copyOf(sessionsById.values());
+    }
+
+    public List<StreamingSession> findByRequestId(String requestId) {
+        return sessionsById.values()
+                .stream()
+                .filter(session -> session.requestId().equals(requestId))
+                .toList();
     }
 
     public int size() {
-        return sessions.size();
+        return sessionsById.size();
     }
 
     public boolean remove(String sessionId) {
-        StreamingSession removed = sessions.remove(sessionId);
+        StreamingSession removed = sessionsById.remove(sessionId);
 
         if (removed == null) {
             return false;
@@ -70,16 +73,13 @@ public class StreamingSessionRegistry {
         all().forEach(session -> remove(session.sessionId()));
     }
 
-    public void broadcast(String eventName, Object payload) {
-        all().forEach(session -> send(session, eventName, payload));
+    public void broadcast(String requestId, String eventName, Object payload) {
+        findByRequestId(requestId)
+                .forEach(session -> send(session, eventName, payload));
     }
 
-    private void send(
-            StreamingSession session,
-            String eventName,
-            Object payload
-    ) {
-        if (session.closed()) {
+    private void send(StreamingSession session, String eventName, Object payload) {
+        if (session.closed().get()) {
             remove(session.sessionId());
             return;
         }
@@ -91,7 +91,6 @@ public class StreamingSessionRegistry {
                             .id(UUID.randomUUID().toString())
                             .data(payload)
             );
-            session.touch();
         } catch (IOException | IllegalStateException ex) {
             remove(session.sessionId());
         }

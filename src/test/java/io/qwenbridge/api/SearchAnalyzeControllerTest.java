@@ -106,6 +106,21 @@ class SearchAnalyzeControllerTest {
                 .andExpect(jsonPath("$.search.hits").isArray());
     }
 
+
+    @Test
+    void shouldUseClientProvidedRequestId() throws Exception {
+        when(aiService.chat(org.mockito.ArgumentMatchers.any(ChatRequest.class))).thenReturn(new ChatResponse(analysisJson("en", "table", "table")));
+        when(searchAnalysisService.analyze("table")).thenReturn(searchAnalysis("en", "table"));
+        when(openSearchClient.search(anyString(), anyMap())).thenReturn(emptyOpenSearchResponse());
+
+        mockMvc.perform(post("/api/v1/search/analyze")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"requestId\":\"client-request-1\",\"query\":\"table\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.requestId").value("client-request-1"))
+                .andExpect(jsonPath("$.originalQuery").value("table"));
+    }
+
     @Test
     void shouldRejectBlankQuery() throws Exception {
         mockMvc.perform(post("/api/v1/search/analyze")
