@@ -4,6 +4,8 @@ import io.qwenbridge.event.model.PipelineStage;
 import io.qwenbridge.pipeline.step.PipelineStep;
 import io.qwenbridge.threat.ThreatResult;
 import org.junit.jupiter.api.Test;
+import io.qwenbridge.event.noop.NoOpPipelineEventPublisher;
+import io.qwenbridge.event.snapshot.PipelineContextSnapshotFactory;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -73,7 +75,11 @@ class PipelineEngineTest {
             }
         };
 
-        PipelineEngine engine = new PipelineEngine(List.of(threatStep, nextStep));
+        PipelineEngine engine = new PipelineEngine(
+                List.of(threatStep, nextStep),
+                new NoOpPipelineEventPublisher(),
+                new PipelineContextSnapshotFactory()
+        );
         ExecutionContext context =
                 new ExecutionContext("desk union select password from users");
 
@@ -147,7 +153,11 @@ class PipelineEngineTest {
             }
         };
 
-        PipelineEngine engine = new PipelineEngine(List.of(threatStep, nextStep));
+        PipelineEngine engine = new PipelineEngine(
+                List.of(threatStep, nextStep),
+                new NoOpPipelineEventPublisher(),
+                new PipelineContextSnapshotFactory()
+        );
         ExecutionContext context = new ExecutionContext("desk");
 
         engine.execute(context);

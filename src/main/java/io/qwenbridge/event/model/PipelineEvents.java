@@ -1,8 +1,55 @@
 package io.qwenbridge.event.model;
 
+import io.qwenbridge.event.snapshot.PipelineContextSnapshot;
+
 public final class PipelineEvents {
 
     private PipelineEvents() {
+    }
+
+    public static PipelineEvent<PipelineContextSnapshot> pipelineStarted(
+            PipelineContextSnapshot snapshot
+    ) {
+        return started(PipelineStage.PIPELINE, snapshot);
+    }
+
+    public static PipelineEvent<PipelineContextSnapshot> pipelineCompleted(
+            PipelineContextSnapshot snapshot
+    ) {
+        return completed(PipelineStage.PIPELINE, snapshot);
+    }
+
+    public static PipelineEvent<PipelineContextSnapshot> pipelineFailed(
+            PipelineContextSnapshot snapshot
+    ) {
+        return failed(PipelineStage.PIPELINE, snapshot);
+    }
+
+    public static PipelineEvent<PipelineContextSnapshot> pipelineStopped(
+            PipelineContextSnapshot snapshot
+    ) {
+        return warning(PipelineStage.PIPELINE, snapshot);
+    }
+
+    public static PipelineEvent<PipelineContextSnapshot> stepStarted(
+            PipelineStage stage,
+            PipelineContextSnapshot snapshot
+    ) {
+        return started(stage, snapshot);
+    }
+
+    public static PipelineEvent<PipelineContextSnapshot> stepCompleted(
+            PipelineStage stage,
+            PipelineContextSnapshot snapshot
+    ) {
+        return completed(stage, snapshot);
+    }
+
+    public static PipelineEvent<PipelineContextSnapshot> stepFailed(
+            PipelineStage stage,
+            PipelineContextSnapshot snapshot
+    ) {
+        return failed(stage, snapshot);
     }
 
     public static <T> PipelineEvent<T> started(
@@ -68,5 +115,4 @@ public final class PipelineEvents {
                 payload
         );
     }
-
 }
