@@ -7,17 +7,11 @@ import java.time.Instant;
 public record PipelineEvent<T>(
 
         PipelineEventId id,
-
         Instant timestamp,
-
         PipelineStage stage,
-
         PipelineEventType type,
-
         PipelineEventMetadata metadata,
-
         Class<T> payloadType,
-
         T payload
 
 ) {
