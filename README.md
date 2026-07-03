@@ -92,11 +92,18 @@ src/main/java/io/qwenbridge
 
 ## REST API
 
-`POST /api/search/analyze`
+Current public API version: `v1`
+
+- `POST /api/v1/search/analyze`
+- `GET /api/v1/search/stream/{requestId}`
+- `POST /api/v1/ai/chat`
 
 Response includes language, intent, rewrite, semantic analysis,
-decision, execution plan, execution result, confidence, and pipeline
-trace.
+decision, execution plan, execution result, confidence, cache metadata,
+and pipeline trace.
+
+Streaming uses request-scoped server-sent events with stable v1 event names
+and a frozen public event envelope. See `docs/api/sse.md`.
 
 ## Testing
 
@@ -110,7 +117,8 @@ mvn clean test
 -   ✅ V2 AI-native Search Core
 -   ⏳ V3 Real Search Providers
 -   ⏳ V4 Retrieval Intelligence
--   ⏳ V5 Production AI Search Platform
+-   ✅ V5 Production AI Search Platform
+-   ⏳ V6 Public Product Hardening
 
 ## Design Principles
 
