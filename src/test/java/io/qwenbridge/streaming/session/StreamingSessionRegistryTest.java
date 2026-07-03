@@ -130,4 +130,62 @@ class StreamingSessionRegistryTest {
         assertThat(second.closed()).isTrue();
     }
 
+
+    @Test
+    void shouldRemoveMatchingSessionsAfterFailureEvent() {
+        StreamingSessionRegistry registry =
+                new StreamingSessionRegistry(
+                        new StreamingProperties(300_000L)
+                );
+
+        registry.register("request-1");
+        registry.register("request-1");
+        registry.register("request-2");
+
+        registry.failRequest(
+                "request-1",
+                "failure-1",
+                "stream.failure",
+                "failure"
+        );
+
+        assertThat(registry.findByRequestId("request-1")).isEmpty();
+        assertThat(registry.findByRequestId("request-2")).hasSize(1);
+
+        registry.clear();
+    }
+
+    @Test
+    void shouldSurviveConcurrentRegisterAndRemoveCycles() throws Exception {
+        StreamingSessionRegistry registry =
+                new StreamingSessionRegistry(
+                        new StreamingProperties(300_000L)
+                );
+
+        int sessionCount = 250;
+
+        Thread first = new Thread(() -> {
+            for (int index = 0; index < sessionCount; index++) {
+                registry.register("request-" + index % 10);
+            }
+        });
+
+        Thread second = new Thread(() -> {
+            for (int index = 0; index < sessionCount; index++) {
+                registry.register("request-" + index % 10);
+            }
+        });
+
+        first.start();
+        second.start();
+        first.join();
+        second.join();
+
+        assertThat(registry.size()).isEqualTo(sessionCount * 2);
+
+        registry.clear();
+
+        assertThat(registry.size()).isZero();
+    }
+
 }

@@ -28,6 +28,16 @@ class SearchStreamControllerWebTest {
     }
 
     @Test
+    void shouldExposeStableConnectedEventEnvelope() throws Exception {
+        mockMvc.perform(get("/api/v1/search/stream/{requestId}", "request-1"))
+                .andExpect(request().asyncStarted())
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("text/event-stream"));
+
+        assertThat(registry.findByRequestId("request-1")).hasSize(1);
+    }
+
+    @Test
     void shouldReturnApiErrorForUnsupportedStreamRequestId() throws Exception {
         mockMvc.perform(get("/api/v1/search/stream/request@1"))
                 .andExpect(status().isBadRequest())

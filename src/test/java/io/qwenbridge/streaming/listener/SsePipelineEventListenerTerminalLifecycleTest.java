@@ -50,4 +50,43 @@ class SsePipelineEventListenerTerminalLifecycleTest {
 
         assertThat(registry.findByRequestId(requestId)).isEmpty();
     }
+
+    @Test
+    void shouldRemoveSessionWhenPipelineFailsAfterFailureEvent() {
+        StreamingSessionRegistry registry =
+                new StreamingSessionRegistry(new StreamingProperties(30_000));
+
+        SsePipelineEventListener listener =
+                new SsePipelineEventListener(
+                        registry,
+                        new PipelineStreamingEventMapper(),
+                        new PipelineEventTerminalPolicy()
+                );
+
+        String requestId = "request-failed-123";
+
+        PipelineContextSnapshot snapshot =
+                new PipelineContextSnapshot(
+                        requestId,
+                        "desk",
+                        false,
+                        true,
+                        "en",
+                        "SEARCH",
+                        "ALLOW",
+                        123456789L
+                );
+
+        registry.register(requestId);
+
+        listener.onPipelineEvent(
+                PipelineEvents.pipelineFailed(
+                        snapshot,
+                        PipelineEventMetadata.of(requestId, 100L)
+                )
+        );
+
+        assertThat(registry.findByRequestId(requestId)).isEmpty();
+    }
+
 }

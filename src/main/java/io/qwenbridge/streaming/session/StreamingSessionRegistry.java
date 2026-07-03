@@ -100,6 +100,19 @@ public class StreamingSessionRegistry {
                 .forEach(session -> remove(session.sessionId()));
     }
 
+    public void failRequest(
+            String requestId,
+            String eventId,
+            String eventName,
+            Object payload
+    ) {
+        findByRequestId(requestId)
+                .forEach(session -> {
+                    send(session, eventId, eventName, payload);
+                    remove(session.sessionId());
+                });
+    }
+
     private void removeAfterEmitterCompletion(String sessionId) {
         StreamingSession removed = sessionsById.remove(sessionId);
 
