@@ -280,7 +280,7 @@ wait_for_compose_services() {
   wait_for_container_healthy_or_running "${REDIS_CONTAINER}" healthy \
     && wait_for_container_healthy_or_running "${OLLAMA_CONTAINER}" healthy \
     && wait_for_container_healthy_or_running "${OPENSEARCH_CONTAINER}" healthy \
-    && wait_for_container_healthy_or_running "${APP_CONTAINER}" running
+    && wait_for_container_healthy_or_running "${APP_CONTAINER}" healthy
 }
 
 verify_ollama_models() {
@@ -327,7 +327,7 @@ ollama_embedding_generation_validation() {
     -d "{\"model\":\"${EMBEDDING_MODEL}\",\"input\":\"gaming mouse razer esports\"}" \
     -o "${body}" || return 1
 
-  jq . "${body}"
+  jq '{model, embeddingCount: (.embeddings | length), embeddingLength: (.embeddings[0] | length)}' "${body}"
 
   jq -e \
     '.embeddings
@@ -417,7 +417,7 @@ opensearch_hybrid_retrieval_validation() {
   jq '.hits.hits[] | {id: ._id, score: ._score, title: ._source.title}' "${body}"
 
   first_title="$(jq -r '.hits.hits[0]._source.title // ""' "${body}")"
-  duplicate_count="$(jq -r '[.hits.hits[]._id] | length - unique | length' "${body}")"
+  duplicate_count="$(jq -r '[.hits.hits[]._id] as $ids | ($ids | length) - ($ids | unique | length)' "${body}")"
 
   [[ "${first_title}" == "Razer DeathAdder V3" ]] \
     && [[ "${duplicate_count}" == "0" ]]
