@@ -24,7 +24,7 @@ public class SsePipelineEventListener {
             return;
         }
 
-        registry.broadcast(
+        registry.sendToRequest(
                 requestId,
                 event.type().name().toLowerCase(),
                 mapper.map(event)
