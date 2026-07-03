@@ -2,6 +2,7 @@ package io.qwenbridge.api;
 
 import lombok.RequiredArgsConstructor;
 
+import io.qwenbridge.api.header.ApiHeaders;
 import io.qwenbridge.exception.ApiError;
 import io.qwenbridge.model.SearchAnalyzeRequest;
 import io.qwenbridge.model.SearchAnalyzeResponse;
@@ -73,7 +74,39 @@ public class SearchAnalyzeController {
             )
     )
     @PostMapping("/analyze")
-    public SearchAnalyzeResponse analyze(@Valid @RequestBody SearchAnalyzeRequest request) {
-        return searchPipeline.analyze(request);
+    public SearchAnalyzeResponse analyze(
+            @RequestHeader(
+                    value = ApiHeaders.REQUEST_ID,
+                    required = false
+            ) String headerRequestId,
+            @Valid @RequestBody SearchAnalyzeRequest request
+    ) {
+        String requestId = resolveRequestId(
+                headerRequestId,
+                request.requestId()
+        );
+
+        SearchAnalyzeRequest effectiveRequest =
+                new SearchAnalyzeRequest(
+                        requestId,
+                        request.query()
+                );
+
+        return searchPipeline.analyze(effectiveRequest);
+    }
+
+    private String resolveRequestId(
+            String headerRequestId,
+            String bodyRequestId
+    ) {
+        if (headerRequestId != null && !headerRequestId.isBlank()) {
+            return headerRequestId.trim();
+        }
+
+        if (bodyRequestId != null && !bodyRequestId.isBlank()) {
+            return bodyRequestId.trim();
+        }
+
+        return null;
     }
 }
