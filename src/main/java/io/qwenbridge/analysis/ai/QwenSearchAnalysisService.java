@@ -3,6 +3,7 @@ package io.qwenbridge.analysis.ai;
 import lombok.RequiredArgsConstructor;
 
 import io.qwenbridge.ai.contract.ChatRequest;
+import io.qwenbridge.ai.contract.StreamingChatRequest;
 import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.analysis.cache.AIAnalysisCache;
 import io.qwenbridge.analysis.cache.AIAnalysisCacheKeyBuilder;
@@ -15,10 +16,14 @@ import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.analysis.parser.SearchAnalysisJsonParser;
 import io.qwenbridge.analysis.prompt.SearchAnalysisPromptBuilder;
 import io.qwenbridge.analysis.service.SearchAnalysisService;
+import io.qwenbridge.streaming.ai.AIStreamingEventPublisher;
+import io.qwenbridge.streaming.config.StreamingProperties;
+import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 @RequiredArgsConstructor
@@ -32,9 +37,21 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
     private final AIAnalysisCacheProperties cacheProperties;
     private final AIAnalysisCacheTraceHolder cacheTraceHolder;
     private final AIAnalysisSingleFlight singleFlight;
+    private final AIStreamingEventPublisher streamingEventPublisher;
+    private final StreamingSessionRegistry streamingSessionRegistry;
+    private final StreamingProperties streamingProperties;
 
     @Override
     public SearchAnalysis analyze(String query) {
+        return analyzeInternal(query, null);
+    }
+
+    @Override
+    public SearchAnalysis analyze(String query, String requestId) {
+        return analyzeInternal(query, requestId);
+    }
+
+    private SearchAnalysis analyzeInternal(String query, String requestId) {
         CacheKey cacheKey = cacheKeyBuilder.build(query);
         cacheTraceHolder.set(AIAnalysisCacheTrace.miss(
                 cacheKey.value(),
@@ -60,33 +77,104 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
         }
 
         return singleFlight.execute(cacheKey, () -> {
-            SearchAnalysis analysis = analyzeWithAI(query);
+            SearchAnalysis analysis = analyzeWithAI(query, requestId);
 
-            try {
-                cache.put(cacheKey, analysis);
-            } catch (Exception ignored) {
-                // Cache failures must never break AI analysis.
+            if (!streamingSessionRegistry.isRequestCancelled(requestId)) {
+                try {
+                    cache.put(cacheKey, analysis);
+                } catch (Exception ignored) {
+                    // Cache failures must never break AI analysis.
+                }
             }
 
             return analysis;
         });
     }
 
-    private SearchAnalysis analyzeWithAI(String query) {
+    private SearchAnalysis analyzeWithAI(String query, String requestId) {
         try {
             return CompletableFuture
-                    .supplyAsync(() -> analyzeWithAIBlocking(query))
+                    .supplyAsync(() -> analyzeWithAIBlocking(query, requestId))
                     .orTimeout(cacheProperties.analysisTimeout().toMillis(), TimeUnit.MILLISECONDS)
-                    .exceptionally(ignored -> SearchAnalysis.fallback(query))
+                    .exceptionally(ignored -> {
+                        streamingEventPublisher.failed(
+                                requestId,
+                                "AI_ANALYSIS_TIMEOUT",
+                                "AI analysis did not complete within the configured timeout"
+                        );
+                        return SearchAnalysis.fallback(query);
+                    })
                     .join();
         } catch (Exception ignored) {
+            streamingEventPublisher.failed(
+                    requestId,
+                    "AI_ANALYSIS_FAILED",
+                    "AI analysis failed"
+            );
             return SearchAnalysis.fallback(query);
         }
     }
 
-    private SearchAnalysis analyzeWithAIBlocking(String query) {
+    private SearchAnalysis analyzeWithAIBlocking(String query, String requestId) {
         String prompt = promptBuilder.build(query);
-        String content = aiService.chat(new ChatRequest(prompt)).content();
-        return parser.parse(content, query);
+
+        if (requestId == null || requestId.isBlank()) {
+            String content = aiService.chat(new ChatRequest(prompt)).content();
+            return parser.parse(content, query);
+        }
+
+        AtomicLong tokenIndex = new AtomicLong(0L);
+        StringBuilder content = new StringBuilder();
+
+        try {
+            aiService.streamChat(new StreamingChatRequest(prompt))
+                    .timeout(streamingProperties.maxAiStreamDuration())
+                    .takeWhile(chunk -> !streamingSessionRegistry.isRequestCancelled(requestId))
+                    .doOnNext(chunk -> {
+                        if (!streamingSessionRegistry.isRequestCancelled(requestId)
+                                && chunk.content() != null
+                                && !chunk.content().isBlank()) {
+                            long index = tokenIndex.incrementAndGet();
+
+                            if (index > streamingProperties.maxAiTokenCount()
+                                    || index > streamingProperties.maxAiEventCount()) {
+                                throw new AIStreamLimitExceededException();
+                            }
+
+                            content.append(chunk.content());
+                            streamingEventPublisher.token(
+                                    requestId,
+                                    index,
+                                    chunk.content()
+                            );
+                        }
+                    })
+                    .blockLast(cacheProperties.analysisTimeout());
+
+            if (streamingSessionRegistry.isRequestCancelled(requestId)) {
+                return SearchAnalysis.fallback(query);
+            }
+
+            streamingEventPublisher.completed(requestId, tokenIndex.get());
+
+            return parser.parse(content.toString(), query);
+        } catch (AIStreamLimitExceededException exception) {
+            streamingEventPublisher.failed(
+                    requestId,
+                    "AI_STREAM_LIMIT_EXCEEDED",
+                    "AI streaming limit exceeded"
+            );
+            return SearchAnalysis.fallback(query);
+        } catch (Exception exception) {
+            streamingEventPublisher.failed(
+                    requestId,
+                    "AI_STREAM_FAILED",
+                    "AI streaming analysis failed"
+            );
+            return SearchAnalysis.fallback(query);
+        }
     }
+    private static final class AIStreamLimitExceededException extends RuntimeException {
+    }
+
 }

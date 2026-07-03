@@ -53,12 +53,18 @@ public class OllamaProvider extends AbstractAIProvider {
 
     @Override
     public Flux<StreamingChatChunk> streamChat(StreamingChatRequest request) {
-        ChatResponse response = chat(new ChatRequest(request.prompt()));
-
-        return Flux.just(
-                new StreamingChatChunk(response.content(), false),
-                new StreamingChatChunk("", true)
+        OllamaChatRequest ollamaRequest = new OllamaChatRequest(
+                properties.chatModel(),
+                List.of(new OllamaChatRequest.Message("user", request.prompt())),
+                true
         );
+
+        return client.streamChat(ollamaRequest)
+                .map(response -> new StreamingChatChunk(
+                        response.content(),
+                        response.done()
+                ))
+                .takeUntil(StreamingChatChunk::done);
     }
 
     @Override

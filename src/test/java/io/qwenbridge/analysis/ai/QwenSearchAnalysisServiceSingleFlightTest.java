@@ -12,6 +12,9 @@ import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTraceHolder;
 import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.analysis.parser.SearchAnalysisJsonParser;
 import io.qwenbridge.analysis.prompt.SearchAnalysisPromptBuilder;
+import io.qwenbridge.streaming.ai.AIStreamingEventPublisher;
+import io.qwenbridge.streaming.config.StreamingProperties;
+import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -21,7 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class QwenSearchAnalysisServiceSingleFlightTest {
@@ -33,22 +36,26 @@ class QwenSearchAnalysisServiceSingleFlightTest {
         SearchAnalysisJsonParser parser = mock(SearchAnalysisJsonParser.class);
         AIAnalysisCache cache = mock(AIAnalysisCache.class);
         AIAnalysisCacheKeyBuilder keyBuilder = mock(AIAnalysisCacheKeyBuilder.class);
-
         AIAnalysisCacheProperties cacheProperties = new AIAnalysisCacheProperties();
         AIAnalysisCacheTraceHolder cacheTraceHolder = new AIAnalysisCacheTraceHolder();
         AIAnalysisSingleFlight singleFlight = new AIAnalysisSingleFlight();
+        AIStreamingEventPublisher streamingEventPublisher = mock(AIStreamingEventPublisher.class);
+        StreamingSessionRegistry streamingSessionRegistry = mock(StreamingSessionRegistry.class);
+        StreamingProperties streamingProperties = new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L);
 
-        QwenSearchAnalysisService service =
-                new QwenSearchAnalysisService(
-                        aiService,
-                        promptBuilder,
-                        parser,
-                        cache,
-                        keyBuilder,
-                        cacheProperties,
-                        cacheTraceHolder,
-                        singleFlight
-                );
+        QwenSearchAnalysisService service = new QwenSearchAnalysisService(
+                aiService,
+                promptBuilder,
+                parser,
+                cache,
+                keyBuilder,
+                cacheProperties,
+                cacheTraceHolder,
+                singleFlight,
+                streamingEventPublisher,
+                streamingSessionRegistry,
+                streamingProperties
+        );
 
         CacheKey key = new CacheKey("same-key");
         SearchAnalysis analysis = SearchAnalysis.fallback("desk");

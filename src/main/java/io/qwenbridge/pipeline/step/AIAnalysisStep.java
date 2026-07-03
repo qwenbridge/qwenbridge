@@ -47,7 +47,15 @@ public class AIAnalysisStep implements PipelineStep<SearchAnalysis> {
                     ? context.request().originalQuery()
                     : normalizedInput.normalizedQuery();
 
-            SearchAnalysis analysis = searchAnalysisService.analyze(query);
+            String requestId = context.request().requestId();
+
+            SearchAnalysis analysis = requestId == null || requestId.isBlank()
+                    ? searchAnalysisService.analyze(query)
+                    : searchAnalysisService.analyze(query, requestId);
+
+            if (analysis == null) {
+                analysis = searchAnalysisService.analyze(query);
+            }
 
             AIAnalysisCacheTrace trace = cacheTraceHolder.get();
             context.store(AIAnalysisCacheTrace.class, trace);

@@ -1,0 +1,7 @@
+queryId,query,documentId,relevance
+q1,gaming mouse,doc-mouse-1,3
+q1,gaming mouse,doc-mouse-2,2
+q1,gaming mouse,doc-keyboard-1,0
+q2,standing desk,doc-desk-1,3
+q2,standing desk,doc-desk-2,1
+q2,standing desk,doc-chair-1,0

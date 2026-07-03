@@ -16,7 +16,7 @@ class SsePipelineEventListenerTerminalLifecycleTest {
     @Test
     void shouldCompleteAndRemoveSessionWhenPipelineCompletes() {
         StreamingSessionRegistry registry =
-                new StreamingSessionRegistry(new StreamingProperties(30_000));
+                new StreamingSessionRegistry(new StreamingProperties(30_000, java.time.Duration.ofSeconds(30), 1_000L, 1_100L));
 
         SsePipelineEventListener listener =
                 new SsePipelineEventListener(
@@ -54,7 +54,7 @@ class SsePipelineEventListenerTerminalLifecycleTest {
     @Test
     void shouldRemoveSessionWhenPipelineFailsAfterFailureEvent() {
         StreamingSessionRegistry registry =
-                new StreamingSessionRegistry(new StreamingProperties(30_000));
+                new StreamingSessionRegistry(new StreamingProperties(30_000, java.time.Duration.ofSeconds(30), 1_000L, 1_100L));
 
         SsePipelineEventListener listener =
                 new SsePipelineEventListener(

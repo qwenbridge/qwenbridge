@@ -12,7 +12,7 @@ class StreamingSessionRegistryTest {
     @Test
     void shouldRegisterSessionForRequestId() {
         StreamingSessionRegistry registry = new StreamingSessionRegistry(
-                new StreamingProperties(300_000L)
+                new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
         );
 
         StreamingSession session = registry.register("request-1");
@@ -27,7 +27,7 @@ class StreamingSessionRegistryTest {
     @Test
     void shouldFindSessionsByRequestId() {
         StreamingSessionRegistry registry = new StreamingSessionRegistry(
-                new StreamingProperties(300_000L)
+                new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
         );
 
         registry.register("request-1");
@@ -43,7 +43,7 @@ class StreamingSessionRegistryTest {
     @Test
     void shouldKeepSessionsSeparatedByRequestId() {
         StreamingSessionRegistry registry = new StreamingSessionRegistry(
-                new StreamingProperties(300_000L)
+                new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
         );
 
         StreamingSession first =
@@ -67,7 +67,7 @@ class StreamingSessionRegistryTest {
     @Test
     void shouldUpdateLastSeenWhenSessionIsTouched() {
         StreamingSessionRegistry registry = new StreamingSessionRegistry(
-                new StreamingProperties(300_000L)
+                new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
         );
 
         StreamingSession session =
@@ -87,7 +87,7 @@ class StreamingSessionRegistryTest {
     void shouldUseConfiguredTimeoutWhenRegisteringSession() {
         StreamingSessionRegistry registry =
                 new StreamingSessionRegistry(
-                        new StreamingProperties(12_345L)
+                        new StreamingProperties(12_345L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
                 );
 
         StreamingSession session = registry.register("request-1");
@@ -102,7 +102,7 @@ class StreamingSessionRegistryTest {
     void shouldRemoveSessionOnlyOnce() {
         StreamingSessionRegistry registry =
                 new StreamingSessionRegistry(
-                        new StreamingProperties(300_000L)
+                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
                 );
 
         StreamingSession session = registry.register("request-1");
@@ -117,7 +117,7 @@ class StreamingSessionRegistryTest {
     void shouldClearAllRegisteredSessions() {
         StreamingSessionRegistry registry =
                 new StreamingSessionRegistry(
-                        new StreamingProperties(300_000L)
+                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
                 );
 
         StreamingSession first = registry.register("request-1");
@@ -135,7 +135,7 @@ class StreamingSessionRegistryTest {
     void shouldRemoveMatchingSessionsAfterFailureEvent() {
         StreamingSessionRegistry registry =
                 new StreamingSessionRegistry(
-                        new StreamingProperties(300_000L)
+                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
                 );
 
         registry.register("request-1");
@@ -159,7 +159,7 @@ class StreamingSessionRegistryTest {
     void shouldSurviveConcurrentRegisterAndRemoveCycles() throws Exception {
         StreamingSessionRegistry registry =
                 new StreamingSessionRegistry(
-                        new StreamingProperties(300_000L)
+                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
                 );
 
         int sessionCount = 250;
@@ -186,6 +186,48 @@ class StreamingSessionRegistryTest {
         registry.clear();
 
         assertThat(registry.size()).isZero();
+    }
+
+    @Test
+    void shouldMarkRequestCancelledWhenLastSessionIsRemoved() {
+        StreamingSessionRegistry registry =
+                new StreamingSessionRegistry(
+                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
+                );
+
+        StreamingSession first = registry.register("request-1");
+        StreamingSession second = registry.register("request-1");
+
+        registry.remove(first.sessionId());
+
+        assertThat(registry.isRequestCancelled("request-1")).isFalse();
+
+        registry.remove(second.sessionId());
+
+        assertThat(registry.isRequestCancelled("request-1")).isTrue();
+
+        registry.clear();
+    }
+
+    @Test
+    void shouldClearCancellationWhenRequestCompletesNormally() {
+        StreamingSessionRegistry registry =
+                new StreamingSessionRegistry(
+                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
+                );
+
+        StreamingSession session = registry.register("request-1");
+
+        registry.remove(session.sessionId());
+
+        assertThat(registry.isRequestCancelled("request-1")).isTrue();
+
+        registry.register("request-1");
+        registry.completeRequest("request-1");
+
+        assertThat(registry.isRequestCancelled("request-1")).isFalse();
+
+        registry.clear();
     }
 
 }
