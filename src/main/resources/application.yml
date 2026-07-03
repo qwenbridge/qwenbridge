@@ -19,6 +19,18 @@ qwenbridge:
     max-ai-token-count: 1000
     max-ai-event-count: 1100
 
+  abuse:
+    enabled: true
+    request-size-limit-bytes: 65536
+    per-ip-limit: 60
+    per-api-key-limit: 600
+    ai-request-quota: 120
+    token-quota: 100000
+    concurrent-stream-limit: 25
+    window: 1m
+    redis-timeout: 1s
+    fail-open-when-redis-unavailable: false
+
   ai:
     provider: ollama
     ollama:
