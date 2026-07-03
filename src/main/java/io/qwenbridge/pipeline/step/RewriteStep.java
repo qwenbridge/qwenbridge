@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class RewriteStep implements PipelineStep<RewriteResult> {
 
-    
+
 
     @Override
     public PipelineStage stage() {

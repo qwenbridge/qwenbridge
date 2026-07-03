@@ -23,7 +23,7 @@ public class DecisionStep implements PipelineStep<DecisionResult> {
     private final ExecutionPlanFactory executionPlanFactory;
     private final ExecutionEngine executionEngine;
 
-    
+
 
     @Override
     public PipelineStage stage() {

@@ -18,7 +18,7 @@ public class AIAnalysisStep implements PipelineStep<SearchAnalysis> {
     private final SearchAnalysisService searchAnalysisService;
     private final AIAnalysisCacheTraceHolder cacheTraceHolder;
 
-    
+
 
     @Override
     public PipelineStage stage() {

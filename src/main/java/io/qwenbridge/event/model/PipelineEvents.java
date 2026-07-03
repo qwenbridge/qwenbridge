@@ -163,7 +163,7 @@ public final class PipelineEvents {
     ) {
         return build(stage, PipelineEventType.STOPPED, payload, metadata);
     }
-    
+
 
     @SuppressWarnings("unchecked")
     private static <T> PipelineEvent<T> build(

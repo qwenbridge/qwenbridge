@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SemanticStep implements PipelineStep<SemanticResult> {
 
-    
+
 
     @Override
     public PipelineStage stage() {

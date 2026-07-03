@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class IntentStep implements PipelineStep<IntentResult> {
 
-    
+
 
     @Override
     public PipelineStage stage() {

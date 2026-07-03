@@ -14,7 +14,7 @@ public class NormalizationStep implements PipelineStep<NormalizedInput> {
 
     private final InputNormalizer inputNormalizer;
 
-    
+
 
     @Override
     public PipelineStage stage() {
