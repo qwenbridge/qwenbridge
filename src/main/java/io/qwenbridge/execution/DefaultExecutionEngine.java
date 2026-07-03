@@ -1,5 +1,9 @@
 package io.qwenbridge.execution;
 
+import io.qwenbridge.ai.contract.EmbeddingRequest;
+import io.qwenbridge.ai.contract.EmbeddingResponse;
+import io.qwenbridge.ai.exception.AIException;
+import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.execution.executor.ExecutionOperationExecutor;
 import io.qwenbridge.execution.provider.implementation.InMemorySearchProvider;
 import io.qwenbridge.execution.provider.model.SearchRequest;
@@ -22,6 +26,7 @@ public class DefaultExecutionEngine implements ExecutionEngine {
 
     private final Map<ExecutionOperation, ExecutionOperationExecutor> executors;
     private final SearchProviderResolver searchProviderResolver;
+    private final AIService aiService;
 
     public DefaultExecutionEngine(List<ExecutionOperationExecutor> executors) {
         this(
@@ -30,21 +35,31 @@ public class DefaultExecutionEngine implements ExecutionEngine {
                         new DefaultSearchProviderRegistry(
                                 List.of(new InMemorySearchProvider())
                         )
-                )
+                ),
+                null
         );
     }
 
     @Autowired
     public DefaultExecutionEngine(
             List<ExecutionOperationExecutor> executors,
-            SearchProviderResolver searchProviderResolver
+            SearchProviderResolver searchProviderResolver,
+            AIService aiService
     ) {
         this.executors = new HashMap<>();
         this.searchProviderResolver = searchProviderResolver;
+        this.aiService = aiService;
 
         for (ExecutionOperationExecutor executor : executors) {
             this.executors.put(executor.operation(), executor);
         }
+    }
+
+    public DefaultExecutionEngine(
+            List<ExecutionOperationExecutor> executors,
+            SearchProviderResolver searchProviderResolver
+    ) {
+        this(executors, searchProviderResolver, null);
     }
 
     @Override
@@ -76,7 +91,7 @@ public class DefaultExecutionEngine implements ExecutionEngine {
             return execute(plan);
         }
 
-        SearchRequest searchRequest = SearchRequestFactory.from(context);
+        SearchRequest searchRequest = searchRequestFor(plan, context);
         SearchProvider provider = searchProviderResolver.resolve(plan.backend());
         SearchResponse response = provider.search(searchRequest);
         context.store(SearchResponse.class, response);
@@ -96,4 +111,43 @@ public class DefaultExecutionEngine implements ExecutionEngine {
                 "Execution plan executed successfully using search provider: " + provider.name()
         );
     }
+    private SearchRequest searchRequestFor(
+            ExecutionPlan plan,
+            ExecutionContext context
+    ) {
+        SearchRequest baseRequest = SearchRequestFactory.from(context);
+
+        if (plan.contains(ExecutionOperation.HYBRID_SEARCH)) {
+            return SearchRequest.hybrid(
+                    baseRequest.query(),
+                    embeddingFor(baseRequest.query()).vector()
+            );
+        }
+
+        if (plan.contains(ExecutionOperation.VECTOR_SEARCH)) {
+            return SearchRequest.vector(
+                    baseRequest.query(),
+                    embeddingFor(baseRequest.query()).vector()
+            );
+        }
+
+        return SearchRequest.keyword(baseRequest.query());
+    }
+
+    private EmbeddingResponse embeddingFor(String query) {
+        if (aiService == null) {
+            throw new AIException(
+                    "AI embedding service is required for vector search execution"
+            );
+        }
+
+        EmbeddingResponse response = aiService.embed(new EmbeddingRequest(query));
+
+        if (response == null || response.vector() == null || response.vector().isEmpty()) {
+            throw new AIException("AI embedding response was empty");
+        }
+
+        return response;
+    }
+
 }
