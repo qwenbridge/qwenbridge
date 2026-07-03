@@ -43,7 +43,7 @@ index_document() {
 
   embedding="$(EMBEDDING_MODEL="$EMBEDDING_MODEL" embed "$content")"
 
-  python3 -c '
+  EMBEDDING="$embedding" python3 -c '
 import json, os, sys
 payload = {
     "title": sys.argv[1],
