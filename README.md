@@ -155,3 +155,4 @@ MIT
 
 - [Docker Deployment](docs/deployment/docker.md)
 - [V6 Release Evidence](docs/release/V6-release-evidence.md)
+- [V6 Release Checklist](docs/release/V6-release-checklist.md)
