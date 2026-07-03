@@ -1,7 +1,7 @@
 package io.qwenbridge.streaming.listener;
 
 import io.qwenbridge.event.model.PipelineEvent;
-import io.qwenbridge.event.snapshot.PipelineContextSnapshot;
+import io.qwenbridge.streaming.event.PipelineStreamingEvent;
 import io.qwenbridge.streaming.event.PipelineStreamingEventMapper;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import lombok.RequiredArgsConstructor;
@@ -18,28 +18,16 @@ public class SsePipelineEventListener {
 
     @EventListener
     public void onPipelineEvent(PipelineEvent<?> event) {
-        String requestId = resolveRequestId(event);
+        PipelineStreamingEvent streamingEvent = mapper.map(event);
 
-        if (requestId == null || requestId.isBlank()) {
+        if (streamingEvent.requestId() == null || streamingEvent.requestId().isBlank()) {
             return;
         }
 
         registry.sendToRequest(
-                requestId,
-                event.type().name().toLowerCase(),
-                mapper.map(event)
+                streamingEvent.requestId(),
+                streamingEvent.event(),
+                streamingEvent
         );
-    }
-
-    private String resolveRequestId(PipelineEvent<?> event) {
-        if (event.metadata() != null && !event.metadata().requestId().isBlank()) {
-            return event.metadata().requestId();
-        }
-
-        if (event.payload() instanceof PipelineContextSnapshot snapshot) {
-            return snapshot.requestId();
-        }
-
-        return "";
     }
 }

@@ -14,7 +14,7 @@ class PipelineStreamingEventMapperTest {
             new PipelineStreamingEventMapper();
 
     @Test
-    void shouldMapPipelineEvent() {
+    void shouldMapPipelineEventToPublicStreamingEnvelope() {
 
         PipelineContextSnapshot snapshot =
                 new PipelineContextSnapshot(
@@ -34,13 +34,27 @@ class PipelineStreamingEventMapperTest {
                         snapshot
                 );
 
-        PipelineStreamingEvent<PipelineContextSnapshot> streaming =
-                mapper.map(event);
+        PipelineStreamingEvent streaming = mapper.map(event);
 
         assertEquals(event.id().value().toString(), streaming.id());
         assertEquals(event.timestamp(), streaming.timestamp());
-        assertEquals(event.stage(), streaming.stage());
-        assertEquals(event.type(), streaming.type());
-        assertSame(snapshot, streaming.payload());
+        assertEquals("request-1", streaming.requestId());
+        assertEquals("intent.started", streaming.event());
+        assertEquals("intent", streaming.stage());
+        assertEquals("started", streaming.type());
+        assertEquals("qwenbridge", streaming.producer());
+        assertEquals(0L, streaming.sequenceNumber());
+        assertInstanceOf(SnapshotStreamingPayload.class, streaming.payload());
+
+        SnapshotStreamingPayload payload =
+                (SnapshotStreamingPayload) streaming.payload();
+
+        assertEquals("desk", payload.query());
+        assertFalse(payload.stopped());
+        assertTrue(payload.safe());
+        assertEquals("en", payload.language());
+        assertEquals("SEARCH", payload.intent());
+        assertEquals("ALLOW", payload.decision());
+        assertEquals(123456789L, payload.timestamp());
     }
 }
