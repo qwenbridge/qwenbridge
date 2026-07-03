@@ -70,6 +70,6 @@ public class OllamaProvider extends AbstractAIProvider {
 
         OllamaEmbeddingResponse response = client.embed(ollamaRequest);
 
-        return new EmbeddingResponse(response.embedding());
+        return new EmbeddingResponse(response.firstEmbedding());
     }
 }

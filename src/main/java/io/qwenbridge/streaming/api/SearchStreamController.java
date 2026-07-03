@@ -1,6 +1,7 @@
 package io.qwenbridge.streaming.api;
 
 import io.qwenbridge.streaming.api.validation.StreamRequestIdValidator;
+import io.qwenbridge.streaming.event.ConnectedStreamingPayload;
 import io.qwenbridge.streaming.session.StreamingSession;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import lombok.RequiredArgsConstructor;
@@ -31,12 +32,7 @@ public class SearchStreamController {
             session.emitter().send(
                     SseEmitter.event()
                             .name("stream.connected")
-                            .data("""
-                                    {
-                                      "requestId": "%s",
-                                      "sessionId": "%s"
-                                    }
-                                    """.formatted(
+                            .data(new ConnectedStreamingPayload(
                                     requestId,
                                     session.sessionId()
                             ))

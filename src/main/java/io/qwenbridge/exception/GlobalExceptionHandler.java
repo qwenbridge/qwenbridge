@@ -2,6 +2,8 @@ package io.qwenbridge.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import io.qwenbridge.api.header.ApiHeaders;
+import io.qwenbridge.ai.exception.AIException;
+import io.qwenbridge.execution.provider.exception.SearchProviderException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -9,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -56,6 +59,19 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ResponseEntity<ApiError> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.BAD_REQUEST,
+                ErrorCode.BAD_REQUEST,
+                "Malformed JSON request body",
+                request
+        );
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     ResponseEntity<ApiError> handleIllegalArgument(
             IllegalArgumentException exception,
@@ -65,6 +81,32 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST,
                 ErrorCode.BAD_REQUEST,
                 safeMessage(exception, "Bad request"),
+                request
+        );
+    }
+
+    @ExceptionHandler(AIException.class)
+    ResponseEntity<ApiError> handleAIProvider(
+            AIException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.BAD_GATEWAY,
+                ErrorCode.AI_PROVIDER_ERROR,
+                safeMessage(exception, "AI provider failure"),
+                request
+        );
+    }
+
+    @ExceptionHandler(SearchProviderException.class)
+    ResponseEntity<ApiError> handleSearchProvider(
+            SearchProviderException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.BAD_GATEWAY,
+                ErrorCode.SEARCH_PROVIDER_ERROR,
+                safeMessage(exception, "Search provider failure"),
                 request
         );
     }

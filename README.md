@@ -90,13 +90,38 @@ src/main/java/io/qwenbridge
 └── model
 ```
 
+
+## AI Provider Reliability
+
+V6 launches with deterministic Ollama routing. Provider calls are bounded by
+connect/read timeouts and a small retry count. QwenBridge does not perform
+automatic provider failover in V6; an unavailable AI provider returns a
+controlled `502 AI_PROVIDER_ERROR`.
+
+See [`docs/architecture/provider-reliability.md`](docs/architecture/provider-reliability.md).
+
 ## REST API
 
-`POST /api/search/analyze`
+Current public API version: `v1`
+
+- `POST /api/v1/search/analyze`
+- `GET /api/v1/search/stream/{requestId}`
+- `POST /api/v1/ai/chat`
 
 Response includes language, intent, rewrite, semantic analysis,
-decision, execution plan, execution result, confidence, and pipeline
-trace.
+decision, execution plan, execution result, confidence, cache metadata,
+and pipeline trace.
+
+Streaming uses request-scoped server-sent events with stable v1 event names
+and a frozen public event envelope. See `docs/api/sse.md`.
+
+## Documentation
+
+-   [REST API](docs/api/rest-api.md)
+-   [SSE API](docs/api/sse.md)
+-   [AI Provider Reliability](docs/architecture/provider-reliability.md)
+-   [Retrieval Verification](docs/architecture/retrieval-verification.md)
+-   [V6 Roadmap](docs/roadmap/V6.md)
 
 ## Testing
 
@@ -110,7 +135,8 @@ mvn clean test
 -   ✅ V2 AI-native Search Core
 -   ⏳ V3 Real Search Providers
 -   ⏳ V4 Retrieval Intelligence
--   ⏳ V5 Production AI Search Platform
+-   ✅ V5 Production AI Search Platform
+-   🔒 V6 Public Product Hardening
 
 ## Design Principles
 
@@ -123,3 +149,10 @@ mvn clean test
 ## License
 
 MIT
+
+
+## Deployment and Release
+
+- [Docker Deployment](docs/deployment/docker.md)
+- [V6 Release Evidence](docs/release/V6-release-evidence.md)
+- [V6 Release Checklist](docs/release/V6-release-checklist.md)

@@ -58,4 +58,23 @@ class PipelineEventTerminalPolicyTest {
                 PipelineEventType.WARNING
         )).isFalse();
     }
+
+    @Test
+    void shouldTreatOnlyPipelineFailedAsFailure() {
+        assertThat(policy.isFailure(
+                PipelineStage.PIPELINE,
+                PipelineEventType.FAILED
+        )).isTrue();
+
+        assertThat(policy.isFailure(
+                PipelineStage.SEARCH,
+                PipelineEventType.FAILED
+        )).isFalse();
+
+        assertThat(policy.isFailure(
+                PipelineStage.PIPELINE,
+                PipelineEventType.COMPLETED
+        )).isFalse();
+    }
+
 }

@@ -4,6 +4,7 @@ import io.qwenbridge.event.model.PipelineEventMetadata;
 import io.qwenbridge.event.model.PipelineEvents;
 import io.qwenbridge.event.model.PipelineStage;
 import io.qwenbridge.event.snapshot.PipelineContextSnapshot;
+import io.qwenbridge.streaming.event.FailureStreamingPayload;
 import io.qwenbridge.streaming.event.PipelineStreamingEvent;
 import io.qwenbridge.streaming.event.PipelineStreamingEventMapper;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
@@ -180,4 +181,61 @@ class SsePipelineEventListenerTest {
 
         verify(registry, never()).completeRequest(anyString());
     }
+
+    @Test
+    void shouldPublishStableFailureEventAndCloseRequestWhenPipelineFails() {
+        StreamingSessionRegistry registry =
+                mock(StreamingSessionRegistry.class);
+
+        PipelineStreamingEventMapper mapper =
+                new PipelineStreamingEventMapper();
+
+        SsePipelineEventListener listener =
+                new SsePipelineEventListener(
+                        registry,
+                        mapper,
+                        new PipelineEventTerminalPolicy()
+                );
+
+        PipelineContextSnapshot snapshot =
+                new PipelineContextSnapshot(
+                        "request-1",
+                        "desk",
+                        false,
+                        true,
+                        "en",
+                        "SEARCH",
+                        "ALLOW",
+                        123456789L
+                );
+
+        var event =
+                PipelineEvents.pipelineFailed(
+                        snapshot,
+                        PipelineEventMetadata.of("request-1", 100L)
+                );
+
+        listener.onPipelineEvent(event);
+
+        ArgumentCaptor<FailureStreamingPayload> payloadCaptor =
+                ArgumentCaptor.forClass(FailureStreamingPayload.class);
+
+        verify(registry).failRequest(
+                eq("request-1"),
+                eq(event.id().value().toString()),
+                eq("stream.failure"),
+                payloadCaptor.capture()
+        );
+
+        FailureStreamingPayload payload = payloadCaptor.getValue();
+
+        assertThat(payload.requestId()).isEqualTo("request-1");
+        assertThat(payload.code()).isEqualTo("PIPELINE_FAILED");
+        assertThat(payload.message()).isEqualTo("Pipeline failed before completion");
+        assertThat(payload.terminal()).isTrue();
+
+        verify(registry, never()).sendToRequest(anyString(), anyString(), anyString(), any());
+        verify(registry, never()).completeRequest(anyString());
+    }
+
 }

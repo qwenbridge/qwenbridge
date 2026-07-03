@@ -1,12 +1,17 @@
 package io.qwenbridge.execution;
 
+import io.qwenbridge.ai.contract.EmbeddingRequest;
+import io.qwenbridge.ai.contract.EmbeddingResponse;
+import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.decision.SearchBackend;
 import io.qwenbridge.decision.SearchMode;
 import io.qwenbridge.execution.executor.ExecutionOperationExecutor;
 import io.qwenbridge.execution.provider.implementation.InMemorySearchProvider;
+import io.qwenbridge.execution.provider.model.SearchRequest;
 import io.qwenbridge.execution.provider.model.SearchResponse;
 import io.qwenbridge.execution.provider.registry.DefaultSearchProviderRegistry;
 import io.qwenbridge.execution.provider.resolver.DefaultSearchProviderResolver;
+import io.qwenbridge.execution.provider.spi.SearchProvider;
 import io.qwenbridge.execution.provider.spi.SearchProviderResolver;
 import io.qwenbridge.pipeline.ExecutionContext;
 import org.junit.jupiter.api.Test;
@@ -14,6 +19,11 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.ArgumentCaptor;
 
 class DefaultExecutionEngineProviderIntegrationTest {
 
@@ -88,4 +98,99 @@ class DefaultExecutionEngineProviderIntegrationTest {
         assertThat(response.results().hits()).hasSize(1);
         assertThat(response.results().hits().getFirst().id()).isEqualTo("product-1");
     }
+    @Test
+    void shouldCreateVectorSearchRequestWithGeneratedEmbedding() {
+        SearchProvider provider = mock(SearchProvider.class);
+        when(provider.name()).thenReturn("opensearch");
+        when(provider.search(any(SearchRequest.class))).thenReturn(SearchResponse.empty());
+
+        SearchProviderResolver resolver = mock(SearchProviderResolver.class);
+        when(resolver.resolve(SearchBackend.OPENSEARCH)).thenReturn(provider);
+
+        AIService aiService = mock(AIService.class);
+        when(aiService.embed(any(EmbeddingRequest.class)))
+                .thenReturn(new EmbeddingResponse(List.of(0.1, 0.2, 0.3)));
+
+        DefaultExecutionEngine engine =
+                new DefaultExecutionEngine(
+                        List.<ExecutionOperationExecutor>of(),
+                        resolver,
+                        aiService
+                );
+
+        ExecutionPlan plan = ExecutionPlan.builder()
+                .mode(SearchMode.VECTOR)
+                .backend(SearchBackend.OPENSEARCH)
+                .steps(List.of(
+                        new ExecutionStep(
+                                1,
+                                ExecutionOperation.VECTOR_SEARCH,
+                                "vector search"
+                        )
+                ))
+                .reason("vector search plan")
+                .build();
+
+        engine.execute(plan, new ExecutionContext("semantic gaming mouse"));
+
+        ArgumentCaptor<EmbeddingRequest> embeddingCaptor =
+                ArgumentCaptor.forClass(EmbeddingRequest.class);
+        verify(aiService).embed(embeddingCaptor.capture());
+        assertThat(embeddingCaptor.getValue().text()).isEqualTo("semantic gaming mouse");
+
+        ArgumentCaptor<SearchRequest> searchRequestCaptor =
+                ArgumentCaptor.forClass(SearchRequest.class);
+        verify(provider).search(searchRequestCaptor.capture());
+
+        SearchRequest searchRequest = searchRequestCaptor.getValue();
+        assertThat(searchRequest.query()).isEqualTo("semantic gaming mouse");
+        assertThat(searchRequest.searchMode()).isEqualTo("VECTOR");
+        assertThat(searchRequest.embedding()).contains(List.of(0.1, 0.2, 0.3));
+    }
+
+    @Test
+    void shouldCreateHybridSearchRequestWithGeneratedEmbedding() {
+        SearchProvider provider = mock(SearchProvider.class);
+        when(provider.name()).thenReturn("opensearch");
+        when(provider.search(any(SearchRequest.class))).thenReturn(SearchResponse.empty());
+
+        SearchProviderResolver resolver = mock(SearchProviderResolver.class);
+        when(resolver.resolve(SearchBackend.OPENSEARCH)).thenReturn(provider);
+
+        AIService aiService = mock(AIService.class);
+        when(aiService.embed(any(EmbeddingRequest.class)))
+                .thenReturn(new EmbeddingResponse(List.of(0.4, 0.5, 0.6)));
+
+        DefaultExecutionEngine engine =
+                new DefaultExecutionEngine(
+                        List.<ExecutionOperationExecutor>of(),
+                        resolver,
+                        aiService
+                );
+
+        ExecutionPlan plan = ExecutionPlan.builder()
+                .mode(SearchMode.HYBRID)
+                .backend(SearchBackend.OPENSEARCH)
+                .steps(List.of(
+                        new ExecutionStep(
+                                1,
+                                ExecutionOperation.HYBRID_SEARCH,
+                                "hybrid search"
+                        )
+                ))
+                .reason("hybrid search plan")
+                .build();
+
+        engine.execute(plan, new ExecutionContext("premium smartphone camera"));
+
+        ArgumentCaptor<SearchRequest> searchRequestCaptor =
+                ArgumentCaptor.forClass(SearchRequest.class);
+        verify(provider).search(searchRequestCaptor.capture());
+
+        SearchRequest searchRequest = searchRequestCaptor.getValue();
+        assertThat(searchRequest.query()).isEqualTo("premium smartphone camera");
+        assertThat(searchRequest.searchMode()).isEqualTo("HYBRID");
+        assertThat(searchRequest.embedding()).contains(List.of(0.4, 0.5, 0.6));
+    }
+
 }

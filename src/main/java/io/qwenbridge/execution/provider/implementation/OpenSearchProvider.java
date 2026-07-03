@@ -1,5 +1,6 @@
 package io.qwenbridge.execution.provider.implementation;
 
+import io.qwenbridge.execution.provider.exception.SearchProviderException;
 import io.qwenbridge.execution.provider.model.SearchRequest;
 import io.qwenbridge.execution.provider.model.SearchResponse;
 import io.qwenbridge.execution.provider.opensearch.OpenSearchProperties;
@@ -37,15 +38,19 @@ public class OpenSearchProvider extends AbstractSearchProvider {
     protected SearchResponse doSearch(SearchRequest request) {
         OpenSearchSearchRequest searchRequest = queryFactory.from(request);
 
-        Map<String, Object> rawResponse = client.search(
-                properties.index(),
-                Map.of(
-                        "query", searchRequest.query(),
-                        "size", searchRequest.size()
-                )
-        );
+        try {
+            Map<String, Object> rawResponse = client.search(
+                    properties.index(),
+                    Map.of(
+                            "query", searchRequest.query(),
+                            "size", searchRequest.size()
+                    )
+            );
 
-        return responseMapper.from(rawResponse);
+            return responseMapper.from(rawResponse);
+        } catch (RuntimeException ex) {
+            throw new SearchProviderException("OpenSearch provider failure", ex);
+        }
     }
 
     public OpenSearchProperties properties() {

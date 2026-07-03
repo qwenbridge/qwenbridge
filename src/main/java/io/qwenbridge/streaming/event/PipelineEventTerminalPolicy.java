@@ -19,4 +19,12 @@ public class PipelineEventTerminalPolicy {
                 || type == PipelineEventType.FAILED
                 || type == PipelineEventType.STOPPED;
     }
+
+    public boolean isFailure(
+            PipelineStage stage,
+            PipelineEventType type
+    ) {
+        return stage == PipelineStage.PIPELINE
+                && type == PipelineEventType.FAILED;
+    }
 }

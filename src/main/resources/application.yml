@@ -24,6 +24,8 @@ qwenbridge:
       embedding-model: bge-m3
       connect-timeout: 5s
       read-timeout: 60s
+      retry-count: 1
+      streaming-enabled: false
 
   search:
     opensearch:

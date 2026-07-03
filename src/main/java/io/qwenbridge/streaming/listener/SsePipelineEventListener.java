@@ -1,6 +1,7 @@
 package io.qwenbridge.streaming.listener;
 
 import io.qwenbridge.event.model.PipelineEvent;
+import io.qwenbridge.streaming.event.FailureStreamingPayload;
 import io.qwenbridge.streaming.event.PipelineEventTerminalPolicy;
 import io.qwenbridge.streaming.event.PipelineStreamingEvent;
 import io.qwenbridge.streaming.event.PipelineStreamingEventMapper;
@@ -24,6 +25,21 @@ public class SsePipelineEventListener {
         PipelineStreamingEvent streamingEvent = mapper.map(event);
 
         if (streamingEvent.requestId() == null || streamingEvent.requestId().isBlank()) {
+            return;
+        }
+
+        if (terminalPolicy.isFailure(event.stage(), event.type())) {
+            registry.failRequest(
+                    streamingEvent.requestId(),
+                    streamingEvent.id(),
+                    "stream.failure",
+                    new FailureStreamingPayload(
+                            streamingEvent.requestId(),
+                            "PIPELINE_FAILED",
+                            "Pipeline failed before completion",
+                            true
+                    )
+            );
             return;
         }
 

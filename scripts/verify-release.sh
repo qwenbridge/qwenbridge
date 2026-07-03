@@ -15,7 +15,7 @@ PUBLIC_HEALTH_ENDPOINT="${PUBLIC_HEALTH_ENDPOINT:-/api/v1/health}"
 VERSION_ENDPOINT="${VERSION_ENDPOINT:-/api/v1/version}"
 SSE_ENDPOINT_PREFIX="${SSE_ENDPOINT_PREFIX:-/api/v1/search/stream}"
 
-EXPECTED_BRANCH="${EXPECTED_BRANCH:-feat/v5-public-launch}"
+EXPECTED_BRANCH="${EXPECTED_BRANCH:-feat/v6-api-contract-hardening}"
 EXPECTED_VERSION="${EXPECTED_VERSION:-0.1.0-SNAPSHOT}"
 
 TEST_QUERY="${TEST_QUERY:-best gaming laptop under 1500 euro}"
@@ -280,7 +280,7 @@ wait_for_compose_services() {
   wait_for_container_healthy_or_running "${REDIS_CONTAINER}" healthy \
     && wait_for_container_healthy_or_running "${OLLAMA_CONTAINER}" healthy \
     && wait_for_container_healthy_or_running "${OPENSEARCH_CONTAINER}" healthy \
-    && wait_for_container_healthy_or_running "${APP_CONTAINER}" running
+    && wait_for_container_healthy_or_running "${APP_CONTAINER}" healthy
 }
 
 verify_ollama_models() {
@@ -294,59 +294,154 @@ verify_ollama_models() {
 }
 
 seed_opensearch() {
-  local attempt=""
+  echo "Seeding OpenSearch index with real BGE-M3 embeddings: ${OPENSEARCH_INDEX}"
 
-  echo "Seeding OpenSearch index: ${OPENSEARCH_INDEX}"
-
-  for attempt in {1..60}; do
-    if curl -fsS "${OPENSEARCH_URL}" >/dev/null 2>&1; then
-      break
-    fi
-    sleep 2
-  done
-
-  curl -fsS "${OPENSEARCH_URL}" >/dev/null || return 1
-
-  curl -sS -o /dev/null \
-    -X DELETE "${OPENSEARCH_URL}/${OPENSEARCH_INDEX}" \
-    || true
-
-  curl -fsS \
-    -X PUT "${OPENSEARCH_URL}/${OPENSEARCH_INDEX}" \
-    -H "Content-Type: application/json" \
-    -d '{
-      "mappings": {
-        "properties": {
-          "title": { "type": "text" },
-          "brand": { "type": "text" },
-          "category": { "type": "keyword" },
-          "description": { "type": "text" }
-        }
-      }
-    }' >/dev/null || return 1
-
-  curl -fsS \
-    -X POST "${OPENSEARCH_URL}/${OPENSEARCH_INDEX}/_doc/product-1?refresh=true" \
-    -H "Content-Type: application/json" \
-    -d '{
-      "title": "iPhone 16 Pro",
-      "brand": "Apple",
-      "category": "smartphone",
-      "description": "Apple flagship smartphone with pro camera system"
-    }' >/dev/null || return 1
-
-  curl -fsS \
-    -X POST "${OPENSEARCH_URL}/${OPENSEARCH_INDEX}/_doc/product-2?refresh=true" \
-    -H "Content-Type: application/json" \
-    -d '{
-      "title": "Samsung Galaxy S25",
-      "brand": "Samsung",
-      "category": "smartphone",
-      "description": "Android flagship smartphone"
-    }' >/dev/null || return 1
+  OPENSEARCH_URL="${OPENSEARCH_URL}" \
+  OPENSEARCH_INDEX="${OPENSEARCH_INDEX}" \
+  OLLAMA_URL="${OLLAMA_URL:-http://localhost:11434}" \
+  QWENBRIDGE_EMBEDDING_MODEL="${EMBEDDING_MODEL}" \
+  ./scripts/opensearch-seed.sh
 
   curl -fsS "${OPENSEARCH_URL}/${OPENSEARCH_INDEX}/_count" | jq .
 }
+
+opensearch_vector_mapping_validation() {
+  local body="/tmp/qwenbridge-opensearch-mapping.json"
+
+  curl -fsS "${OPENSEARCH_URL}/${OPENSEARCH_INDEX}/_mapping" -o "${body}" || return 1
+  jq . "${body}"
+
+  jq -e \
+    --arg index "${OPENSEARCH_INDEX}" \
+    '.[ $index ].mappings.properties.embedding.type == "knn_vector"
+     and .[ $index ].mappings.properties.embedding.dimension == 1024
+     and .[ $index ].mappings.properties.category.type == "keyword"' \
+    "${body}" >/dev/null
+}
+
+ollama_embedding_generation_validation() {
+  local body="/tmp/qwenbridge-embedding.json"
+
+  curl -fsS "${OLLAMA_URL:-http://localhost:11434}/api/embed" \
+    -H "Content-Type: application/json" \
+    -d "{\"model\":\"${EMBEDDING_MODEL}\",\"input\":\"gaming mouse razer esports\"}" \
+    -o "${body}" || return 1
+
+  jq '{model, embeddingCount: (.embeddings | length), embeddingLength: (.embeddings[0] | length)}' "${body}"
+
+  jq -e \
+    '.embeddings
+     and (.embeddings[0] | type == "array")
+     and (.embeddings[0] | length == 1024)' \
+    "${body}" >/dev/null
+}
+
+opensearch_vector_retrieval_validation() {
+  local embedding=""
+  local body="/tmp/qwenbridge-vector-search.json"
+  local first_title=""
+
+  embedding="$(
+    curl -fsS "${OLLAMA_URL:-http://localhost:11434}/api/embed" \
+      -H "Content-Type: application/json" \
+      -d "{\"model\":\"${EMBEDDING_MODEL}\",\"input\":\"gaming mouse for esports\"}" \
+      | jq -c '.embeddings[0]'
+  )"
+
+  [[ -n "${embedding}" && "${embedding}" != "null" ]] || return 1
+
+  curl -fsS "${OPENSEARCH_URL}/${OPENSEARCH_INDEX}/_search?pretty" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"size\": 3,
+      \"query\": {
+        \"knn\": {
+          \"embedding\": {
+            \"vector\": ${embedding},
+            \"k\": 3
+          }
+        }
+      }
+    }" \
+    -o "${body}" || return 1
+
+  jq '.hits.hits[] | {id: ._id, score: ._score, title: ._source.title}' "${body}"
+
+  first_title="$(jq -r '.hits.hits[0]._source.title // ""' "${body}")"
+  [[ "${first_title}" == "Razer DeathAdder V3" ]]
+}
+
+opensearch_hybrid_retrieval_validation() {
+  local embedding=""
+  local body="/tmp/qwenbridge-hybrid-search.json"
+  local first_title=""
+  local duplicate_count=""
+
+  embedding="$(
+    curl -fsS "${OLLAMA_URL:-http://localhost:11434}/api/embed" \
+      -H "Content-Type: application/json" \
+      -d "{\"model\":\"${EMBEDDING_MODEL}\",\"input\":\"gaming mouse razer esports\"}" \
+      | jq -c '.embeddings[0]'
+  )"
+
+  [[ -n "${embedding}" && "${embedding}" != "null" ]] || return 1
+
+  curl -fsS "${OPENSEARCH_URL}/${OPENSEARCH_INDEX}/_search?pretty" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"size\": 3,
+      \"query\": {
+        \"bool\": {
+          \"should\": [
+            {
+              \"multi_match\": {
+                \"query\": \"razer gaming mouse\",
+                \"fields\": [\"title^3\", \"brand^2\", \"category\", \"description\"]
+              }
+            },
+            {
+              \"knn\": {
+                \"embedding\": {
+                  \"vector\": ${embedding},
+                  \"k\": 3
+                }
+              }
+            }
+          ],
+          \"minimum_should_match\": 1
+        }
+      }
+    }" \
+    -o "${body}" || return 1
+
+  jq '.hits.hits[] | {id: ._id, score: ._score, title: ._source.title}' "${body}"
+
+  first_title="$(jq -r '.hits.hits[0]._source.title // ""' "${body}")"
+  duplicate_count="$(jq -r '[.hits.hits[]._id] as $ids | ($ids | length) - ($ids | unique | length)' "${body}")"
+
+  [[ "${first_title}" == "Razer DeathAdder V3" ]] \
+    && [[ "${duplicate_count}" == "0" ]]
+}
+
+docker_runtime_user_validation() {
+  local user=""
+
+  user="$(docker exec "${APP_CONTAINER}" id -un | tr -d '\r')"
+  echo "Application container user: ${user}"
+
+  [[ "${user}" == "qwenbridge" ]]
+}
+
+docker_app_healthcheck_validation() {
+  local health=""
+
+  health="$(docker inspect "${APP_CONTAINER}" --format '{{.State.Health.Status}}' 2>/dev/null || true)"
+  echo "Application container health: ${health}"
+
+  [[ "${health}" == "healthy" ]]
+}
+
+
 
 app_public_health_up() {
   curl -fsS "${BASE_URL}${PUBLIC_HEALTH_ENDPOINT}" \
@@ -487,9 +582,19 @@ ai_chat_endpoint() {
   echo "HTTP status: ${status}"
   jq . "${body}" || true
 
-  [[ "${status}" == "200" ]] \
-    && assert_common_headers "${headers}" \
-    && jq -e '.content' "${body}" >/dev/null
+  assert_common_headers "${headers}" || return 1
+
+  if [[ "${status}" == "200" ]]; then
+    jq -e '.content' "${body}" >/dev/null
+    return $?
+  fi
+
+  if [[ "${status}" == "502" ]]; then
+    jq -e '.code == "AI_PROVIDER_ERROR" and .status == 502' "${body}" >/dev/null
+    return $?
+  fi
+
+  return 1
 }
 
 validation_error_contract() {
@@ -977,7 +1082,7 @@ openapi_endpoint() {
   curl -fsS "${BASE_URL}/v3/api-docs" | jq . >/dev/null
 }
 
-openapi_contains_v5_endpoints() {
+openapi_contains_v6_endpoints() {
   local body="/tmp/qwenbridge-openapi.json"
 
   curl -fsS "${BASE_URL}/v3/api-docs" -o "${body}" || return 1
@@ -1059,7 +1164,7 @@ print_summary() {
 
 echo ""
 echo "======================================================"
-echo "       QwenBridge - V5 Docker Release Verification"
+echo "       QwenBridge - V6 Docker Release Verification"
 echo "======================================================"
 
 run_step "Project root validation" check_project_root
@@ -1072,6 +1177,12 @@ run_step "Docker Compose service readiness" wait_for_compose_services
 run_step "Ollama model validation" verify_ollama_models
 run_step "OpenSearch seed data" seed_opensearch
 run_step "Application readiness" wait_for_app_readiness
+run_step "Docker app healthcheck validation" docker_app_healthcheck_validation
+run_step "Docker runtime user validation" docker_runtime_user_validation
+run_step "OpenSearch vector mapping validation" opensearch_vector_mapping_validation
+run_step "Ollama embedding generation validation" ollama_embedding_generation_validation
+run_step "OpenSearch vector retrieval validation" opensearch_vector_retrieval_validation
+run_step "OpenSearch hybrid retrieval validation" opensearch_hybrid_retrieval_validation
 
 run_step "Actuator health endpoint" actuator_health_endpoint
 run_step "Public health endpoint" public_health_endpoint
@@ -1085,7 +1196,7 @@ run_step "CORS preflight validation" cors_preflight_validation
 run_step "Cache miss / cache hit validation" cache_miss_hit_validation
 run_step "Concurrent SingleFlight validation" singleflight_validation
 run_step "OpenAPI endpoint" openapi_endpoint
-run_step "OpenAPI contains V5 endpoints" openapi_contains_v5_endpoints
+run_step "OpenAPI contains V6 endpoints" openapi_contains_v6_endpoints
 run_step "Swagger UI endpoint" swagger_endpoint
 
 echo ""

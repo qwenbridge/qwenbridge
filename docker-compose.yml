@@ -51,6 +51,8 @@ services:
     ports:
       - "9200:9200"
       - "9600:9600"
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
     healthcheck:
       test: ["CMD-SHELL", "curl -fs http://localhost:9200 >/dev/null || exit 1"]
       interval: 10s
@@ -72,7 +74,10 @@ services:
         condition: service_healthy
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
+      JAVA_OPTS: ${JAVA_OPTS:-"-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError"}
       QWENBRIDGE_AI_PROVIDER: ollama
       QWENBRIDGE_AI_OLLAMA_BASE_URL: http://qwenbridge-ollama:11434
       QWENBRIDGE_AI_OLLAMA_CHAT_MODEL: qwen2.5
@@ -81,6 +86,13 @@ services:
       QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST: qwenbridge-redis
       QWENBRIDGE_ANALYSIS_CACHE_REDIS_PORT: 6379
       QWENBRIDGE_ANALYSIS_CACHE_ANALYSIS_TIMEOUT: 10s
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8080/actuator/health >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
 volumes:
   ollama-data:
+  opensearch-data:
