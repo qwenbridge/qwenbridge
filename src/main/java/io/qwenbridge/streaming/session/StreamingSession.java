@@ -4,22 +4,74 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
-public record StreamingSession(
-        String sessionId,
-        String requestId,
-        Instant createdAt,
-        Instant lastSeen,
-        SseEmitter emitter,
-        AtomicBoolean closed
-) {
+public final class StreamingSession {
 
-    public StreamingSession(String sessionId, String requestId, SseEmitter emitter) {
-        this(sessionId, requestId, Instant.now(), Instant.now(), emitter, new AtomicBoolean(false));
+    private final String sessionId;
+    private final String requestId;
+    private final Instant createdAt;
+    private final AtomicReference<Instant> lastSeen;
+    private final SseEmitter emitter;
+    private final AtomicBoolean closed;
+
+    public StreamingSession(
+            String sessionId,
+            String requestId,
+            SseEmitter emitter
+    ) {
+        this(
+                sessionId,
+                requestId,
+                Instant.now(),
+                new AtomicReference<>(Instant.now()),
+                emitter,
+                new AtomicBoolean(false)
+        );
     }
 
-    public StreamingSession touch() {
-        return new StreamingSession(sessionId, requestId, createdAt, Instant.now(), emitter, closed);
+    StreamingSession(
+            String sessionId,
+            String requestId,
+            Instant createdAt,
+            AtomicReference<Instant> lastSeen,
+            SseEmitter emitter,
+            AtomicBoolean closed
+    ) {
+        this.sessionId = sessionId;
+        this.requestId = requestId;
+        this.createdAt = createdAt;
+        this.lastSeen = lastSeen;
+        this.emitter = emitter;
+        this.closed = closed;
+    }
+
+    public String sessionId() {
+        return sessionId;
+    }
+
+    public String requestId() {
+        return requestId;
+    }
+
+    public Instant createdAt() {
+        return createdAt;
+    }
+
+    public Instant lastSeen() {
+        return lastSeen.get();
+    }
+
+    public SseEmitter emitter() {
+        return emitter;
+    }
+
+    public boolean closed() {
+        return closed.get();
+    }
+
+    public void touch() {
+        lastSeen.set(Instant.now());
     }
 
     public boolean close() {

@@ -15,7 +15,8 @@ public class StreamingSessionRegistry {
 
     private static final long DEFAULT_TIMEOUT_MS = 0L;
 
-    private final ConcurrentMap<String, StreamingSession> sessionsById = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, StreamingSession> sessionsById =
+            new ConcurrentHashMap<>();
 
     public StreamingSession register(String requestId) {
         return register(requestId, DEFAULT_TIMEOUT_MS);
@@ -25,7 +26,8 @@ public class StreamingSessionRegistry {
         String sessionId = UUID.randomUUID().toString();
         SseEmitter emitter = new SseEmitter(timeoutMs);
 
-        StreamingSession session = new StreamingSession(sessionId, requestId, emitter);
+        StreamingSession session =
+                new StreamingSession(sessionId, requestId, emitter);
 
         emitter.onCompletion(() -> remove(sessionId));
         emitter.onTimeout(() -> remove(sessionId));
@@ -73,13 +75,21 @@ public class StreamingSessionRegistry {
         all().forEach(session -> remove(session.sessionId()));
     }
 
-    public void broadcast(String requestId, String eventName, Object payload) {
+    public void sendToRequest(
+            String requestId,
+            String eventName,
+            Object payload
+    ) {
         findByRequestId(requestId)
                 .forEach(session -> send(session, eventName, payload));
     }
 
-    private void send(StreamingSession session, String eventName, Object payload) {
-        if (session.closed().get()) {
+    private void send(
+            StreamingSession session,
+            String eventName,
+            Object payload
+    ) {
+        if (session.closed()) {
             remove(session.sessionId());
             return;
         }
@@ -91,6 +101,8 @@ public class StreamingSessionRegistry {
                             .id(UUID.randomUUID().toString())
                             .data(payload)
             );
+
+            session.touch();
         } catch (IOException | IllegalStateException ex) {
             remove(session.sessionId());
         }
