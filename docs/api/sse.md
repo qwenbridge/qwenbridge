@@ -2,8 +2,7 @@
 
 ## Overview
 
-QwenBridge uses request-scoped server-sent events to expose pipeline progress to
-clients while a search request is being analyzed and executed.
+QwenBridge exposes request-scoped Server-Sent Events for pipeline lifecycle events and request-aware AI token streaming.
 
 Endpoint:
 
@@ -12,54 +11,11 @@ GET /api/v1/search/stream/{requestId}
 Accept: text/event-stream
 ```
 
-The `{requestId}` path variable binds the stream to pipeline events with the same
-request id.
+Open the stream before calling `POST /api/v1/search/analyze` with the same `requestId`.
 
----
+## Events
 
-## Public Event Envelope
-
-Pipeline events use the stable `PipelineStreamingEvent` envelope.
-
-```json
-{
-  "id": "event-id",
-  "timestamp": "2026-07-03T17:50:51Z",
-  "requestId": "demo-request-1",
-  "event": "pipeline.completed",
-  "stage": "pipeline",
-  "type": "completed",
-  "producer": "pipeline-engine",
-  "sequenceNumber": 42,
-  "payload": {}
-}
-```
-
-### Envelope Fields
-
-| Field | Type | Required | Stability |
-| --- | --- | --- | --- |
-| `id` | string | yes | Stable in v1 |
-| `timestamp` | string, ISO-8601 | yes | Stable in v1 |
-| `requestId` | string | yes | Stable in v1 |
-| `event` | string | yes | Stable in v1 |
-| `stage` | string | yes | Stable in v1 |
-| `type` | string | yes | Stable in v1 |
-| `producer` | string | yes | Stable in v1 |
-| `sequenceNumber` | number | yes | Stable in v1 |
-| `payload` | object or null | yes | Stable per event in v1 |
-
----
-
-## Connection Event
-
-When a stream is established, QwenBridge sends:
-
-```text
-event: stream.connected
-```
-
-Payload:
+### stream.connected
 
 ```json
 {
@@ -68,119 +24,142 @@ Payload:
 }
 ```
 
-The connection event is not a pipeline event and does not use the full pipeline
-event envelope.
-
----
-
-## Failure Event
-
-When the server can still write to the stream and needs to report a controlled
-streaming failure, QwenBridge sends:
-
-```text
-event: stream.failure
-```
-
-Payload:
+### ai.token
 
 ```json
 {
   "requestId": "demo-request-1",
-  "sessionId": "server-generated-session-id",
-  "code": "STREAM_FAILURE",
-  "message": "Streaming failure",
+  "tokenIndex": 1,
+  "content": "hello",
+  "terminal": false
+}
+```
+
+### ai.completed
+
+```json
+{
+  "requestId": "demo-request-1",
+  "tokenCount": 42,
+  "terminal": false
+}
+```
+
+### ai.failed
+
+```json
+{
+  "requestId": "demo-request-1",
+  "code": "AI_STREAM_LIMIT_EXCEEDED",
+  "message": "AI streaming limit exceeded",
+  "terminal": false
+}
+```
+
+### stream.failure
+
+```json
+{
+  "requestId": "demo-request-1",
+  "code": "PIPELINE_FAILED",
+  "message": "Pipeline failed before completion",
   "terminal": true
 }
 ```
 
-`stream.failure` is terminal for the affected SSE session.
+## Event Ordering
 
----
-
-## Pipeline Event Names
-
-Pipeline event names use this format:
+Successful stream:
 
 ```text
-{stage}.{type}
+stream.connected
+pipeline.started
+ai.token*
+ai.completed
+pipeline.completed
 ```
 
-Examples:
+Failed or degraded AI stream:
 
-- `pipeline.started`
-- `pipeline.completed`
-- `pipeline.failed`
-- `pipeline.stopped`
-- `execution.started`
-- `execution.completed`
+```text
+stream.connected
+pipeline.started
+ai.token*
+ai.failed
+pipeline.completed | pipeline.failed
+```
 
-Terminal pipeline events:
+No `ai.token` is emitted after `ai.completed` or `ai.failed`.
 
-- `pipeline.completed`
-- `pipeline.failed`
-- `pipeline.stopped`
+## Cancellation
 
-When a terminal pipeline event is published, all stream sessions for the matching
-request id are completed and removed.
+If one client disconnects, only that SSE session is removed.
 
----
+If it was the last active SSE session for the request id, QwenBridge cancels the request-aware AI stream on a best-effort basis.
 
-## Compatibility Rules
+After cancellation:
 
-SSE v1 compatibility is frozen by these rules:
+- no more `ai.token` events are sent
+- no `ai.completed` event is sent
+- no `ai.failed` event is sent just because the client disconnected
+- partial AI output is not cached
+- the REST pipeline may continue with safe fallback behavior
 
-- Existing event names are stable.
-- Existing envelope fields must not be removed.
-- Existing envelope field types must not change.
-- Payload type is stable per event name.
-- Optional additive fields are allowed.
-- Breaking changes require a new `/api/v2/search/stream/{requestId}` endpoint.
+## Safety Limits
 
----
+```yaml
+qwenbridge:
+  streaming:
+    session-timeout-ms: 300000
+    max-ai-stream-duration: 30s
+    max-ai-token-count: 1000
+    max-ai-event-count: 1100
+```
 
-## Client Disconnect Semantics
+When a limit is exceeded, QwenBridge emits:
 
-If the client disconnects, the server removes only the affected SSE session.
+```text
+event: ai.failed
+```
 
-The search pipeline is not cancelled by default when a client disconnects. This
-keeps REST request execution deterministic and prevents one disconnected UI tab
-from cancelling work that may still be needed by another client.
+with:
 
-If multiple stream sessions are attached to the same request id, a disconnect in
-one session does not close the other sessions.
+```json
+{
+  "code": "AI_STREAM_LIMIT_EXCEEDED"
+}
+```
 
----
-
-## Server Send Failure Semantics
-
-If writing an event to an `SseEmitter` fails with `IOException` or
-`IllegalStateException`, QwenBridge closes and removes that stream session.
-
-The failure is treated as a stream lifecycle failure, not as a pipeline failure.
-
----
-
-## JavaScript Example
+## Browser EventSource Example
 
 ```javascript
 const requestId = crypto.randomUUID();
 const source = new EventSource(`/api/v1/search/stream/${requestId}`);
 
 source.addEventListener('stream.connected', event => {
-  const payload = JSON.parse(event.data);
-  console.log('connected', payload.sessionId);
+  console.log('connected', JSON.parse(event.data));
 });
 
-source.addEventListener('stream.failure', event => {
+source.addEventListener('ai.token', event => {
   const payload = JSON.parse(event.data);
-  console.error(payload.code, payload.message);
-  source.close();
+  console.log(payload.content);
+});
+
+source.addEventListener('ai.completed', event => {
+  console.log('AI completed', JSON.parse(event.data));
+});
+
+source.addEventListener('ai.failed', event => {
+  console.warn('AI fallback', JSON.parse(event.data));
 });
 
 source.addEventListener('pipeline.completed', event => {
-  const envelope = JSON.parse(event.data);
-  console.log('done', envelope.sequenceNumber);
+  console.log('pipeline completed', JSON.parse(event.data));
+  source.close();
+});
+
+source.addEventListener('pipeline.failed', event => {
+  console.error('pipeline failed', JSON.parse(event.data));
   source.close();
 });
 ```
