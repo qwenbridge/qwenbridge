@@ -15,7 +15,8 @@ PUBLIC_HEALTH_ENDPOINT="${PUBLIC_HEALTH_ENDPOINT:-/api/v1/health}"
 VERSION_ENDPOINT="${VERSION_ENDPOINT:-/api/v1/version}"
 SSE_ENDPOINT_PREFIX="${SSE_ENDPOINT_PREFIX:-/api/v1/search/stream}"
 
-EXPECTED_BRANCH="${EXPECTED_BRANCH:-feat/v6-api-contract-hardening}"
+EXPECTED_BRANCH="${EXPECTED_BRANCH:-main}"
+EXPECTED_TAG="${EXPECTED_TAG:-v0.7.0}"
 EXPECTED_VERSION="${EXPECTED_VERSION:-0.1.0-SNAPSHOT}"
 
 TEST_QUERY="${TEST_QUERY:-best gaming laptop under 1500 euro}"
@@ -146,6 +147,40 @@ check_required_tools() {
 
   return "${ok}"
 }
+
+
+
+check_release_tag() {
+  local tag_commit=""
+  local head_commit=""
+
+  tag_commit="$(git rev-list -n 1 "${EXPECTED_TAG}" 2>/dev/null || true)"
+  head_commit="$(git rev-parse HEAD)"
+
+  echo "Expected tag: ${EXPECTED_TAG}"
+  echo "Tag commit: ${tag_commit}"
+  echo "HEAD commit: ${head_commit}"
+
+  [[ -n "${tag_commit}" ]] && [[ "${tag_commit}" == "${head_commit}" ]]
+}
+
+v7_release_docs_validation() {
+  [[ -f "docs/roadmap/V7.md" ]] \
+    && [[ -f "docs/release/V7-release-evidence.md" ]] \
+    && [[ -f "docs/release/V7-quality-evidence.md" ]] \
+    && [[ -f "docs/evaluation/retrieval-quality-benchmark.md" ]] \
+    && grep -q "Intelligent Streaming and Retrieval Quality" docs/roadmap/V7.md \
+    && grep -q "Tests run: 318" docs/release/V7-release-evidence.md \
+    && grep -q "Precision@K" docs/evaluation/retrieval-quality-benchmark.md \
+    && grep -q "nDCG@K" docs/evaluation/retrieval-quality-benchmark.md
+}
+
+v7_quality_test_suite_validation() {
+  mvn -q \
+    -Dtest='RetrievalEvaluationMetricsTest,BenchmarkDatasetLoaderTest,DefaultRetrievalEvaluationServiceTest,DefaultEvaluationThresholdPolicyTest,DefaultBenchmarkEvaluationRunnerTest,DefaultRankingPolicyTest,SearchResultRankerTest,DefaultRerankingServiceTest,NoOpRerankerTest' \
+    test
+}
+
 
 check_git_state() {
   local branch=""
@@ -1078,11 +1113,97 @@ sse_streaming_lifecycle_validation() {
   return 0
 }
 
+
+
+sse_ai_token_streaming_validation() {
+  local suffix=""
+  local request_id=""
+  local headers="/tmp/qwenbridge-v7-ai-sse.headers"
+  local stream_log="/tmp/qwenbridge-v7-ai-sse.log"
+  local analyze_headers="/tmp/qwenbridge-v7-ai-sse-analyze.headers"
+  local analyze_body="/tmp/qwenbridge-v7-ai-sse-analyze.json"
+  local analyze_status=""
+  local pid=""
+
+  cleanup_background_processes
+
+  suffix="$(date +%s)"
+  request_id="verify-release-v7-ai-sse-${suffix}"
+
+  rm -f "${headers}" "${stream_log}" "${analyze_headers}" "${analyze_body}"
+  docker exec "${REDIS_CONTAINER}" redis-cli flushdb >/dev/null || true
+
+  curl --silent --show-error --no-buffer \
+    --connect-timeout "${SSE_CONNECT_TIMEOUT_SECONDS}" \
+    --max-time "$((SSE_EVENT_WAIT_SECONDS + 30))" \
+    -D "${headers}" \
+    -H "Accept: text/event-stream" \
+    "${BASE_URL}${SSE_ENDPOINT_PREFIX}/${request_id}" \
+    > "${stream_log}" 2>&1 &
+
+  pid=$!
+  SSE_PRIMARY_PID="${pid}"
+
+  wait_for_sse_headers "${headers}" "${SSE_CONNECT_TIMEOUT_SECONDS}" || {
+    echo "AI SSE stream did not return valid headers."
+    cat "${headers}" 2>/dev/null || true
+    cat "${stream_log}" 2>/dev/null || true
+    return 1
+  }
+
+  analyze_status="$(
+    curl --silent --show-error \
+      -D "${analyze_headers}" \
+      -X POST "${BASE_URL}${ANALYZE_ENDPOINT}" \
+      -H "Content-Type: application/json" \
+      -H "X-Request-ID: ${request_id}" \
+      --data "$(json_payload "${request_id}" "v7 unique ai streaming gaming laptop ${suffix}")" \
+      -o "${analyze_body}" \
+      -w "%{http_code}"
+  )"
+
+  echo "Analyze HTTP status: ${analyze_status}"
+  jq . "${analyze_body}" || true
+
+  [[ "${analyze_status}" == "200" ]] || return 1
+  assert_common_headers "${analyze_headers}" || return 1
+
+  wait_for_file_pattern "${stream_log}" '^event:ai\.(token|failed)$' "${SSE_EVENT_WAIT_SECONDS}" || {
+    echo "Timed out waiting for ai.token or ai.failed."
+    cat "${stream_log}" 2>/dev/null || true
+    return 1
+  }
+
+  wait_for_file_pattern "${stream_log}" '^event:ai\.(completed|failed)$' "${SSE_EVENT_WAIT_SECONDS}" || {
+    echo "Timed out waiting for ai.completed or ai.failed."
+    cat "${stream_log}" 2>/dev/null || true
+    return 1
+  }
+
+  wait_for_file_pattern "${stream_log}" '^event:pipeline\.(completed|failed|stopped)$' "${SSE_EVENT_WAIT_SECONDS}" || {
+    echo "Timed out waiting for pipeline terminal event."
+    cat "${stream_log}" 2>/dev/null || true
+    return 1
+  }
+
+  terminate_background_process "${pid}"
+  SSE_PRIMARY_PID=""
+
+  echo ""
+  echo "========== V7 AI SSE Stream =========="
+  cat "${stream_log}" 2>/dev/null || true
+
+  grep -Eq '^event:ai\.(token|failed)$' "${stream_log}" \
+    && grep -Eq '^event:ai\.(completed|failed)$' "${stream_log}" \
+    && grep -Eq "\"requestId\"[[:space:]]*:[[:space:]]*\"${request_id}\"" "${stream_log}"
+}
+
+
 openapi_endpoint() {
   curl -fsS "${BASE_URL}/v3/api-docs" | jq . >/dev/null
 }
 
-openapi_contains_v6_endpoints() {
+openapi_contains_v7_endpoints() {
   local body="/tmp/qwenbridge-openapi.json"
 
   curl -fsS "${BASE_URL}/v3/api-docs" -o "${body}" || return 1
@@ -1164,12 +1285,15 @@ print_summary() {
 
 echo ""
 echo "======================================================"
-echo "       QwenBridge - V6 Docker Release Verification"
+echo "       QwenBridge - V7 Docker Release Verification"
 echo "======================================================"
 
 run_step "Project root validation" check_project_root
 run_step "Required tools validation" check_required_tools
 run_step "Git state validation" check_git_state
+run_step "V7 release tag validation" check_release_tag
+run_step "V7 release docs validation" v7_release_docs_validation
+run_step "V7 quality test suite validation" v7_quality_test_suite_validation
 run_step "Docker readiness" restart_docker_daemon
 run_step "Fresh Docker environment reset" fresh_environment_reset
 run_step "Docker Compose pull/build/up" docker_pull_build_up
@@ -1190,13 +1314,14 @@ run_step "Version endpoint" version_endpoint
 run_step "AI chat endpoint" ai_chat_endpoint
 run_step "Analyze API endpoint" analyze_api_endpoint
 run_step "SSE streaming lifecycle validation" sse_streaming_lifecycle_validation
+run_step "V7 AI SSE token streaming validation" sse_ai_token_streaming_validation
 run_step "Validation error contract" validation_error_contract
 run_step "Custom request ID propagation" custom_request_id_propagation
 run_step "CORS preflight validation" cors_preflight_validation
 run_step "Cache miss / cache hit validation" cache_miss_hit_validation
 run_step "Concurrent SingleFlight validation" singleflight_validation
 run_step "OpenAPI endpoint" openapi_endpoint
-run_step "OpenAPI contains V6 endpoints" openapi_contains_v6_endpoints
+run_step "OpenAPI contains V7 endpoints" openapi_contains_v7_endpoints
 run_step "Swagger UI endpoint" swagger_endpoint
 
 echo ""
