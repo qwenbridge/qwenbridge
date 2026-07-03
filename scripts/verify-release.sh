@@ -977,7 +977,7 @@ openapi_endpoint() {
   curl -fsS "${BASE_URL}/v3/api-docs" | jq . >/dev/null
 }
 
-openapi_contains_v5_endpoints() {
+openapi_contains_v6_endpoints() {
   local body="/tmp/qwenbridge-openapi.json"
 
   curl -fsS "${BASE_URL}/v3/api-docs" -o "${body}" || return 1
@@ -1059,7 +1059,7 @@ print_summary() {
 
 echo ""
 echo "======================================================"
-echo "       QwenBridge - V5 Docker Release Verification"
+echo "       QwenBridge - V6 Docker Release Verification"
 echo "======================================================"
 
 run_step "Project root validation" check_project_root
@@ -1085,7 +1085,7 @@ run_step "CORS preflight validation" cors_preflight_validation
 run_step "Cache miss / cache hit validation" cache_miss_hit_validation
 run_step "Concurrent SingleFlight validation" singleflight_validation
 run_step "OpenAPI endpoint" openapi_endpoint
-run_step "OpenAPI contains V5 endpoints" openapi_contains_v5_endpoints
+run_step "OpenAPI contains V6 endpoints" openapi_contains_v6_endpoints
 run_step "Swagger UI endpoint" swagger_endpoint
 
 echo ""
