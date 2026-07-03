@@ -97,4 +97,37 @@ class StreamingSessionRegistryTest {
 
         registry.clear();
     }
+
+    @Test
+    void shouldRemoveSessionOnlyOnce() {
+        StreamingSessionRegistry registry =
+                new StreamingSessionRegistry(
+                        new StreamingProperties(300_000L)
+                );
+
+        StreamingSession session = registry.register("request-1");
+
+        assertThat(registry.remove(session.sessionId())).isTrue();
+        assertThat(registry.remove(session.sessionId())).isFalse();
+        assertThat(registry.size()).isZero();
+        assertThat(session.closed()).isTrue();
+    }
+
+    @Test
+    void shouldClearAllRegisteredSessions() {
+        StreamingSessionRegistry registry =
+                new StreamingSessionRegistry(
+                        new StreamingProperties(300_000L)
+                );
+
+        StreamingSession first = registry.register("request-1");
+        StreamingSession second = registry.register("request-2");
+
+        registry.clear();
+
+        assertThat(registry.size()).isZero();
+        assertThat(first.closed()).isTrue();
+        assertThat(second.closed()).isTrue();
+    }
+
 }

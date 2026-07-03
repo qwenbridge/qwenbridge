@@ -34,9 +34,9 @@ public class StreamingSessionRegistry {
         StreamingSession session =
                 new StreamingSession(sessionId, requestId, emitter);
 
-        emitter.onCompletion(() -> remove(sessionId));
-        emitter.onTimeout(() -> remove(sessionId));
-        emitter.onError(error -> remove(sessionId));
+        emitter.onCompletion(() -> removeAfterEmitterCompletion(sessionId));
+        emitter.onTimeout(() -> removeAfterEmitterCompletion(sessionId));
+        emitter.onError(error -> removeAfterEmitterCompletion(sessionId));
 
         sessionsById.put(sessionId, session);
 
@@ -95,6 +95,14 @@ public class StreamingSessionRegistry {
                 ));
     }
 
+    private void removeAfterEmitterCompletion(String sessionId) {
+        StreamingSession removed = sessionsById.remove(sessionId);
+
+        if (removed != null) {
+            removed.close();
+        }
+    }
+
     private void send(
             StreamingSession session,
             String eventId,
@@ -102,7 +110,7 @@ public class StreamingSessionRegistry {
             Object payload
     ) {
         if (session.closed()) {
-            remove(session.sessionId());
+            removeAfterEmitterCompletion(session.sessionId());
             return;
         }
 
