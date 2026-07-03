@@ -1,5 +1,6 @@
 package io.qwenbridge.pipeline;
 
+import io.qwenbridge.event.model.PipelineEventMetadata;
 import io.qwenbridge.event.model.PipelineEvents;
 import io.qwenbridge.event.snapshot.PipelineContextSnapshotFactory;
 import io.qwenbridge.event.spi.PipelineEventPublisher;
@@ -12,6 +13,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Component
 @RequiredArgsConstructor
@@ -25,13 +27,18 @@ public class PipelineEngine {
 
     public void execute(ExecutionContext context) {
 
-        publisher.publish(
+        AtomicLong sequence = new AtomicLong(0L);
+
+        publish(
                 PipelineEvents.pipelineStarted(
-                        snapshotFactory.create(context)
+                        snapshotFactory.create(context),
+                        metadata(context, sequence)
                 )
         );
 
         try {
+
+            boolean stoppedPublished = false;
 
             for (PipelineStep<?> step : steps.stream()
                     .sorted(Comparator.comparingInt(PipelineStep::order))
@@ -47,29 +54,36 @@ public class PipelineEngine {
                             )
                     );
 
-                    publisher.publish(
-                            PipelineEvents.pipelineStopped(
-                                    snapshotFactory.create(context)
-                            )
-                    );
+                    if (!stoppedPublished) {
+                        publish(
+                                PipelineEvents.pipelineStopped(
+                                        snapshotFactory.create(context),
+                                        metadata(context, sequence)
+                                )
+                        );
+
+                        stoppedPublished = true;
+                    }
 
                     continue;
                 }
 
-                executeStep(step, context);
+                executeStep(step, context, sequence);
             }
 
-            publisher.publish(
+            publish(
                     PipelineEvents.pipelineCompleted(
-                            snapshotFactory.create(context)
+                            snapshotFactory.create(context),
+                            metadata(context, sequence)
                     )
             );
 
         } catch (Exception ex) {
 
-            publisher.publish(
+            publish(
                     PipelineEvents.pipelineFailed(
-                            snapshotFactory.create(context)
+                            snapshotFactory.create(context),
+                            metadata(context, sequence)
                     )
             );
 
@@ -79,14 +93,16 @@ public class PipelineEngine {
 
     private <T> void executeStep(
             PipelineStep<T> step,
-            ExecutionContext context
+            ExecutionContext context,
+            AtomicLong sequence
     ) {
 
         if (step.publishEvents()) {
-            publisher.publish(
+            publish(
                     PipelineEvents.stepStarted(
                             step.stage(),
-                            snapshotFactory.create(context)
+                            snapshotFactory.create(context),
+                            metadata(context, sequence)
                     )
             );
         }
@@ -111,10 +127,11 @@ public class PipelineEngine {
             );
 
             if (step.publishEvents()) {
-                publisher.publish(
+                publish(
                         PipelineEvents.stepCompleted(
                                 step.stage(),
-                                snapshotFactory.create(context)
+                                snapshotFactory.create(context),
+                                metadata(context, sequence)
                         )
                 );
             }
@@ -122,16 +139,31 @@ public class PipelineEngine {
         } catch (RuntimeException ex) {
 
             if (step.publishEvents()) {
-                publisher.publish(
+                publish(
                         PipelineEvents.stepFailed(
                                 step.stage(),
-                                snapshotFactory.create(context)
+                                snapshotFactory.create(context),
+                                metadata(context, sequence)
                         )
                 );
             }
 
             throw ex;
         }
+    }
+
+    private PipelineEventMetadata metadata(
+            ExecutionContext context,
+            AtomicLong sequence
+    ) {
+        return PipelineEventMetadata.of(
+                context.request().requestId(),
+                sequence.incrementAndGet()
+        );
+    }
+
+    private void publish(io.qwenbridge.event.model.PipelineEvent<?> event) {
+        publisher.publish(event);
     }
 
 }
