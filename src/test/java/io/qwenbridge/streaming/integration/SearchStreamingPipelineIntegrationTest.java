@@ -9,6 +9,7 @@ import io.qwenbridge.decision.SearchBackend;
 import io.qwenbridge.decision.SearchMode;
 import io.qwenbridge.execution.provider.opensearch.client.OpenSearchClient;
 import io.qwenbridge.intent.IntentType;
+import io.qwenbridge.streaming.ai.AIStreamingEventPublisher;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 import java.util.Map;
@@ -41,6 +43,9 @@ class SearchStreamingPipelineIntegrationTest {
 
     @Autowired
     private StreamingSessionRegistry registry;
+
+    @Autowired
+    private AIStreamingEventPublisher aiStreamingEventPublisher;
 
     @MockBean
     private AIService aiService;
@@ -85,10 +90,63 @@ class SearchStreamingPipelineIntegrationTest {
                 .hasSize(1);
     }
 
-    private void openStream(String requestId) throws Exception {
-        mockMvc.perform(get("/api/v1/search/stream/{requestId}", requestId))
-                .andExpect(request().asyncStarted())
+
+    @Test
+    void shouldPublishAiEventsBeforeTerminalPipelineCompletedEvent() throws Exception {
+        String requestId = "stream-order-1";
+
+        MvcResult stream = openStreamResult(requestId);
+
+        when(searchAnalysisService.analyze("table", requestId))
+                .thenAnswer(invocation -> {
+                    aiStreamingEventPublisher.token(requestId, 1L, "hel");
+                    aiStreamingEventPublisher.token(requestId, 2L, "lo");
+                    aiStreamingEventPublisher.completed(requestId, 2L);
+                    return searchAnalysis();
+                });
+
+        when(openSearchClient.search(anyString(), anyMap()))
+                .thenReturn(emptyOpenSearchResponse());
+
+        mockMvc.perform(post("/api/v1/search/analyze")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "requestId": "%s",
+                                  "query": "table"
+                                }
+                                """.formatted(requestId)))
                 .andExpect(status().isOk());
+
+        String streamBody = stream.getResponse().getContentAsString();
+
+        assertThat(streamBody).contains("event:stream.connected");
+        assertThat(streamBody).contains("event:pipeline.started");
+        assertThat(streamBody).contains("event:ai.token");
+        assertThat(streamBody).contains("event:ai.completed");
+        assertThat(streamBody).contains("event:pipeline.completed");
+
+        assertThat(streamBody.indexOf("event:pipeline.started"))
+                .isLessThan(streamBody.indexOf("event:ai.token"));
+
+        assertThat(streamBody.indexOf("event:ai.token"))
+                .isLessThan(streamBody.indexOf("event:ai.completed"));
+
+        assertThat(streamBody.indexOf("event:ai.completed"))
+                .isLessThan(streamBody.indexOf("event:pipeline.completed"));
+
+        assertThat(registry.findByRequestId(requestId)).isEmpty();
+    }
+
+    private void openStream(String requestId) throws Exception {
+        openStreamResult(requestId);
+    }
+
+    private MvcResult openStreamResult(String requestId) throws Exception {
+        return mockMvc.perform(get("/api/v1/search/stream/{requestId}", requestId))
+                .andExpect(request().asyncStarted())
+                .andExpect(status().isOk())
+                .andReturn();
     }
 
     private void stubSuccessfulPipeline() {
