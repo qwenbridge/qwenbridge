@@ -1,6 +1,7 @@
 package io.qwenbridge.streaming.listener;
 
 import io.qwenbridge.event.model.PipelineEvent;
+import io.qwenbridge.streaming.event.PipelineEventTerminalPolicy;
 import io.qwenbridge.streaming.event.PipelineStreamingEvent;
 import io.qwenbridge.streaming.event.PipelineStreamingEventMapper;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
@@ -16,6 +17,8 @@ public class SsePipelineEventListener {
 
     private final PipelineStreamingEventMapper mapper;
 
+    private final PipelineEventTerminalPolicy terminalPolicy;
+
     @EventListener
     public void onPipelineEvent(PipelineEvent<?> event) {
         PipelineStreamingEvent streamingEvent = mapper.map(event);
@@ -26,8 +29,13 @@ public class SsePipelineEventListener {
 
         registry.sendToRequest(
                 streamingEvent.requestId(),
+                streamingEvent.id(),
                 streamingEvent.event(),
                 streamingEvent
         );
+
+        if (terminalPolicy.isTerminal(event.stage(), event.type())) {
+            registry.completeRequest(streamingEvent.requestId());
+        }
     }
 }

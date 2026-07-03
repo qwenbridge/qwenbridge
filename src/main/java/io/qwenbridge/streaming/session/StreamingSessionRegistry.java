@@ -95,6 +95,11 @@ public class StreamingSessionRegistry {
                 ));
     }
 
+    public void completeRequest(String requestId) {
+        findByRequestId(requestId)
+                .forEach(session -> remove(session.sessionId()));
+    }
+
     private void removeAfterEmitterCompletion(String sessionId) {
         StreamingSession removed = sessionsById.remove(sessionId);
 

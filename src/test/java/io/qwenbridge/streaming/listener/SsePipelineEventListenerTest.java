@@ -10,6 +10,9 @@ import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import io.qwenbridge.streaming.event.PipelineEventTerminalPolicy;
+import org.mockito.InOrder;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -24,7 +27,11 @@ class SsePipelineEventListenerTest {
                 new PipelineStreamingEventMapper();
 
         SsePipelineEventListener listener =
-                new SsePipelineEventListener(registry, mapper);
+                new SsePipelineEventListener(
+                        registry,
+                        mapper,
+                        new PipelineEventTerminalPolicy()
+                );
 
         PipelineContextSnapshot snapshot =
                 new PipelineContextSnapshot(
@@ -75,12 +82,102 @@ class SsePipelineEventListenerTest {
                 new PipelineStreamingEventMapper();
 
         SsePipelineEventListener listener =
-                new SsePipelineEventListener(registry, mapper);
+                new SsePipelineEventListener(
+                        registry,
+                        mapper,
+                        new PipelineEventTerminalPolicy()
+                );
 
         listener.onPipelineEvent(
                 PipelineEvents.info(PipelineStage.PIPELINE, "hello")
         );
 
         verifyNoInteractions(registry);
+    }
+
+    @Test
+    void shouldCompleteMatchingRequestAfterTerminalPipelineEvent() {
+        StreamingSessionRegistry registry =
+                mock(StreamingSessionRegistry.class);
+
+        PipelineStreamingEventMapper mapper =
+                new PipelineStreamingEventMapper();
+
+        SsePipelineEventListener listener =
+                new SsePipelineEventListener(
+                        registry,
+                        mapper,
+                        new PipelineEventTerminalPolicy()
+                );
+
+        PipelineContextSnapshot snapshot =
+                new PipelineContextSnapshot(
+                        "request-1",
+                        "desk",
+                        false,
+                        true,
+                        "en",
+                        "SEARCH",
+                        "ALLOW",
+                        123456789L
+                );
+
+        var event =
+                PipelineEvents.pipelineCompleted(
+                        snapshot,
+                        PipelineEventMetadata.of("request-1", 99L)
+                );
+
+        listener.onPipelineEvent(event);
+
+        InOrder inOrder = inOrder(registry);
+
+        inOrder.verify(registry).sendToRequest(
+                eq("request-1"),
+                eq(event.id().value().toString()),
+                eq("pipeline.completed"),
+                any(PipelineStreamingEvent.class)
+        );
+
+        inOrder.verify(registry).completeRequest("request-1");
+    }
+
+    @Test
+    void shouldNotCompleteRequestAfterNonTerminalStepEvent() {
+        StreamingSessionRegistry registry =
+                mock(StreamingSessionRegistry.class);
+
+        PipelineStreamingEventMapper mapper =
+                new PipelineStreamingEventMapper();
+
+        SsePipelineEventListener listener =
+                new SsePipelineEventListener(
+                        registry,
+                        mapper,
+                        new PipelineEventTerminalPolicy()
+                );
+
+        PipelineContextSnapshot snapshot =
+                new PipelineContextSnapshot(
+                        "request-1",
+                        "desk",
+                        false,
+                        true,
+                        "en",
+                        "SEARCH",
+                        "ALLOW",
+                        123456789L
+                );
+
+        var event =
+                PipelineEvents.stepCompleted(
+                        PipelineStage.SEARCH,
+                        snapshot,
+                        PipelineEventMetadata.of("request-1", 8L)
+                );
+
+        listener.onPipelineEvent(event);
+
+        verify(registry, never()).completeRequest(anyString());
     }
 }
