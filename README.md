@@ -149,3 +149,9 @@ mvn clean test
 ## License
 
 MIT
+
+
+## Deployment and Release
+
+- [Docker Deployment](docs/deployment/docker.md)
+- [V6 Release Evidence](docs/release/V6-release-evidence.md)
