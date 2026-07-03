@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
+import io.qwenbridge.ai.provider.ollama.dto.OllamaStreamingChatResponse;
+import reactor.core.publisher.Flux;
 
 
 @Component
@@ -43,6 +45,26 @@ public class OllamaClient {
                         .bodyToMono(OllamaChatResponse.class),
                 "Ollama chat response was empty"
         );
+    }
+
+    public Flux<OllamaStreamingChatResponse> streamChat(OllamaChatRequest request) {
+        log.debug("Sending Ollama streaming chat request. model={}", request.model());
+
+        Flux<OllamaStreamingChatResponse> pipeline = webClient.post()
+                .uri("/api/chat")
+                .bodyValue(request)
+                .retrieve()
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                        OllamaExceptionHandler::mapError)
+                .bodyToFlux(OllamaStreamingChatResponse.class)
+                .timeout(properties.readTimeout())
+                .onErrorMap(
+                        throwable -> throwable instanceof AIException
+                                ? throwable
+                                : new AIException("Ollama streaming chat request failed", throwable)
+                );
+
+        return pipeline;
     }
 
     public OllamaEmbeddingResponse embed(OllamaEmbeddingRequest request) {
