@@ -1,6 +1,7 @@
 package io.qwenbridge.streaming.api;
 
 import io.qwenbridge.streaming.api.validation.StreamRequestIdValidator;
+import io.qwenbridge.streaming.config.StreamingProperties;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -11,7 +12,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class SearchStreamControllerTest {
 
     private final StreamingSessionRegistry registry =
-            new StreamingSessionRegistry();
+            new StreamingSessionRegistry(
+                    new StreamingProperties(300_000L)
+            );
 
     private final SearchStreamController controller =
             new SearchStreamController(

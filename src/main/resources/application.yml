@@ -13,6 +13,8 @@ management:
 
 qwenbridge:
   version: 0.1.0-SNAPSHOT
+  streaming:
+    session-timeout-ms: 300000
 
   ai:
     provider: ollama

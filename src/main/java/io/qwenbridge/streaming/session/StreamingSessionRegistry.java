@@ -1,5 +1,6 @@
 package io.qwenbridge.streaming.session;
 
+import io.qwenbridge.streaming.config.StreamingProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -13,13 +14,17 @@ import java.util.concurrent.ConcurrentMap;
 @Component
 public class StreamingSessionRegistry {
 
-    private static final long DEFAULT_TIMEOUT_MS = 0L;
+    private final StreamingProperties properties;
 
     private final ConcurrentMap<String, StreamingSession> sessionsById =
             new ConcurrentHashMap<>();
 
+    public StreamingSessionRegistry(StreamingProperties properties) {
+        this.properties = properties;
+    }
+
     public StreamingSession register(String requestId) {
-        return register(requestId, DEFAULT_TIMEOUT_MS);
+        return register(requestId, properties.sessionTimeoutMs());
     }
 
     public StreamingSession register(String requestId, long timeoutMs) {
@@ -77,15 +82,22 @@ public class StreamingSessionRegistry {
 
     public void sendToRequest(
             String requestId,
+            String eventId,
             String eventName,
             Object payload
     ) {
         findByRequestId(requestId)
-                .forEach(session -> send(session, eventName, payload));
+                .forEach(session -> send(
+                        session,
+                        eventId,
+                        eventName,
+                        payload
+                ));
     }
 
     private void send(
             StreamingSession session,
+            String eventId,
             String eventName,
             Object payload
     ) {
@@ -97,8 +109,8 @@ public class StreamingSessionRegistry {
         try {
             session.emitter().send(
                     SseEmitter.event()
+                            .id(eventId)
                             .name(eventName)
-                            .id(UUID.randomUUID().toString())
                             .data(payload)
             );
 

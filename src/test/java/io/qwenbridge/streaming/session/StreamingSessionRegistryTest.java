@@ -1,5 +1,6 @@
 package io.qwenbridge.streaming.session;
 
+import io.qwenbridge.streaming.config.StreamingProperties;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -10,7 +11,9 @@ class StreamingSessionRegistryTest {
 
     @Test
     void shouldRegisterSessionForRequestId() {
-        StreamingSessionRegistry registry = new StreamingSessionRegistry();
+        StreamingSessionRegistry registry = new StreamingSessionRegistry(
+                new StreamingProperties(300_000L)
+        );
 
         StreamingSession session = registry.register("request-1");
 
@@ -23,7 +26,9 @@ class StreamingSessionRegistryTest {
 
     @Test
     void shouldFindSessionsByRequestId() {
-        StreamingSessionRegistry registry = new StreamingSessionRegistry();
+        StreamingSessionRegistry registry = new StreamingSessionRegistry(
+                new StreamingProperties(300_000L)
+        );
 
         registry.register("request-1");
         registry.register("request-1");
@@ -37,7 +42,9 @@ class StreamingSessionRegistryTest {
 
     @Test
     void shouldKeepSessionsSeparatedByRequestId() {
-        StreamingSessionRegistry registry = new StreamingSessionRegistry();
+        StreamingSessionRegistry registry = new StreamingSessionRegistry(
+                new StreamingProperties(300_000L)
+        );
 
         StreamingSession first =
                 registry.register("request-1");
@@ -59,7 +66,9 @@ class StreamingSessionRegistryTest {
 
     @Test
     void shouldUpdateLastSeenWhenSessionIsTouched() {
-        StreamingSessionRegistry registry = new StreamingSessionRegistry();
+        StreamingSessionRegistry registry = new StreamingSessionRegistry(
+                new StreamingProperties(300_000L)
+        );
 
         StreamingSession session =
                 registry.register("request-1");
@@ -70,6 +79,21 @@ class StreamingSessionRegistryTest {
 
         assertThat(session.lastSeen())
                 .isAfterOrEqualTo(beforeTouch);
+
+        registry.clear();
+    }
+
+    @Test
+    void shouldUseConfiguredTimeoutWhenRegisteringSession() {
+        StreamingSessionRegistry registry =
+                new StreamingSessionRegistry(
+                        new StreamingProperties(12_345L)
+                );
+
+        StreamingSession session = registry.register("request-1");
+
+        assertThat(session).isNotNull();
+        assertThat(session.requestId()).isEqualTo("request-1");
 
         registry.clear();
     }
