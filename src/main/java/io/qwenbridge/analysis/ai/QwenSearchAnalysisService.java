@@ -3,6 +3,7 @@ package io.qwenbridge.analysis.ai;
 import lombok.RequiredArgsConstructor;
 
 import io.qwenbridge.ai.contract.ChatRequest;
+import io.qwenbridge.ai.contract.StreamingChatRequest;
 import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.analysis.cache.AIAnalysisCache;
 import io.qwenbridge.analysis.cache.AIAnalysisCacheKeyBuilder;
@@ -15,10 +16,12 @@ import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.analysis.parser.SearchAnalysisJsonParser;
 import io.qwenbridge.analysis.prompt.SearchAnalysisPromptBuilder;
 import io.qwenbridge.analysis.service.SearchAnalysisService;
+import io.qwenbridge.streaming.ai.AIStreamingEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 @RequiredArgsConstructor
@@ -32,9 +35,19 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
     private final AIAnalysisCacheProperties cacheProperties;
     private final AIAnalysisCacheTraceHolder cacheTraceHolder;
     private final AIAnalysisSingleFlight singleFlight;
+    private final AIStreamingEventPublisher streamingEventPublisher;
 
     @Override
     public SearchAnalysis analyze(String query) {
+        return analyzeInternal(query, null);
+    }
+
+    @Override
+    public SearchAnalysis analyze(String query, String requestId) {
+        return analyzeInternal(query, requestId);
+    }
+
+    private SearchAnalysis analyzeInternal(String query, String requestId) {
         CacheKey cacheKey = cacheKeyBuilder.build(query);
         cacheTraceHolder.set(AIAnalysisCacheTrace.miss(
                 cacheKey.value(),
@@ -60,7 +73,7 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
         }
 
         return singleFlight.execute(cacheKey, () -> {
-            SearchAnalysis analysis = analyzeWithAI(query);
+            SearchAnalysis analysis = analyzeWithAI(query, requestId);
 
             try {
                 cache.put(cacheKey, analysis);
@@ -72,21 +85,66 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
         });
     }
 
-    private SearchAnalysis analyzeWithAI(String query) {
+    private SearchAnalysis analyzeWithAI(String query, String requestId) {
         try {
             return CompletableFuture
-                    .supplyAsync(() -> analyzeWithAIBlocking(query))
+                    .supplyAsync(() -> analyzeWithAIBlocking(query, requestId))
                     .orTimeout(cacheProperties.analysisTimeout().toMillis(), TimeUnit.MILLISECONDS)
-                    .exceptionally(ignored -> SearchAnalysis.fallback(query))
+                    .exceptionally(ignored -> {
+                        streamingEventPublisher.failed(
+                                requestId,
+                                "AI_ANALYSIS_TIMEOUT",
+                                "AI analysis did not complete within the configured timeout"
+                        );
+                        return SearchAnalysis.fallback(query);
+                    })
                     .join();
         } catch (Exception ignored) {
+            streamingEventPublisher.failed(
+                    requestId,
+                    "AI_ANALYSIS_FAILED",
+                    "AI analysis failed"
+            );
             return SearchAnalysis.fallback(query);
         }
     }
 
-    private SearchAnalysis analyzeWithAIBlocking(String query) {
+    private SearchAnalysis analyzeWithAIBlocking(String query, String requestId) {
         String prompt = promptBuilder.build(query);
-        String content = aiService.chat(new ChatRequest(prompt)).content();
-        return parser.parse(content, query);
+
+        if (requestId == null || requestId.isBlank()) {
+            String content = aiService.chat(new ChatRequest(prompt)).content();
+            return parser.parse(content, query);
+        }
+
+        AtomicLong tokenIndex = new AtomicLong(0L);
+        StringBuilder content = new StringBuilder();
+
+        try {
+            aiService.streamChat(new StreamingChatRequest(prompt))
+                    .doOnNext(chunk -> {
+                        if (chunk.content() != null && !chunk.content().isBlank()) {
+                            long index = tokenIndex.incrementAndGet();
+                            content.append(chunk.content());
+                            streamingEventPublisher.token(
+                                    requestId,
+                                    index,
+                                    chunk.content()
+                            );
+                        }
+                    })
+                    .blockLast(cacheProperties.analysisTimeout());
+
+            streamingEventPublisher.completed(requestId, tokenIndex.get());
+
+            return parser.parse(content.toString(), query);
+        } catch (Exception exception) {
+            streamingEventPublisher.failed(
+                    requestId,
+                    "AI_STREAM_FAILED",
+                    "AI streaming analysis failed"
+            );
+            return SearchAnalysis.fallback(query);
+        }
     }
 }

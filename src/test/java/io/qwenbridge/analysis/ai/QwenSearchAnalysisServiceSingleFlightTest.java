@@ -12,6 +12,7 @@ import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTraceHolder;
 import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.analysis.parser.SearchAnalysisJsonParser;
 import io.qwenbridge.analysis.prompt.SearchAnalysisPromptBuilder;
+import io.qwenbridge.streaming.ai.AIStreamingEventPublisher;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ class QwenSearchAnalysisServiceSingleFlightTest {
         AIAnalysisCacheProperties cacheProperties = new AIAnalysisCacheProperties();
         AIAnalysisCacheTraceHolder cacheTraceHolder = new AIAnalysisCacheTraceHolder();
         AIAnalysisSingleFlight singleFlight = new AIAnalysisSingleFlight();
+        AIStreamingEventPublisher streamingEventPublisher = mock(AIStreamingEventPublisher.class);
 
         QwenSearchAnalysisService service =
                 new QwenSearchAnalysisService(
@@ -47,7 +49,8 @@ class QwenSearchAnalysisServiceSingleFlightTest {
                         keyBuilder,
                         cacheProperties,
                         cacheTraceHolder,
-                        singleFlight
+                        singleFlight,
+                        streamingEventPublisher
                 );
 
         CacheKey key = new CacheKey("same-key");
