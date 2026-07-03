@@ -1,5 +1,7 @@
 package io.qwenbridge.decision.ai;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.ai.contract.ChatRequest;
 import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.decision.SearchDecision;
@@ -7,22 +9,13 @@ import io.qwenbridge.pipeline.ExecutionContext;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 
 public class QwenAIDecisionService implements AIDecisionService {
 
     private final AIService aiService;
     private final DecisionPromptBuilder promptBuilder;
     private final DecisionJsonParser parser;
-
-    public QwenAIDecisionService(
-            AIService aiService,
-            DecisionPromptBuilder promptBuilder,
-            DecisionJsonParser parser
-    ) {
-        this.aiService = aiService;
-        this.promptBuilder = promptBuilder;
-        this.parser = parser;
-    }
 
     @Override
     public SearchDecision decide(ExecutionContext context) {

@@ -54,29 +54,29 @@ class DecisionStepTest {
     }
 
     private static SearchAnalysis analysis(boolean rewriteAgain) {
-        return new SearchAnalysis(
-                "en",
-                IntentType.PRODUCT_SEARCH,
-                0.85,
-                "User searches for a product.",
-                List.of("desk"),
-                true,
-                0.90,
-                "User searches for a desk.",
-                List.of("desk"),
-                SearchMode.KEYWORD,
-                SearchBackend.IN_MEMORY,
-                true,
-                false,
-                false,
-                true,
-                false,
-                rewriteAgain,
-                false,
-                0.80,
-                rewriteAgain
+        return SearchAnalysis.builder()
+                .language("en")
+                .intent(IntentType.PRODUCT_SEARCH)
+                .intentConfidence(0.85)
+                .intentReason("User searches for a product.")
+                .rewrites(List.of("desk"))
+                .semanticValidated(true)
+                .semanticScore(0.90)
+                .semanticMeaning("User searches for a desk.")
+                .entities(List.of("desk"))
+                .searchMode(SearchMode.KEYWORD)
+                .backend(SearchBackend.IN_MEMORY)
+                .keywordSearch(true)
+                .vectorSearch(false)
+                .hybridSearch(false)
+                .facets(true)
+                .rerank(false)
+                .rewriteAgain(rewriteAgain)
+                .answer(false)
+                .decisionConfidence(0.80)
+                .decisionReason(rewriteAgain
                         ? "Rewrite is required before search execution."
-                        : "Keyword search is enough."
-        );
+                        : "Keyword search is enough.")
+                .build();
     }
 }

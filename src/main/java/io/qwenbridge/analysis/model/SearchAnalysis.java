@@ -1,5 +1,7 @@
 package io.qwenbridge.analysis.model;
 
+import lombok.Builder;
+
 import io.qwenbridge.decision.SearchBackend;
 import io.qwenbridge.decision.SearchDecision;
 import io.qwenbridge.decision.SearchMode;
@@ -15,6 +17,7 @@ import io.qwenbridge.semantic.SemanticEntityType;
 
 import java.util.List;
 
+@Builder
 public record SearchAnalysis(
         String language,
         IntentType intent,
@@ -98,28 +101,28 @@ public record SearchAnalysis(
     public static SearchAnalysis fallback(String query) {
         String normalized = query == null ? "" : query.trim();
 
-        return new SearchAnalysis(
-                "unknown",
-                IntentType.UNKNOWN,
-                0.20,
-                "AI analysis failed; fallback analysis was used.",
-                normalized.isBlank() ? List.of() : List.of(normalized),
-                false,
-                0.20,
-                normalized.isBlank() ? "Unknown query." : normalized,
-                List.of(),
-                SearchMode.KEYWORD,
-                SearchBackend.OPENSEARCH,
-                true,
-                false,
-                false,
-                true,
-                false,
-                false,
-                false,
-                0.50,
-                "Fallback keyword search decision."
-        );
+        return SearchAnalysis.builder()
+                .language("unknown")
+                .intent(IntentType.UNKNOWN)
+                .intentConfidence(0.20)
+                .intentReason("AI analysis failed; fallback analysis was used.")
+                .rewrites(normalized.isBlank() ? List.of() : List.of(normalized))
+                .semanticValidated(false)
+                .semanticScore(0.20)
+                .semanticMeaning(normalized.isBlank() ? "Unknown query." : normalized)
+                .entities(List.of())
+                .searchMode(SearchMode.KEYWORD)
+                .backend(SearchBackend.OPENSEARCH)
+                .keywordSearch(true)
+                .vectorSearch(false)
+                .hybridSearch(false)
+                .facets(true)
+                .rerank(false)
+                .rewriteAgain(false)
+                .answer(false)
+                .decisionConfidence(0.50)
+                .decisionReason("Fallback keyword search decision.")
+                .build();
     }
 
     private static String blankToDefault(String value, String fallback) {

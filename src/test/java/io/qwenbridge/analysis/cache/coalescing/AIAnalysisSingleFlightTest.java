@@ -82,7 +82,7 @@ class AIAnalysisSingleFlightTest {
         assertThat(calls).hasValue(2);
         assertThat(singleFlight.inFlightCount()).isZero();
     }
-
+    
     private static void sleep(long millis) {
         try {
             Thread.sleep(millis);

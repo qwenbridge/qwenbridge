@@ -1,5 +1,7 @@
 package io.qwenbridge.pipeline;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTrace;
 import io.qwenbridge.decision.DecisionType;
 import io.qwenbridge.execution.provider.model.SearchResponse;
@@ -19,16 +21,13 @@ import java.time.Duration;
 import java.time.Instant;
 
 @Service
+@RequiredArgsConstructor
 public class SearchPipeline {
 
     private final PipelineEngine pipelineEngine;
 
-    public SearchPipeline(PipelineEngine pipelineEngine) {
-        this.pipelineEngine = pipelineEngine;
-    }
-
     public SearchAnalyzeResponse analyze(SearchAnalyzeRequest request) {
-        ExecutionContext context = new ExecutionContext(request.query());
+        ExecutionContext context = new ExecutionContext(request.requestId(), request.query());
 
         pipelineEngine.execute(context);
 
@@ -53,50 +52,50 @@ public class SearchPipeline {
                 Instant.now()
         ).toMillis();
 
-        return new SearchAnalyzeResponse(
-                requestContext.requestId(),
-                processingTimeMs,
-                requestContext.originalQuery(),
-                language.language(),
-                intent.intent(),
-                finalDecision,
-                finalConfidence,
-                rewrite.rewrites(),
-                threat.reasons(),
-                semantic.validated(),
-                semantic.score(),
-                policy.passed(),
-                policy.violations(),
-                toExecutionPlanResponse(executionPlan),
-                toExecutionResultResponse(executionResult),
-                toSearchResultResponse(context),
-                toCacheResponse(cacheTrace),
-                context.trace()
-        );
+        return SearchAnalyzeResponse.builder()
+                .requestId(requestContext.requestId())
+                .processingTimeMs(processingTimeMs)
+                .originalQuery(requestContext.originalQuery())
+                .language(language.language())
+                .intent(intent.intent())
+                .decision(finalDecision)
+                .confidence(finalConfidence)
+                .rewrites(rewrite.rewrites())
+                .threatReasons(threat.reasons())
+                .semanticValidated(semantic.validated())
+                .semanticScore(semantic.score())
+                .policyPassed(policy.passed())
+                .policyViolations(policy.violations())
+                .executionPlan(toExecutionPlanResponse(executionPlan))
+                .executionResult(toExecutionResultResponse(executionResult))
+                .search(toSearchResultResponse(context))
+                .cache(toCacheResponse(cacheTrace))
+                .pipelineTrace(context.trace())
+                .build();
     }
 
     private AIAnalysisCacheResponse toCacheResponse(AIAnalysisCacheTrace trace) {
         if (trace == null) {
-            return new AIAnalysisCacheResponse(
-                    false,
-                    false,
-                    true,
-                    "",
-                    "",
-                    "",
-                    ""
-            );
+            return AIAnalysisCacheResponse.builder()
+                    .enabled(false)
+                    .hit(false)
+                    .miss(true)
+                    .key("")
+                    .provider("")
+                    .model("")
+                    .version("")
+                    .build();
         }
 
-        return new AIAnalysisCacheResponse(
-                trace.enabled(),
-                trace.hit(),
-                trace.miss(),
-                trace.key(),
-                trace.provider(),
-                trace.model(),
-                trace.version()
-        );
+        return AIAnalysisCacheResponse.builder()
+                .enabled(trace.enabled())
+                .hit(trace.hit())
+                .miss(trace.miss())
+                .key(trace.key())
+                .provider(trace.provider())
+                .model(trace.model())
+                .version(trace.version())
+                .build();
     }
 
     private ExecutionPlanResponse toExecutionPlanResponse(ExecutionPlanResult result) {
@@ -104,19 +103,19 @@ public class SearchPipeline {
             return ExecutionPlanResponse.unavailable();
         }
 
-        return new ExecutionPlanResponse(
-                true,
-                result.plan().mode(),
-                result.plan().backend(),
-                result.plan().steps().stream()
+        return ExecutionPlanResponse.builder()
+                .available(true)
+                .mode(result.plan().mode())
+                .backend(result.plan().backend())
+                .steps(result.plan().steps().stream()
                         .map(step -> new ExecutionStepResponse(
                                 step.order(),
                                 step.operation(),
                                 step.reason()
                         ))
-                        .toList(),
-                result.plan().reason()
-        );
+                        .toList())
+                .reason(result.plan().reason())
+                .build();
     }
 
     private ExecutionResultResponse toExecutionResultResponse(ExecutionResultResult result) {
@@ -124,13 +123,13 @@ public class SearchPipeline {
             return ExecutionResultResponse.unavailable();
         }
 
-        return new ExecutionResultResponse(
-                true,
-                result.result().executed(),
-                result.result().operations(),
-                result.result().results(),
-                result.result().reason()
-        );
+        return ExecutionResultResponse.builder()
+                .available(true)
+                .executed(result.result().executed())
+                .operations(result.result().operations())
+                .results(result.result().results())
+                .reason(result.result().reason())
+                .build();
     }
 
     private SearchResultResponse toSearchResultResponse(ExecutionContext context) {
@@ -140,20 +139,20 @@ public class SearchPipeline {
             return SearchResultResponse.unavailable();
         }
 
-        return new SearchResultResponse(
-                true,
-                response.results().totalHits(),
-                response.results().tookMillis(),
-                response.results()
+        return SearchResultResponse.builder()
+                .available(true)
+                .totalHits(response.results().totalHits())
+                .tookMillis(response.results().tookMillis())
+                .hits(response.results()
                         .hits()
                         .stream()
-                        .map(hit -> new SearchHitResponse(
-                                hit.id(),
-                                hit.score(),
-                                hit.document()
-                        ))
-                        .toList()
-        );
+                        .map(hit -> SearchHitResponse.builder()
+                                .id(hit.id())
+                                .score(hit.score())
+                                .document(hit.document())
+                                .build())
+                        .toList())
+                .build();
     }
 
     private DecisionType resolveFinalDecision(

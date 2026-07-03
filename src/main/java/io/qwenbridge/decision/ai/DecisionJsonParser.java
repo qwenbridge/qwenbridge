@@ -1,17 +1,16 @@
 package io.qwenbridge.decision.ai;
 
+import lombok.RequiredArgsConstructor;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qwenbridge.decision.SearchDecision;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class DecisionJsonParser {
 
     private final ObjectMapper objectMapper;
-
-    public DecisionJsonParser(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     public SearchDecision parse(String content) {
         try {

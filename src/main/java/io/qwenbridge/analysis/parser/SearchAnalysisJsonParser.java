@@ -1,5 +1,7 @@
 package io.qwenbridge.analysis.parser;
 
+import lombok.RequiredArgsConstructor;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qwenbridge.analysis.model.SearchAnalysis;
@@ -12,40 +14,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class SearchAnalysisJsonParser {
 
     private final ObjectMapper objectMapper;
-
-    public SearchAnalysisJsonParser(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     public SearchAnalysis parse(String content, String originalQuery) {
         try {
             JsonNode root = objectMapper.readTree(extractJson(content));
 
-            return new SearchAnalysis(
-                    text(root, "language", "unknown"),
-                    IntentType.from(text(root, "intent", "UNKNOWN")),
-                    decimal(root, "intentConfidence", 0.0),
-                    text(root, "intentReason", "No intent reason provided."),
-                    array(root, "rewrites"),
-                    bool(root, "semanticValidated", false),
-                    decimal(root, "semanticScore", 0.0),
-                    text(root, "semanticMeaning", originalQuery),
-                    array(root, "entities"),
-                    enumValue(SearchMode.class, text(root, "searchMode", "KEYWORD"), SearchMode.KEYWORD),
-                    enumValue(SearchBackend.class, text(root, "backend", "OPENSEARCH"), SearchBackend.OPENSEARCH),
-                    bool(root, "keywordSearch", true),
-                    bool(root, "vectorSearch", false),
-                    bool(root, "hybridSearch", false),
-                    bool(root, "facets", true),
-                    bool(root, "rerank", false),
-                    bool(root, "rewriteAgain", false),
-                    bool(root, "answer", false),
-                    decimal(root, "decisionConfidence", 0.5),
-                    text(root, "decisionReason", "AI search analysis decision.")
-            );
+            return SearchAnalysis.builder()
+                    .language(text(root, "language", "unknown"))
+                    .intent(IntentType.from(text(root, "intent", "UNKNOWN")))
+                    .intentConfidence(decimal(root, "intentConfidence", 0.0))
+                    .intentReason(text(root, "intentReason", "No intent reason provided."))
+                    .rewrites(array(root, "rewrites"))
+                    .semanticValidated(bool(root, "semanticValidated", false))
+                    .semanticScore(decimal(root, "semanticScore", 0.0))
+                    .semanticMeaning(text(root, "semanticMeaning", originalQuery))
+                    .entities(array(root, "entities"))
+                    .searchMode(enumValue(SearchMode.class, text(root, "searchMode", "KEYWORD"), SearchMode.KEYWORD))
+                    .backend(enumValue(SearchBackend.class, text(root, "backend", "OPENSEARCH"), SearchBackend.OPENSEARCH))
+                    .keywordSearch(bool(root, "keywordSearch", true))
+                    .vectorSearch(bool(root, "vectorSearch", false))
+                    .hybridSearch(bool(root, "hybridSearch", false))
+                    .facets(bool(root, "facets", true))
+                    .rerank(bool(root, "rerank", false))
+                    .rewriteAgain(bool(root, "rewriteAgain", false))
+                    .answer(bool(root, "answer", false))
+                    .decisionConfidence(decimal(root, "decisionConfidence", 0.5))
+                    .decisionReason(text(root, "decisionReason", "AI search analysis decision."))
+                    .build();
         } catch (Exception ignored) {
             return SearchAnalysis.fallback(originalQuery);
         }

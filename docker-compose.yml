@@ -1,49 +1,46 @@
 services:
-
-  ollama:
+  qwenbridge-ollama:
     image: ollama/ollama:latest
     container_name: qwenbridge-ollama
-
     restart: unless-stopped
-
     ports:
       - "11434:11434"
-
     volumes:
       - ollama-data:/root/.ollama
-
     healthcheck:
       test: ["CMD", "ollama", "list"]
-      interval: 15s
+      interval: 10s
       timeout: 5s
-      retries: 20
+      retries: 30
 
-  qwenbridge:
-    build:
-      context: .
-      dockerfile: Dockerfile
-
-    container_name: qwenbridge
-
+  qwenbridge-ollama-init:
+    image: ollama/ollama:latest
+    container_name: qwenbridge-ollama-init
     depends_on:
-      ollama:
+      qwenbridge-ollama:
         condition: service_healthy
-      opensearch:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
-    ports:
-      - "8080:8080"
-
     environment:
-      QWENBRIDGE_AI_PROVIDER: ollama
-      QWENBRIDGE_AI_OLLAMA_BASE_URL: http://ollama:11434
-      QWENBRIDGE_SEARCH_OPENSEARCH_BASE_URL: http://opensearch:9200
-      QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST: redis
-      QWENBRIDGE_ANALYSIS_CACHE_REDIS_PORT: 6379
+      OLLAMA_HOST: http://qwenbridge-ollama:11434
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "ollama pull qwen2.5 &&
+       ollama pull bge-m3 &&
+       ollama list"
+    restart: "no"
 
-  opensearch:
+  qwenbridge-redis:
+    image: redis:7.2-alpine
+    container_name: qwenbridge-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  qwenbridge-opensearch:
     image: opensearchproject/opensearch:2.15.0
     container_name: qwenbridge-opensearch
     restart: unless-stopped
@@ -55,22 +52,35 @@ services:
       - "9200:9200"
       - "9600:9600"
     healthcheck:
-      test: [ "CMD-SHELL", "curl -fs http://localhost:9200 >/dev/null || exit 1" ]
+      test: ["CMD-SHELL", "curl -fs http://localhost:9200 >/dev/null || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 30
 
-  redis:
-    image: redis:7.2-alpine
-    container_name: qwenbridge-redis
+  qwenbridge-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qwenbridge-app
     restart: unless-stopped
+    depends_on:
+      qwenbridge-ollama-init:
+        condition: service_completed_successfully
+      qwenbridge-redis:
+        condition: service_healthy
+      qwenbridge-opensearch:
+        condition: service_healthy
     ports:
-      - "6379:6379"
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 10s
-      timeout: 5s
-      retries: 30
+      - "8080:8080"
+    environment:
+      QWENBRIDGE_AI_PROVIDER: ollama
+      QWENBRIDGE_AI_OLLAMA_BASE_URL: http://qwenbridge-ollama:11434
+      QWENBRIDGE_AI_OLLAMA_CHAT_MODEL: qwen2.5
+      QWENBRIDGE_AI_OLLAMA_EMBEDDING_MODEL: bge-m3
+      QWENBRIDGE_SEARCH_OPENSEARCH_BASE_URL: http://qwenbridge-opensearch:9200
+      QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST: qwenbridge-redis
+      QWENBRIDGE_ANALYSIS_CACHE_REDIS_PORT: 6379
+      QWENBRIDGE_ANALYSIS_CACHE_ANALYSIS_TIMEOUT: 10s
 
 volumes:
   ollama-data:

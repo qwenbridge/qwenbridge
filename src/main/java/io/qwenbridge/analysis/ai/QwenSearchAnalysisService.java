@@ -1,5 +1,7 @@
 package io.qwenbridge.analysis.ai;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.ai.contract.ChatRequest;
 import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.analysis.cache.AIAnalysisCache;
@@ -15,7 +17,11 @@ import io.qwenbridge.analysis.prompt.SearchAnalysisPromptBuilder;
 import io.qwenbridge.analysis.service.SearchAnalysisService;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
 @Service
+@RequiredArgsConstructor
 public class QwenSearchAnalysisService implements SearchAnalysisService {
 
     private final AIService aiService;
@@ -26,26 +32,6 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
     private final AIAnalysisCacheProperties cacheProperties;
     private final AIAnalysisCacheTraceHolder cacheTraceHolder;
     private final AIAnalysisSingleFlight singleFlight;
-
-    public QwenSearchAnalysisService(
-            AIService aiService,
-            SearchAnalysisPromptBuilder promptBuilder,
-            SearchAnalysisJsonParser parser,
-            AIAnalysisCache cache,
-            AIAnalysisCacheKeyBuilder cacheKeyBuilder,
-            AIAnalysisCacheProperties cacheProperties,
-            AIAnalysisCacheTraceHolder cacheTraceHolder,
-            AIAnalysisSingleFlight singleFlight
-    ) {
-        this.aiService = aiService;
-        this.promptBuilder = promptBuilder;
-        this.parser = parser;
-        this.cache = cache;
-        this.cacheKeyBuilder = cacheKeyBuilder;
-        this.cacheProperties = cacheProperties;
-        this.cacheTraceHolder = cacheTraceHolder;
-        this.singleFlight = singleFlight;
-    }
 
     @Override
     public SearchAnalysis analyze(String query) {
@@ -88,11 +74,19 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
 
     private SearchAnalysis analyzeWithAI(String query) {
         try {
-            String prompt = promptBuilder.build(query);
-            String content = aiService.chat(new ChatRequest(prompt)).content();
-            return parser.parse(content, query);
+            return CompletableFuture
+                    .supplyAsync(() -> analyzeWithAIBlocking(query))
+                    .orTimeout(cacheProperties.analysisTimeout().toMillis(), TimeUnit.MILLISECONDS)
+                    .exceptionally(ignored -> SearchAnalysis.fallback(query))
+                    .join();
         } catch (Exception ignored) {
             return SearchAnalysis.fallback(query);
         }
+    }
+
+    private SearchAnalysis analyzeWithAIBlocking(String query) {
+        String prompt = promptBuilder.build(query);
+        String content = aiService.chat(new ChatRequest(prompt)).content();
+        return parser.parse(content, query);
     }
 }

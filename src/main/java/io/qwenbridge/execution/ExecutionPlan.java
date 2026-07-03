@@ -1,5 +1,7 @@
 package io.qwenbridge.execution;
 
+import lombok.Builder;
+
 import io.qwenbridge.decision.SearchBackend;
 import io.qwenbridge.decision.SearchMode;
 
@@ -7,6 +9,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+@Builder
 public record ExecutionPlan(
         SearchMode mode,
         SearchBackend backend,

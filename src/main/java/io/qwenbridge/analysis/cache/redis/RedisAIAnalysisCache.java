@@ -1,5 +1,7 @@
 package io.qwenbridge.analysis.cache.redis;
 
+import lombok.RequiredArgsConstructor;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qwenbridge.analysis.cache.AIAnalysisCache;
 import io.qwenbridge.analysis.cache.CacheKey;
@@ -12,22 +14,13 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 @ConditionalOnExpression("'${qwenbridge.analysis.cache.enabled:true}' == 'true' && '${qwenbridge.analysis.cache.type:redis}' == 'redis'")
 public class RedisAIAnalysisCache implements AIAnalysisCache {
 
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
     private final AIAnalysisCacheProperties properties;
-
-    public RedisAIAnalysisCache(
-            StringRedisTemplate redisTemplate,
-            ObjectMapper objectMapper,
-            AIAnalysisCacheProperties properties
-    ) {
-        this.redisTemplate = redisTemplate;
-        this.objectMapper = objectMapper;
-        this.properties = properties;
-    }
 
     @Override
     public Optional<SearchAnalysis> get(CacheKey key) {

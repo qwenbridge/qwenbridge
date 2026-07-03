@@ -1,10 +1,13 @@
 package io.qwenbridge.model;
 
+import lombok.Builder;
+
 import io.qwenbridge.decision.DecisionType;
 import io.qwenbridge.pipeline.result.PipelineTraceItem;
 
 import java.util.List;
 
+@Builder
 public record SearchAnalyzeResponse(
         String requestId,
         long processingTimeMs,

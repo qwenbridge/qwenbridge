@@ -1,8 +1,11 @@
 package io.qwenbridge.execution;
 
+import lombok.Builder;
+
 import java.util.List;
 import java.util.Objects;
 
+@Builder
 public record ExecutionResult(
         boolean executed,
         List<ExecutionOperation> operations,
@@ -19,7 +22,12 @@ public record ExecutionResult(
     }
 
     public static ExecutionResult skipped(String reason) {
-        return new ExecutionResult(false, List.of(), List.of(), reason);
+        return ExecutionResult.builder()
+                .executed(false)
+                .operations(List.of())
+                .results(List.of())
+                .reason(reason)
+                .build();
     }
 
     public static ExecutionResult completed(
@@ -27,6 +35,11 @@ public record ExecutionResult(
             List<String> results,
             String reason
     ) {
-        return new ExecutionResult(true, operations, results, reason);
+        return ExecutionResult.builder()
+                .executed(true)
+                .operations(operations)
+                .results(results)
+                .reason(reason)
+                .build();
     }
 }

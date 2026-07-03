@@ -1,17 +1,16 @@
 package io.qwenbridge.intent.ai;
 
+import lombok.RequiredArgsConstructor;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qwenbridge.intent.IntentAnalysis;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class IntentJsonParser {
 
     private final ObjectMapper objectMapper;
-
-    public IntentJsonParser(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     public IntentAnalysis parse(String json) {
         try {

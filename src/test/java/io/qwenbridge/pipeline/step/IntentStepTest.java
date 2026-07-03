@@ -29,27 +29,27 @@ class IntentStepTest {
     }
 
     private static SearchAnalysis analysis() {
-        return new SearchAnalysis(
-                "en",
-                IntentType.FILTER,
-                0.82,
-                "User is narrowing search results.",
-                List.of("red shoes"),
-                true,
-                0.90,
-                "User wants red shoes.",
-                List.of("shoes", "red"),
-                SearchMode.KEYWORD,
-                SearchBackend.IN_MEMORY,
-                true,
-                false,
-                false,
-                true,
-                false,
-                false,
-                false,
-                0.80,
-                "Keyword search is enough."
-        );
+        return SearchAnalysis.builder()
+                .language("en")
+                .intent(IntentType.FILTER)
+                .intentConfidence(0.82)
+                .intentReason("User is narrowing search results.")
+                .rewrites(List.of("red shoes"))
+                .semanticValidated(true)
+                .semanticScore(0.90)
+                .semanticMeaning("User wants red shoes.")
+                .entities(List.of("shoes", "red"))
+                .searchMode(SearchMode.KEYWORD)
+                .backend(SearchBackend.IN_MEMORY)
+                .keywordSearch(true)
+                .vectorSearch(false)
+                .hybridSearch(false)
+                .facets(true)
+                .rerank(false)
+                .rewriteAgain(false)
+                .answer(false)
+                .decisionConfidence(0.80)
+                .decisionReason("Keyword search is enough.")
+                .build();
     }
 }

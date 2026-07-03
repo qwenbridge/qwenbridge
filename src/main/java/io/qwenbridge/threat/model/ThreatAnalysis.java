@@ -1,11 +1,14 @@
 package io.qwenbridge.threat.model;
 
+import lombok.Builder;
+
 import io.qwenbridge.threat.correlation.ThreatRiskProfile;
 import io.qwenbridge.threat.explanation.ThreatExplanation;
 
 import java.util.Comparator;
 import java.util.List;
 
+@Builder
 public record ThreatAnalysis(
         boolean safe,
         double score,
@@ -24,7 +27,14 @@ public record ThreatAnalysis(
     }
 
     public static ThreatAnalysis allow() {
-        return new ThreatAnalysis(true, 0.0, ThreatDecision.ALLOW, List.of(), ThreatRiskProfile.none(), ThreatExplanation.none());
+        return ThreatAnalysis.builder()
+                .safe(true)
+                .score(0.0)
+                .decision(ThreatDecision.ALLOW)
+                .findings(List.of())
+                .riskProfile(ThreatRiskProfile.none())
+                .explanation(ThreatExplanation.none())
+                .build();
     }
 
     public static ThreatAnalysis from(List<ThreatFinding> findings, ThreatDecision decision) {
@@ -50,11 +60,25 @@ public record ThreatAnalysis(
                 ? safeFindings.stream().map(ThreatFinding::score).max(Comparator.naturalOrder()).orElse(0.0)
                 : riskProfile.correlatedScore();
 
-        return new ThreatAnalysis(decision == ThreatDecision.ALLOW, score, decision, safeFindings, riskProfile, explanation);
+        return ThreatAnalysis.builder()
+                .safe(decision == ThreatDecision.ALLOW)
+                .score(score)
+                .decision(decision)
+                .findings(safeFindings)
+                .riskProfile(riskProfile)
+                .explanation(explanation)
+                .build();
     }
 
     public ThreatAnalysis withExplanation(ThreatExplanation explanation) {
-        return new ThreatAnalysis(safe, score, decision, findings, riskProfile, explanation);
+        return ThreatAnalysis.builder()
+                .safe(safe)
+                .score(score)
+                .decision(decision)
+                .findings(findings)
+                .riskProfile(riskProfile)
+                .explanation(explanation)
+                .build();
     }
 
     public boolean blocked() {

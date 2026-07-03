@@ -9,15 +9,15 @@ class AIAnalysisCacheResponseTest {
     @Test
     void shouldNormalizeNullFields() {
         AIAnalysisCacheResponse response =
-                new AIAnalysisCacheResponse(
-                        true,
-                        false,
-                        true,
-                        null,
-                        null,
-                        null,
-                        null
-                );
+                AIAnalysisCacheResponse.builder()
+                        .enabled(true)
+                        .hit(false)
+                        .miss(true)
+                        .key(null)
+                        .provider(null)
+                        .model(null)
+                        .version(null)
+                        .build();
 
         assertThat(response.key()).isEmpty();
         assertThat(response.provider()).isEmpty();

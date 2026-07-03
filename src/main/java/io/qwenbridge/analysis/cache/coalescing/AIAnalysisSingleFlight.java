@@ -31,7 +31,11 @@ public class AIAnalysisSingleFlight {
                     return created;
                 });
 
-        return future.join();
+        try {
+            return future.join();
+        } finally {
+            inFlight.remove(key, future);
+        }
     }
 
     public int inFlightCount() {

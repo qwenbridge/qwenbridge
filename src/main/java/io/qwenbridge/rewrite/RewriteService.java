@@ -1,23 +1,20 @@
 package io.qwenbridge.rewrite;
 
+import lombok.RequiredArgsConstructor;
+
+import lombok.extern.slf4j.Slf4j;
 import io.qwenbridge.rewrite.ai.AIRewriteService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 
+@Slf4j
 public class RewriteService {
 
-    private static final Logger log = LoggerFactory.getLogger(RewriteService.class);
-
     private final AIRewriteService aiRewriteService;
-
-    public RewriteService(AIRewriteService aiRewriteService) {
-        this.aiRewriteService = aiRewriteService;
-    }
 
     public List<String> rewrite(String query, String language, String intent) {
         try {

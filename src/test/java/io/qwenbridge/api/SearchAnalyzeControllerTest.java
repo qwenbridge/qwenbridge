@@ -106,37 +106,60 @@ class SearchAnalyzeControllerTest {
                 .andExpect(jsonPath("$.search.hits").isArray());
     }
 
+
+    @Test
+    void shouldUseClientProvidedRequestId() throws Exception {
+        when(aiService.chat(org.mockito.ArgumentMatchers.any(ChatRequest.class))).thenReturn(new ChatResponse(analysisJson("en", "table", "table")));
+        when(searchAnalysisService.analyze("table")).thenReturn(searchAnalysis("en", "table"));
+        when(openSearchClient.search(anyString(), anyMap())).thenReturn(emptyOpenSearchResponse());
+
+        mockMvc.perform(post("/api/v1/search/analyze")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"requestId\":\"client-request-1\",\"query\":\"table\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.requestId").value("client-request-1"))
+                .andExpect(jsonPath("$.originalQuery").value("table"));
+    }
+
     @Test
     void shouldRejectBlankQuery() throws Exception {
         mockMvc.perform(post("/api/v1/search/analyze")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"query\":\"\"}"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.message").value("query query must not be blank"))
+                .andExpect(jsonPath("$.path").value("/api/v1/search/analyze"))
+                .andExpect(jsonPath("$.requestId").exists())
+                .andExpect(header().exists("X-Request-ID"))
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 
     private SearchAnalysis searchAnalysis(String language, String rewrite) {
-        return new SearchAnalysis(
-                language,
-                IntentType.PRODUCT_SEARCH,
-                0.90,
-                "User is searching for a product.",
-                List.of(rewrite),
-                true,
-                0.85,
-                "Product search query.",
-                List.of(rewrite),
-                SearchMode.KEYWORD,
-                SearchBackend.OPENSEARCH,
-                true,
-                false,
-                false,
-                true,
-                false,
-                false,
-                false,
-                0.85,
-                "Use OpenSearch keyword search."
-        );
+        return SearchAnalysis.builder()
+                .language(language)
+                .intent(IntentType.PRODUCT_SEARCH)
+                .intentConfidence(0.90)
+                .intentReason("User is searching for a product.")
+                .rewrites(List.of(rewrite))
+                .semanticValidated(true)
+                .semanticScore(0.85)
+                .semanticMeaning("Product search query.")
+                .entities(List.of(rewrite))
+                .searchMode(SearchMode.KEYWORD)
+                .backend(SearchBackend.OPENSEARCH)
+                .keywordSearch(true)
+                .vectorSearch(false)
+                .hybridSearch(false)
+                .facets(true)
+                .rerank(false)
+                .rewriteAgain(false)
+                .answer(false)
+                .decisionConfidence(0.85)
+                .decisionReason("Use OpenSearch keyword search.")
+                .build();
     }
 
 

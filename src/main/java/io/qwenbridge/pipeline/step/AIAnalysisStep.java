@@ -1,28 +1,30 @@
 package io.qwenbridge.pipeline.step;
 
+import lombok.RequiredArgsConstructor;
+
 import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTrace;
 import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTraceHolder;
 import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.analysis.service.SearchAnalysisService;
 import io.qwenbridge.normalization.model.NormalizedInput;
+import io.qwenbridge.event.model.PipelineStage;
 import io.qwenbridge.pipeline.ExecutionContext;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class AIAnalysisStep implements PipelineStep<SearchAnalysis> {
 
     private final SearchAnalysisService searchAnalysisService;
     private final AIAnalysisCacheTraceHolder cacheTraceHolder;
 
-    public AIAnalysisStep(
-            SearchAnalysisService searchAnalysisService,
-            AIAnalysisCacheTraceHolder cacheTraceHolder
-    ) {
-        this.searchAnalysisService = searchAnalysisService;
-        this.cacheTraceHolder = cacheTraceHolder;
-    }
+
 
     @Override
+    public PipelineStage stage() {
+        return PipelineStage.AI_ANALYSIS;
+    }
+@Override
     public String name() {
         return "AIAnalysisStep";
     }

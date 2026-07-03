@@ -4,6 +4,8 @@ import io.qwenbridge.ai.contract.ChatRequest;
 import io.qwenbridge.ai.contract.ChatResponse;
 import io.qwenbridge.ai.contract.EmbeddingRequest;
 import io.qwenbridge.ai.contract.EmbeddingResponse;
+import io.qwenbridge.ai.contract.StreamingChatChunk;
+import io.qwenbridge.ai.contract.StreamingChatRequest;
 import io.qwenbridge.ai.provider.ollama.client.OllamaClient;
 import io.qwenbridge.ai.provider.ollama.config.OllamaProperties;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaChatRequest;
@@ -13,6 +15,7 @@ import io.qwenbridge.ai.provider.ollama.dto.OllamaEmbeddingResponse;
 import io.qwenbridge.ai.provider.support.AbstractAIProvider;
 import io.qwenbridge.ai.value.ProviderId;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -45,6 +48,16 @@ public class OllamaProvider extends AbstractAIProvider {
 
         return new ChatResponse(
                 response.message() == null ? "" : response.message().content()
+        );
+    }
+
+    @Override
+    public Flux<StreamingChatChunk> streamChat(StreamingChatRequest request) {
+        ChatResponse response = chat(new ChatRequest(request.prompt()));
+
+        return Flux.just(
+                new StreamingChatChunk(response.content(), false),
+                new StreamingChatChunk("", true)
         );
     }
 

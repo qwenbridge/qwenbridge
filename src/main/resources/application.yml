@@ -12,6 +12,10 @@ management:
         include: health,info,metrics
 
 qwenbridge:
+  version: 0.1.0-SNAPSHOT
+  streaming:
+    session-timeout-ms: 300000
+
   ai:
     provider: ollama
     ollama:
@@ -37,6 +41,7 @@ qwenbridge:
       provider: ollama
       model: qwen2.5
       version: v4
+      analysis-timeout: 10s
       ttl: 10m
       redis:
         host: localhost
