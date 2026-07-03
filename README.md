@@ -115,6 +115,13 @@ and pipeline trace.
 Streaming uses request-scoped server-sent events with stable v1 event names
 and a frozen public event envelope. See `docs/api/sse.md`.
 
+## Documentation
+
+-   [REST API](docs/api/rest-api.md)
+-   [SSE API](docs/api/sse.md)
+-   [AI Provider Reliability](docs/architecture/provider-reliability.md)
+-   [Retrieval Verification](docs/architecture/retrieval-verification.md)
+
 ## Testing
 
 ``` bash
