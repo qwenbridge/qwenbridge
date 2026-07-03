@@ -19,6 +19,9 @@ public class StreamingSessionRegistry {
     private final ConcurrentMap<String, StreamingSession> sessionsById =
             new ConcurrentHashMap<>();
 
+    private final ConcurrentMap<String, Boolean> cancelledRequests =
+            new ConcurrentHashMap<>();
+
     public StreamingSessionRegistry(StreamingProperties properties) {
         this.properties = properties;
     }
@@ -30,6 +33,8 @@ public class StreamingSessionRegistry {
     public StreamingSession register(String requestId, long timeoutMs) {
         String sessionId = UUID.randomUUID().toString();
         SseEmitter emitter = new SseEmitter(timeoutMs);
+
+        cancelledRequests.remove(requestId);
 
         StreamingSession session =
                 new StreamingSession(sessionId, requestId, emitter);
@@ -58,6 +63,10 @@ public class StreamingSessionRegistry {
                 .toList();
     }
 
+    public boolean isRequestCancelled(String requestId) {
+        return requestId != null && Boolean.TRUE.equals(cancelledRequests.get(requestId));
+    }
+
     public int size() {
         return sessionsById.size();
     }
@@ -69,6 +78,8 @@ public class StreamingSessionRegistry {
             return false;
         }
 
+        markCancelledIfNoSessionsRemain(removed.requestId());
+
         if (removed.close()) {
             removed.emitter().complete();
         }
@@ -78,6 +89,7 @@ public class StreamingSessionRegistry {
 
     public void clear() {
         all().forEach(session -> remove(session.sessionId()));
+        cancelledRequests.clear();
     }
 
     public void sendToRequest(
@@ -98,6 +110,8 @@ public class StreamingSessionRegistry {
     public void completeRequest(String requestId) {
         findByRequestId(requestId)
                 .forEach(session -> remove(session.sessionId()));
+
+        cancelledRequests.remove(requestId);
     }
 
     public void failRequest(
@@ -111,6 +125,8 @@ public class StreamingSessionRegistry {
                     send(session, eventId, eventName, payload);
                     remove(session.sessionId());
                 });
+
+        cancelledRequests.remove(requestId);
     }
 
     private void removeAfterEmitterCompletion(String sessionId) {
@@ -118,6 +134,17 @@ public class StreamingSessionRegistry {
 
         if (removed != null) {
             removed.close();
+            markCancelledIfNoSessionsRemain(removed.requestId());
+        }
+    }
+
+    private void markCancelledIfNoSessionsRemain(String requestId) {
+        if (requestId == null || requestId.isBlank()) {
+            return;
+        }
+
+        if (findByRequestId(requestId).isEmpty()) {
+            cancelledRequests.put(requestId, true);
         }
     }
 

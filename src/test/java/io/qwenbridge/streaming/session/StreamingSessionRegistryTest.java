@@ -188,4 +188,46 @@ class StreamingSessionRegistryTest {
         assertThat(registry.size()).isZero();
     }
 
+    @Test
+    void shouldMarkRequestCancelledWhenLastSessionIsRemoved() {
+        StreamingSessionRegistry registry =
+                new StreamingSessionRegistry(
+                        new StreamingProperties(300_000L)
+                );
+
+        StreamingSession first = registry.register("request-1");
+        StreamingSession second = registry.register("request-1");
+
+        registry.remove(first.sessionId());
+
+        assertThat(registry.isRequestCancelled("request-1")).isFalse();
+
+        registry.remove(second.sessionId());
+
+        assertThat(registry.isRequestCancelled("request-1")).isTrue();
+
+        registry.clear();
+    }
+
+    @Test
+    void shouldClearCancellationWhenRequestCompletesNormally() {
+        StreamingSessionRegistry registry =
+                new StreamingSessionRegistry(
+                        new StreamingProperties(300_000L)
+                );
+
+        StreamingSession session = registry.register("request-1");
+
+        registry.remove(session.sessionId());
+
+        assertThat(registry.isRequestCancelled("request-1")).isTrue();
+
+        registry.register("request-1");
+        registry.completeRequest("request-1");
+
+        assertThat(registry.isRequestCancelled("request-1")).isFalse();
+
+        registry.clear();
+    }
+
 }

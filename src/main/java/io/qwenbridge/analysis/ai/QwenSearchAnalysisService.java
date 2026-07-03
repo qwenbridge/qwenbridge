@@ -17,6 +17,7 @@ import io.qwenbridge.analysis.parser.SearchAnalysisJsonParser;
 import io.qwenbridge.analysis.prompt.SearchAnalysisPromptBuilder;
 import io.qwenbridge.analysis.service.SearchAnalysisService;
 import io.qwenbridge.streaming.ai.AIStreamingEventPublisher;
+import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
@@ -36,6 +37,7 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
     private final AIAnalysisCacheTraceHolder cacheTraceHolder;
     private final AIAnalysisSingleFlight singleFlight;
     private final AIStreamingEventPublisher streamingEventPublisher;
+    private final StreamingSessionRegistry streamingSessionRegistry;
 
     @Override
     public SearchAnalysis analyze(String query) {
@@ -75,10 +77,12 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
         return singleFlight.execute(cacheKey, () -> {
             SearchAnalysis analysis = analyzeWithAI(query, requestId);
 
-            try {
-                cache.put(cacheKey, analysis);
-            } catch (Exception ignored) {
-                // Cache failures must never break AI analysis.
+            if (!streamingSessionRegistry.isRequestCancelled(requestId)) {
+                try {
+                    cache.put(cacheKey, analysis);
+                } catch (Exception ignored) {
+                    // Cache failures must never break AI analysis.
+                }
             }
 
             return analysis;
@@ -122,8 +126,11 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
 
         try {
             aiService.streamChat(new StreamingChatRequest(prompt))
+                    .takeWhile(chunk -> !streamingSessionRegistry.isRequestCancelled(requestId))
                     .doOnNext(chunk -> {
-                        if (chunk.content() != null && !chunk.content().isBlank()) {
+                        if (!streamingSessionRegistry.isRequestCancelled(requestId)
+                                && chunk.content() != null
+                                && !chunk.content().isBlank()) {
                             long index = tokenIndex.incrementAndGet();
                             content.append(chunk.content());
                             streamingEventPublisher.token(
@@ -134,6 +141,10 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
                         }
                     })
                     .blockLast(cacheProperties.analysisTimeout());
+
+            if (streamingSessionRegistry.isRequestCancelled(requestId)) {
+                return SearchAnalysis.fallback(query);
+            }
 
             streamingEventPublisher.completed(requestId, tokenIndex.get());
 

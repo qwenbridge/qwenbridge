@@ -13,6 +13,7 @@ import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.analysis.parser.SearchAnalysisJsonParser;
 import io.qwenbridge.analysis.prompt.SearchAnalysisPromptBuilder;
 import io.qwenbridge.streaming.ai.AIStreamingEventPublisher;
+import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import reactor.core.publisher.Flux;
@@ -42,6 +43,8 @@ class QwenSearchAnalysisServiceStreamingTest {
             new AIAnalysisSingleFlight();
     private final AIStreamingEventPublisher streamingEventPublisher =
             mock(AIStreamingEventPublisher.class);
+    private final StreamingSessionRegistry streamingSessionRegistry =
+            mock(StreamingSessionRegistry.class);
 
     private final QwenSearchAnalysisService service =
             new QwenSearchAnalysisService(
@@ -53,7 +56,8 @@ class QwenSearchAnalysisServiceStreamingTest {
                     cacheProperties,
                     cacheTraceHolder,
                     singleFlight,
-                    streamingEventPublisher
+                    streamingEventPublisher,
+                    streamingSessionRegistry
             );
 
     @Test
@@ -165,5 +169,36 @@ class QwenSearchAnalysisServiceStreamingTest {
         verify(aiService, never()).streamChat(any());
 
         verifyNoInteractions(streamingEventPublisher);
+    }
+
+    @Test
+    void shouldStopPublishingTokensAndSkipCompletionWhenRequestIsCancelled() {
+        CacheKey key = new CacheKey("cache-key");
+
+        when(keyBuilder.build("desk")).thenReturn(key);
+        when(cache.get(key)).thenReturn(Optional.empty());
+        when(promptBuilder.build("desk")).thenReturn("prompt");
+
+        when(streamingSessionRegistry.isRequestCancelled("request-1"))
+                .thenReturn(false)
+                .thenReturn(false)
+                .thenReturn(true);
+
+        when(aiService.streamChat(any(StreamingChatRequest.class)))
+                .thenReturn(Flux.just(
+                        new StreamingChatChunk("first", false),
+                        new StreamingChatChunk("second", false),
+                        new StreamingChatChunk("third", false)
+                ));
+
+        SearchAnalysis result = service.analyze("desk", "request-1");
+
+        assertThat(result.decisionReason())
+                .isEqualTo("Fallback keyword search decision.");
+
+        verify(streamingEventPublisher).token("request-1", 1L, "first");
+        verify(streamingEventPublisher, never()).completed(anyString(), anyLong());
+        verify(streamingEventPublisher, never()).failed(anyString(), anyString(), anyString());
+        verify(cache, never()).put(eq(key), any(SearchAnalysis.class));
     }
 }
