@@ -121,6 +121,7 @@ and a frozen public event envelope. See `docs/api/sse.md`.
 -   [SSE API](docs/api/sse.md)
 -   [AI Provider Reliability](docs/architecture/provider-reliability.md)
 -   [Retrieval Verification](docs/architecture/retrieval-verification.md)
+-   [V6 Roadmap](docs/roadmap/V6.md)
 
 ## Testing
 
@@ -135,7 +136,7 @@ mvn clean test
 -   ⏳ V3 Real Search Providers
 -   ⏳ V4 Retrieval Intelligence
 -   ✅ V5 Production AI Search Platform
--   ⏳ V6 Public Product Hardening
+-   🔒 V6 Public Product Hardening
 
 ## Design Principles
 
