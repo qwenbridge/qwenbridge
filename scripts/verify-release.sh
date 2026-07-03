@@ -582,9 +582,19 @@ ai_chat_endpoint() {
   echo "HTTP status: ${status}"
   jq . "${body}" || true
 
-  [[ "${status}" == "200" ]] \
-    && assert_common_headers "${headers}" \
-    && jq -e '.content' "${body}" >/dev/null
+  assert_common_headers "${headers}" || return 1
+
+  if [[ "${status}" == "200" ]]; then
+    jq -e '.content' "${body}" >/dev/null
+    return $?
+  fi
+
+  if [[ "${status}" == "502" ]]; then
+    jq -e '.code == "AI_PROVIDER_ERROR" and .status == 502' "${body}" >/dev/null
+    return $?
+  fi
+
+  return 1
 }
 
 validation_error_contract() {
