@@ -90,6 +90,16 @@ src/main/java/io/qwenbridge
 └── model
 ```
 
+
+## AI Provider Reliability
+
+V6 launches with deterministic Ollama routing. Provider calls are bounded by
+connect/read timeouts and a small retry count. QwenBridge does not perform
+automatic provider failover in V6; an unavailable AI provider returns a
+controlled `502 AI_PROVIDER_ERROR`.
+
+See [`docs/architecture/provider-reliability.md`](docs/architecture/provider-reliability.md).
+
 ## REST API
 
 Current public API version: `v1`
