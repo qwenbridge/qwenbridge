@@ -58,14 +58,16 @@ class OpenSearchQueryFactoryTest {
                 SearchRequest.hybrid("wireless gaming mouse", List.of(0.1, 0.2, 0.3))
         );
 
-        assertThat(request.query()).containsKey("hybrid");
+        assertThat(request.query()).containsKey("bool");
 
-        Map<?, ?> hybrid = (Map<?, ?>) request.query().get("hybrid");
-        List<?> queries = (List<?>) hybrid.get("queries");
+        Map<?, ?> bool = (Map<?, ?>) request.query().get("bool");
+        List<?> should = (List<?>) bool.get("should");
 
-        assertThat(queries).hasSize(2);
-        assertThat(queries.get(0).toString()).contains("multi_match");
-        assertThat(queries.get(1).toString()).contains("knn");
+        assertThat(bool.get("minimum_should_match")).isEqualTo(1);
+        assertThat(should).hasSize(2);
+        assertThat(should.get(0).toString()).contains("multi_match");
+        assertThat(should.get(1).toString()).contains("knn");
+        assertThat(request.query()).doesNotContainKey("hybrid");
     }
 
     @Test

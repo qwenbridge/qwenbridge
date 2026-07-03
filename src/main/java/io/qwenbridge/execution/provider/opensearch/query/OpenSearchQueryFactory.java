@@ -46,13 +46,15 @@ public class OpenSearchQueryFactory {
         return new OpenSearchSearchRequest(
                 request.embedding()
                         .map(embedding -> Map.<String, Object>of(
-                                "hybrid",
+                                "bool",
                                 Map.of(
-                                        "queries",
+                                        "should",
                                         List.of(
                                                 keywordQuery(request.query()),
                                                 vectorQuery(embedding)
-                                        )
+                                        ),
+                                        "minimum_should_match",
+                                        1
                                 )
                         ))
                         .orElseGet(() -> keywordQuery(request.query())),
