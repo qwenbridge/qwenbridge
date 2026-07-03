@@ -267,4 +267,66 @@ class DefaultExecutionEngineProviderIntegrationTest {
     }
 
 
+    @Test
+    void shouldApplyRerankingServiceWhenPlanContainsRerankOperation() {
+        SearchProvider provider = mock(SearchProvider.class);
+        when(provider.name()).thenReturn("opensearch");
+        when(provider.search(any(SearchRequest.class))).thenReturn(
+                new SearchResponse(
+                        new io.qwenbridge.execution.provider.model.SearchResultSet(
+                                List.of(
+                                        SearchHit.of("doc-1", 0.9, Map.of("title", "First")),
+                                        SearchHit.of("doc-2", 0.8, Map.of("title", "Second"))
+                                ),
+                                2,
+                                4
+                        )
+                )
+        );
+
+        SearchProviderResolver resolver = mock(SearchProviderResolver.class);
+        when(resolver.resolve(SearchBackend.OPENSEARCH)).thenReturn(provider);
+
+        io.qwenbridge.reranking.service.RerankingService rerankingService =
+                (query, resultSet) -> new io.qwenbridge.execution.provider.model.SearchResultSet(
+                        List.of(
+                                resultSet.hits().get(1),
+                                resultSet.hits().get(0)
+                        ),
+                        resultSet.totalHits(),
+                        resultSet.tookMillis()
+                );
+
+        DefaultExecutionEngine engine =
+                new DefaultExecutionEngine(
+                        List.<ExecutionOperationExecutor>of(),
+                        resolver,
+                        null,
+                        new io.qwenbridge.ranking.service.SearchResultRanker(
+                                new io.qwenbridge.ranking.policy.DefaultRankingPolicy()
+                        ),
+                        rerankingService
+                );
+
+        ExecutionPlan plan = ExecutionPlan.builder()
+                .mode(SearchMode.KEYWORD)
+                .backend(SearchBackend.OPENSEARCH)
+                .steps(List.of(
+                        new ExecutionStep(1, ExecutionOperation.KEYWORD_SEARCH, "keyword search"),
+                        new ExecutionStep(2, ExecutionOperation.RERANK_RESULTS, "rerank")
+                ))
+                .reason("keyword search with rerank")
+                .build();
+
+        ExecutionContext context = new ExecutionContext("desk");
+
+        engine.execute(plan, context);
+
+        SearchResponse response = context.get(SearchResponse.class);
+
+        assertThat(response.results().hits()).extracting(SearchHit::id)
+                .containsExactly("doc-2", "doc-1");
+    }
+
+
 }
