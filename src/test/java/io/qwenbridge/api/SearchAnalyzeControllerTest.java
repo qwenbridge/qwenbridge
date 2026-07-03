@@ -1,5 +1,6 @@
 package io.qwenbridge.api;
 
+import io.qwenbridge.ai.exception.AIException;
 import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.analysis.service.SearchAnalysisService;
 import io.qwenbridge.decision.SearchBackend;
@@ -135,6 +136,106 @@ class SearchAnalyzeControllerTest {
                 .andExpect(jsonPath("$.requestId").exists())
                 .andExpect(header().exists("X-Request-ID"))
                 .andExpect(jsonPath("$.timestamp").exists());
+    }
+
+
+    @Test
+    void shouldMapAIProviderFailureToBadGateway() throws Exception {
+        when(searchAnalysisService.analyze("table"))
+                .thenThrow(new AIException("Ollama provider failure"));
+
+        mockMvc.perform(post("/api/v1/search/analyze")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"query\":\"table\"}"))
+                .andExpect(status().isBadGateway())
+                .andExpect(jsonPath("$.status").value(502))
+                .andExpect(jsonPath("$.error").value("Bad Gateway"))
+                .andExpect(jsonPath("$.code").value("AI_PROVIDER_ERROR"))
+                .andExpect(jsonPath("$.message").value("Ollama provider failure"))
+                .andExpect(jsonPath("$.path").value("/api/v1/search/analyze"))
+                .andExpect(jsonPath("$.requestId").exists())
+                .andExpect(header().exists("X-Request-ID"));
+    }
+
+    @Test
+    void shouldMapOpenSearchFailureToBadGateway() throws Exception {
+        when(searchAnalysisService.analyze("table")).thenReturn(searchAnalysis("en", "table"));
+        when(openSearchClient.search(anyString(), anyMap()))
+                .thenThrow(new RuntimeException("OpenSearch timeout"));
+
+        mockMvc.perform(post("/api/v1/search/analyze")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"query\":\"table\"}"))
+                .andExpect(status().isBadGateway())
+                .andExpect(jsonPath("$.status").value(502))
+                .andExpect(jsonPath("$.error").value("Bad Gateway"))
+                .andExpect(jsonPath("$.code").value("SEARCH_PROVIDER_ERROR"))
+                .andExpect(jsonPath("$.message").value("OpenSearch provider failure"))
+                .andExpect(jsonPath("$.path").value("/api/v1/search/analyze"))
+                .andExpect(jsonPath("$.requestId").exists())
+                .andExpect(header().exists("X-Request-ID"));
+    }
+
+    @Test
+    void shouldMapMalformedJsonToBadRequest() throws Exception {
+        mockMvc.perform(post("/api/v1/search/analyze")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"query\":"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("Malformed JSON request body"))
+                .andExpect(jsonPath("$.path").value("/api/v1/search/analyze"))
+                .andExpect(header().exists("X-Request-ID"));
+    }
+
+    @Test
+    void shouldMapUnexpectedFailureToInternalError() throws Exception {
+        when(searchAnalysisService.analyze("table"))
+                .thenThrow(new NullPointerException("boom"));
+
+        mockMvc.perform(post("/api/v1/search/analyze")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"query\":\"table\"}"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.error").value("Internal Server Error"))
+                .andExpect(jsonPath("$.code").value("INTERNAL_ERROR"))
+                .andExpect(jsonPath("$.message").value("Unexpected server error"))
+                .andExpect(jsonPath("$.path").value("/api/v1/search/analyze"))
+                .andExpect(header().exists("X-Request-ID"));
+    }
+
+    @Test
+    void shouldRejectBlankAIChatPrompt() throws Exception {
+        mockMvc.perform(post("/api/v1/ai/chat")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"prompt\":\"\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.message").value("prompt prompt must not be blank"))
+                .andExpect(jsonPath("$.path").value("/api/v1/ai/chat"))
+                .andExpect(header().exists("X-Request-ID"));
+    }
+
+    @Test
+    void shouldMapAIChatProviderFailureToBadGateway() throws Exception {
+        when(aiService.chat(org.mockito.ArgumentMatchers.any(ChatRequest.class)))
+                .thenThrow(new AIException("Ollama provider failure"));
+
+        mockMvc.perform(post("/api/v1/ai/chat")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"prompt\":\"hello\"}"))
+                .andExpect(status().isBadGateway())
+                .andExpect(jsonPath("$.status").value(502))
+                .andExpect(jsonPath("$.error").value("Bad Gateway"))
+                .andExpect(jsonPath("$.code").value("AI_PROVIDER_ERROR"))
+                .andExpect(jsonPath("$.message").value("Ollama provider failure"))
+                .andExpect(jsonPath("$.path").value("/api/v1/ai/chat"))
+                .andExpect(header().exists("X-Request-ID"));
     }
 
     private SearchAnalysis searchAnalysis(String language, String rewrite) {
