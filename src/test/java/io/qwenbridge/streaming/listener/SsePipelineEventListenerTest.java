@@ -1,19 +1,78 @@
 package io.qwenbridge.streaming.listener;
 
+import io.qwenbridge.event.model.PipelineEventMetadata;
 import io.qwenbridge.event.model.PipelineEvents;
 import io.qwenbridge.event.model.PipelineStage;
+import io.qwenbridge.event.snapshot.PipelineContextSnapshot;
+import io.qwenbridge.streaming.event.PipelineStreamingEvent;
 import io.qwenbridge.streaming.event.PipelineStreamingEventMapper;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 class SsePipelineEventListenerTest {
 
     @Test
-    void shouldListenToPipelineEventsWithoutFailingWhenNoSessionsExist() {
-        StreamingSessionRegistry registry = new StreamingSessionRegistry();
-        PipelineStreamingEventMapper mapper = new PipelineStreamingEventMapper();
+    void shouldRouteMappedEventToMatchingRequestId() {
+        StreamingSessionRegistry registry =
+                mock(StreamingSessionRegistry.class);
+
+        PipelineStreamingEventMapper mapper =
+                new PipelineStreamingEventMapper();
+
+        SsePipelineEventListener listener =
+                new SsePipelineEventListener(registry, mapper);
+
+        PipelineContextSnapshot snapshot =
+                new PipelineContextSnapshot(
+                        "request-1",
+                        "desk",
+                        false,
+                        true,
+                        "en",
+                        "SEARCH",
+                        "ALLOW",
+                        123456789L
+                );
+
+        var event =
+                PipelineEvents.stepStarted(
+                        PipelineStage.INTENT,
+                        snapshot,
+                        PipelineEventMetadata.of("request-1", 7L)
+                );
+
+        listener.onPipelineEvent(event);
+
+        ArgumentCaptor<PipelineStreamingEvent> payloadCaptor =
+                ArgumentCaptor.forClass(PipelineStreamingEvent.class);
+
+        verify(registry).sendToRequest(
+                eq("request-1"),
+                eq(event.id().value().toString()),
+                eq("intent.started"),
+                payloadCaptor.capture()
+        );
+
+        PipelineStreamingEvent payload = payloadCaptor.getValue();
+
+        assertThat(payload.requestId()).isEqualTo("request-1");
+        assertThat(payload.event()).isEqualTo("intent.started");
+        assertThat(payload.stage()).isEqualTo("intent");
+        assertThat(payload.type()).isEqualTo("started");
+        assertThat(payload.sequenceNumber()).isEqualTo(7L);
+    }
+
+    @Test
+    void shouldIgnoreEventsWithoutRequestId() {
+        StreamingSessionRegistry registry =
+                mock(StreamingSessionRegistry.class);
+
+        PipelineStreamingEventMapper mapper =
+                new PipelineStreamingEventMapper();
 
         SsePipelineEventListener listener =
                 new SsePipelineEventListener(registry, mapper);
@@ -22,6 +81,6 @@ class SsePipelineEventListenerTest {
                 PipelineEvents.info(PipelineStage.PIPELINE, "hello")
         );
 
-        assertThat(registry.size()).isZero();
+        verifyNoInteractions(registry);
     }
 }
