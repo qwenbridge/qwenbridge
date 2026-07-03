@@ -10,14 +10,26 @@ public record PipelineEventMetadata(
 
 ) {
 
+    public static PipelineEventMetadata of(
+            String requestId,
+            long sequenceNumber
+    ) {
+        return new PipelineEventMetadata(
+                requestId,
+                "",
+                requestId,
+                sequenceNumber,
+                "qwenbridge"
+        );
+    }
+
     public static PipelineEventMetadata empty() {
         return new PipelineEventMetadata(
                 "",
                 "",
                 "",
-                0,
+                0L,
                 "qwenbridge"
         );
     }
-
 }

@@ -8,6 +8,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/search")
@@ -24,6 +26,30 @@ public class SearchStreamController {
         requestIdValidator.validate(requestId);
 
         StreamingSession session = registry.register(requestId);
+
+        try {
+            session.emitter().send(
+                    SseEmitter.event()
+                            .name("stream.connected")
+                            .data("""
+                                    {
+                                      "requestId": "%s",
+                                      "sessionId": "%s"
+                                    }
+                                    """.formatted(
+                                    requestId,
+                                    session.sessionId()
+                            ))
+            );
+        } catch (IOException | IllegalStateException ex) {
+            registry.remove(session.sessionId());
+
+            throw new IllegalStateException(
+                    "Unable to establish SSE stream for requestId: " + requestId,
+                    ex
+            );
+        }
+
         return session.emitter();
     }
 }

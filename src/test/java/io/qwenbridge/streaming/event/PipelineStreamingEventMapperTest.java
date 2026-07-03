@@ -1,6 +1,7 @@
 package io.qwenbridge.streaming.event;
 
 import io.qwenbridge.event.model.PipelineEvent;
+import io.qwenbridge.event.model.PipelineEventMetadata;
 import io.qwenbridge.event.model.PipelineEvents;
 import io.qwenbridge.event.model.PipelineStage;
 import io.qwenbridge.event.snapshot.PipelineContextSnapshot;
@@ -15,7 +16,6 @@ class PipelineStreamingEventMapperTest {
 
     @Test
     void shouldMapPipelineEventToPublicStreamingEnvelope() {
-
         PipelineContextSnapshot snapshot =
                 new PipelineContextSnapshot(
                         "request-1",
@@ -31,7 +31,8 @@ class PipelineStreamingEventMapperTest {
         PipelineEvent<PipelineContextSnapshot> event =
                 PipelineEvents.stepStarted(
                         PipelineStage.INTENT,
-                        snapshot
+                        snapshot,
+                        PipelineEventMetadata.of("request-1", 7L)
                 );
 
         PipelineStreamingEvent streaming = mapper.map(event);
@@ -43,7 +44,7 @@ class PipelineStreamingEventMapperTest {
         assertEquals("intent", streaming.stage());
         assertEquals("started", streaming.type());
         assertEquals("qwenbridge", streaming.producer());
-        assertEquals(0L, streaming.sequenceNumber());
+        assertEquals(7L, streaming.sequenceNumber());
         assertInstanceOf(SnapshotStreamingPayload.class, streaming.payload());
 
         SnapshotStreamingPayload payload =
