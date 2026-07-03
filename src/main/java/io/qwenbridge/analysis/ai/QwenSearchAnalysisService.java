@@ -17,6 +17,7 @@ import io.qwenbridge.analysis.parser.SearchAnalysisJsonParser;
 import io.qwenbridge.analysis.prompt.SearchAnalysisPromptBuilder;
 import io.qwenbridge.analysis.service.SearchAnalysisService;
 import io.qwenbridge.streaming.ai.AIStreamingEventPublisher;
+import io.qwenbridge.streaming.config.StreamingProperties;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +39,7 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
     private final AIAnalysisSingleFlight singleFlight;
     private final AIStreamingEventPublisher streamingEventPublisher;
     private final StreamingSessionRegistry streamingSessionRegistry;
+    private final StreamingProperties streamingProperties;
 
     @Override
     public SearchAnalysis analyze(String query) {
@@ -126,12 +128,19 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
 
         try {
             aiService.streamChat(new StreamingChatRequest(prompt))
+                    .timeout(streamingProperties.maxAiStreamDuration())
                     .takeWhile(chunk -> !streamingSessionRegistry.isRequestCancelled(requestId))
                     .doOnNext(chunk -> {
                         if (!streamingSessionRegistry.isRequestCancelled(requestId)
                                 && chunk.content() != null
                                 && !chunk.content().isBlank()) {
                             long index = tokenIndex.incrementAndGet();
+
+                            if (index > streamingProperties.maxAiTokenCount()
+                                    || index > streamingProperties.maxAiEventCount()) {
+                                throw new AIStreamLimitExceededException();
+                            }
+
                             content.append(chunk.content());
                             streamingEventPublisher.token(
                                     requestId,
@@ -149,6 +158,13 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
             streamingEventPublisher.completed(requestId, tokenIndex.get());
 
             return parser.parse(content.toString(), query);
+        } catch (AIStreamLimitExceededException exception) {
+            streamingEventPublisher.failed(
+                    requestId,
+                    "AI_STREAM_LIMIT_EXCEEDED",
+                    "AI streaming limit exceeded"
+            );
+            return SearchAnalysis.fallback(query);
         } catch (Exception exception) {
             streamingEventPublisher.failed(
                     requestId,
@@ -158,4 +174,7 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
             return SearchAnalysis.fallback(query);
         }
     }
+    private static final class AIStreamLimitExceededException extends RuntimeException {
+    }
+
 }

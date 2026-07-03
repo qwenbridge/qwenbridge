@@ -13,6 +13,7 @@ import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.analysis.parser.SearchAnalysisJsonParser;
 import io.qwenbridge.analysis.prompt.SearchAnalysisPromptBuilder;
 import io.qwenbridge.streaming.ai.AIStreamingEventPublisher;
+import io.qwenbridge.streaming.config.StreamingProperties;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
@@ -45,6 +46,8 @@ class QwenSearchAnalysisServiceStreamingTest {
             mock(AIStreamingEventPublisher.class);
     private final StreamingSessionRegistry streamingSessionRegistry =
             mock(StreamingSessionRegistry.class);
+    private final StreamingProperties streamingProperties =
+            new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L);
 
     private final QwenSearchAnalysisService service =
             new QwenSearchAnalysisService(
@@ -57,7 +60,8 @@ class QwenSearchAnalysisServiceStreamingTest {
                     cacheTraceHolder,
                     singleFlight,
                     streamingEventPublisher,
-                    streamingSessionRegistry
+                    streamingSessionRegistry,
+                    streamingProperties
             );
 
     @Test
@@ -201,4 +205,54 @@ class QwenSearchAnalysisServiceStreamingTest {
         verify(streamingEventPublisher, never()).failed(anyString(), anyString(), anyString());
         verify(cache, never()).put(eq(key), any(SearchAnalysis.class));
     }
+
+    @Test
+    void shouldFailAndReturnFallbackWhenTokenLimitIsExceeded() {
+        QwenSearchAnalysisService limitedService =
+                new QwenSearchAnalysisService(
+                        aiService,
+                        promptBuilder,
+                        parser,
+                        cache,
+                        keyBuilder,
+                        cacheProperties,
+                        cacheTraceHolder,
+                        singleFlight,
+                        streamingEventPublisher,
+                        streamingSessionRegistry,
+                        new StreamingProperties(
+                                300_000L,
+                                java.time.Duration.ofSeconds(30),
+                                1L,
+                                10L
+                        )
+                );
+
+        CacheKey key = new CacheKey("cache-key");
+
+        when(keyBuilder.build("desk")).thenReturn(key);
+        when(cache.get(key)).thenReturn(Optional.empty());
+        when(promptBuilder.build("desk")).thenReturn("prompt");
+
+        when(aiService.streamChat(any(StreamingChatRequest.class)))
+                .thenReturn(Flux.just(
+                        new StreamingChatChunk("first", false),
+                        new StreamingChatChunk("second", false)
+                ));
+
+        SearchAnalysis result = limitedService.analyze("desk", "request-1");
+
+        assertThat(result.decisionReason())
+                .isEqualTo("Fallback keyword search decision.");
+
+        verify(streamingEventPublisher).token("request-1", 1L, "first");
+        verify(streamingEventPublisher).failed(
+                "request-1",
+                "AI_STREAM_LIMIT_EXCEEDED",
+                "AI streaming limit exceeded"
+        );
+        verify(streamingEventPublisher, never()).completed(anyString(), anyLong());
+        verify(cache).put(eq(key), any(SearchAnalysis.class));
+    }
+
 }

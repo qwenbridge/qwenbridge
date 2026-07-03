@@ -13,7 +13,7 @@ class SearchStreamControllerTest {
 
     private final StreamingSessionRegistry registry =
             new StreamingSessionRegistry(
-                    new StreamingProperties(300_000L)
+                    new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
             );
 
     private final SearchStreamController controller =
