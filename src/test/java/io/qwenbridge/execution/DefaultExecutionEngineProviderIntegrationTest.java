@@ -7,6 +7,7 @@ import io.qwenbridge.decision.SearchBackend;
 import io.qwenbridge.decision.SearchMode;
 import io.qwenbridge.execution.executor.ExecutionOperationExecutor;
 import io.qwenbridge.execution.provider.implementation.InMemorySearchProvider;
+import io.qwenbridge.execution.provider.model.SearchHit;
 import io.qwenbridge.execution.provider.model.SearchRequest;
 import io.qwenbridge.execution.provider.model.SearchResponse;
 import io.qwenbridge.execution.provider.registry.DefaultSearchProviderRegistry;
@@ -17,6 +18,7 @@ import io.qwenbridge.pipeline.ExecutionContext;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -192,5 +194,77 @@ class DefaultExecutionEngineProviderIntegrationTest {
         assertThat(searchRequest.searchMode()).isEqualTo("HYBRID");
         assertThat(searchRequest.embedding()).contains(List.of(0.4, 0.5, 0.6));
     }
+
+    @Test
+    void shouldRankSearchProviderResultsBeforeStoringResponseInContext() {
+        SearchProvider provider = mock(SearchProvider.class);
+        when(provider.name()).thenReturn("opensearch");
+        when(provider.search(any(SearchRequest.class))).thenReturn(
+                new SearchResponse(
+                        new io.qwenbridge.execution.provider.model.SearchResultSet(
+                                List.of(
+                                        new SearchHit(
+                                                "doc-low",
+                                                0.2,
+                                                Map.of("title", "Low score"),
+                                                Map.of(
+                                                        "lexicalScore", 0.2,
+                                                        "vectorScore", 0.2
+                                                )
+                                        ),
+                                        new SearchHit(
+                                                "doc-high",
+                                                0.9,
+                                                Map.of("title", "High score"),
+                                                Map.of(
+                                                        "lexicalScore", 0.9,
+                                                        "vectorScore", 0.9
+                                                )
+                                        )
+                                ),
+                                2,
+                                9
+                        )
+                )
+        );
+
+        SearchProviderResolver resolver = mock(SearchProviderResolver.class);
+        when(resolver.resolve(SearchBackend.OPENSEARCH)).thenReturn(provider);
+
+        DefaultExecutionEngine engine =
+                new DefaultExecutionEngine(
+                        List.<ExecutionOperationExecutor>of(),
+                        resolver,
+                        null
+                );
+
+        ExecutionPlan plan = ExecutionPlan.builder()
+                .mode(SearchMode.KEYWORD)
+                .backend(SearchBackend.OPENSEARCH)
+                .steps(List.of(
+                        new ExecutionStep(
+                                1,
+                                ExecutionOperation.KEYWORD_SEARCH,
+                                "keyword search"
+                        )
+                ))
+                .reason("keyword search plan")
+                .build();
+
+        ExecutionContext context = new ExecutionContext("desk");
+
+        engine.execute(plan, context);
+
+        SearchResponse response = context.get(SearchResponse.class);
+
+        assertThat(response.results().hits()).extracting(SearchHit::id)
+                .containsExactly("doc-high", "doc-low");
+
+        SearchHit topHit = response.results().hits().getFirst();
+
+        assertThat(topHit.metadata()).containsKeys("rankingScore", "finalScore");
+        assertThat(topHit.score()).isEqualTo(topHit.metadata().get("finalScore"));
+    }
+
 
 }

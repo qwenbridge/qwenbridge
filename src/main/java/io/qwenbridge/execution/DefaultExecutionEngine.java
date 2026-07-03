@@ -14,6 +14,8 @@ import io.qwenbridge.execution.provider.resolver.DefaultSearchProviderResolver;
 import io.qwenbridge.execution.provider.spi.SearchProvider;
 import io.qwenbridge.execution.provider.spi.SearchProviderResolver;
 import io.qwenbridge.pipeline.ExecutionContext;
+import io.qwenbridge.ranking.policy.DefaultRankingPolicy;
+import io.qwenbridge.ranking.service.SearchResultRanker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +29,7 @@ public class DefaultExecutionEngine implements ExecutionEngine {
     private final Map<ExecutionOperation, ExecutionOperationExecutor> executors;
     private final SearchProviderResolver searchProviderResolver;
     private final AIService aiService;
+    private final SearchResultRanker searchResultRanker;
 
     public DefaultExecutionEngine(List<ExecutionOperationExecutor> executors) {
         this(
@@ -36,7 +39,8 @@ public class DefaultExecutionEngine implements ExecutionEngine {
                                 List.of(new InMemorySearchProvider())
                         )
                 ),
-                null
+                null,
+                new SearchResultRanker(new DefaultRankingPolicy())
         );
     }
 
@@ -44,15 +48,30 @@ public class DefaultExecutionEngine implements ExecutionEngine {
     public DefaultExecutionEngine(
             List<ExecutionOperationExecutor> executors,
             SearchProviderResolver searchProviderResolver,
-            AIService aiService
+            AIService aiService,
+            SearchResultRanker searchResultRanker
     ) {
         this.executors = new HashMap<>();
         this.searchProviderResolver = searchProviderResolver;
         this.aiService = aiService;
+        this.searchResultRanker = searchResultRanker;
 
         for (ExecutionOperationExecutor executor : executors) {
             this.executors.put(executor.operation(), executor);
         }
+    }
+
+    public DefaultExecutionEngine(
+            List<ExecutionOperationExecutor> executors,
+            SearchProviderResolver searchProviderResolver,
+            AIService aiService
+    ) {
+        this(
+                executors,
+                searchProviderResolver,
+                aiService,
+                new SearchResultRanker(new DefaultRankingPolicy())
+        );
     }
 
     public DefaultExecutionEngine(
@@ -93,10 +112,15 @@ public class DefaultExecutionEngine implements ExecutionEngine {
 
         SearchRequest searchRequest = searchRequestFor(plan, context);
         SearchProvider provider = searchProviderResolver.resolve(plan.backend());
-        SearchResponse response = provider.search(searchRequest);
-        context.store(SearchResponse.class, response);
 
-        List<String> results = response.results()
+        SearchResponse rawResponse = provider.search(searchRequest);
+        SearchResponse rankedResponse = new SearchResponse(
+                searchResultRanker.rank(rawResponse.results())
+        );
+
+        context.store(SearchResponse.class, rankedResponse);
+
+        List<String> results = rankedResponse.results()
                 .hits()
                 .stream()
                 .map(hit -> hit.document().toString())
@@ -111,6 +135,7 @@ public class DefaultExecutionEngine implements ExecutionEngine {
                 "Execution plan executed successfully using search provider: " + provider.name()
         );
     }
+
     private SearchRequest searchRequestFor(
             ExecutionPlan plan,
             ExecutionContext context
@@ -149,5 +174,4 @@ public class DefaultExecutionEngine implements ExecutionEngine {
 
         return response;
     }
-
 }
