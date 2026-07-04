@@ -1,6 +1,9 @@
+import type { RetryPolicyOptions } from "./retry/retry-policy.js";
+
 export interface QwenBridgeClientOptions {
   baseUrl: string;
   fetch?: typeof fetch;
+  retry?: RetryPolicyOptions;
 }
 
 export interface SearchAnalyzeRequest {

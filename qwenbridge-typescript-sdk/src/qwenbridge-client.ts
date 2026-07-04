@@ -3,6 +3,8 @@ import {
   QwenBridgeTransportError,
   type QwenBridgeApiErrorBody
 } from "./errors.js";
+import { RetryExecutor } from "./retry/retry-executor.js";
+import { RetryPolicy } from "./retry/retry-policy.js";
 import type {
   QwenBridgeClientOptions,
   SearchAnalyzeRequest,
@@ -13,6 +15,7 @@ const REQUEST_ID_HEADER = "X-Request-Id";
 
 export class QwenBridgeClient {
   private readonly fetchFn: typeof fetch;
+  private readonly retryExecutor: RetryExecutor;
 
   public constructor(
     private readonly options: QwenBridgeClientOptions
@@ -24,6 +27,10 @@ export class QwenBridgeClient {
         "No fetch implementation is available. Use Node.js 20+ or provide options.fetch."
       );
     }
+
+    this.retryExecutor = new RetryExecutor(
+      new RetryPolicy(options.retry)
+    );
   }
 
   public get baseUrl(): string {
@@ -35,6 +42,14 @@ export class QwenBridgeClient {
   ): Promise<SearchAnalyzeResponse> {
     this.validateAnalyzeRequest(request);
 
+    return this.retryExecutor.execute(
+      () => this.executeAnalyze(request)
+    );
+  }
+
+  private async executeAnalyze(
+    request: SearchAnalyzeRequest
+  ): Promise<SearchAnalyzeResponse> {
     const headers: Record<string, string> = {
       "Accept": "application/json",
       "Content-Type": "application/json"

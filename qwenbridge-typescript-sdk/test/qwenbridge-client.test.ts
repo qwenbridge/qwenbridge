@@ -166,6 +166,35 @@ describe("QwenBridgeClient", () => {
     ).rejects.toBeInstanceOf(QwenBridgeTransportError);
   });
 
+  it("retries transient API failure before returning success", async () => {
+    const fetchMock = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse(503, {
+        status: 503,
+        message: "temporarily unavailable"
+      }))
+      .mockResolvedValueOnce(jsonResponse(200, {
+        requestId: "req-retry",
+        originalQuery: "iphone"
+      }));
+
+    const client = new QwenBridgeClient({
+      baseUrl: "http://localhost:8080",
+      fetch: fetchMock,
+      retry: {
+        maxAttempts: 2,
+        initialDelayMs: 0
+      }
+    });
+
+    const response = await client.analyze({
+      requestId: "req-retry",
+      query: "iphone"
+    });
+
+    expect(response.requestId).toBe("req-retry");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it("rejects blank query before HTTP call", async () => {
     const fetchMock = vi.fn<typeof fetch>();
 
