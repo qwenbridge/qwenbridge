@@ -1,5 +1,8 @@
 package io.qwenbridge.starter;
 
+import io.qwenbridge.sdk.QwenBridgeClient;
+import io.qwenbridge.sdk.config.QwenBridgeClientConfig;
+import io.qwenbridge.sdk.streaming.QwenBridgeStreamingClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -57,4 +60,57 @@ class QwenBridgeAutoConfigurationTest {
                             .isEqualTo(Duration.ofSeconds(45));
                 });
     }
+
+    @Test
+    void shouldCreateSdkBeans() {
+        contextRunner.run(context -> {
+            assertThat(context).hasSingleBean(QwenBridgeClientConfig.class);
+            assertThat(context).hasSingleBean(QwenBridgeClient.class);
+            assertThat(context).hasSingleBean(QwenBridgeStreamingClient.class);
+        });
+    }
+
+    @Test
+    void shouldRespectCustomClientConfigBean() {
+        QwenBridgeClientConfig customConfig = new QwenBridgeClientConfig(
+                java.net.URI.create("http://custom-qwenbridge:8081"),
+                Duration.ofSeconds(9),
+                Duration.ofSeconds(99)
+        );
+
+        contextRunner
+                .withBean(QwenBridgeClientConfig.class, () -> customConfig)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(QwenBridgeClientConfig.class);
+                    assertThat(context.getBean(QwenBridgeClientConfig.class))
+                            .isSameAs(customConfig);
+                    assertThat(context).hasSingleBean(QwenBridgeClient.class);
+                    assertThat(context).hasSingleBean(QwenBridgeStreamingClient.class);
+                });
+    }
+
+    @Test
+    void shouldRespectCustomSdkBeans() {
+        QwenBridgeClientConfig customConfig = new QwenBridgeClientConfig(
+                java.net.URI.create("http://custom-qwenbridge:8081"),
+                Duration.ofSeconds(9),
+                Duration.ofSeconds(99)
+        );
+
+        QwenBridgeClient customClient = new QwenBridgeClient(customConfig);
+        QwenBridgeStreamingClient customStreamingClient =
+                new QwenBridgeStreamingClient(customConfig);
+
+        contextRunner
+                .withBean(QwenBridgeClient.class, () -> customClient)
+                .withBean(QwenBridgeStreamingClient.class, () -> customStreamingClient)
+                .run(context -> {
+                    assertThat(context.getBean(QwenBridgeClient.class))
+                            .isSameAs(customClient);
+                    assertThat(context.getBean(QwenBridgeStreamingClient.class))
+                            .isSameAs(customStreamingClient);
+                });
+    }
+
 }
+
