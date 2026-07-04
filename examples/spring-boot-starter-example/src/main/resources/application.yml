@@ -1,0 +1,16 @@
+server:
+  port: 8081
+
+qwenbridge:
+  base-url: http://localhost:8080
+  connect-timeout: 2s
+  request-timeout: 30s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always

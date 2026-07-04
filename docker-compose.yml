@@ -3,7 +3,11 @@ services:
     image: ollama/ollama:latest
     container_name: qwenbridge-ollama
     restart: unless-stopped
-    mem_limit: 4g
+    mem_limit: 8g
+    environment:
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_KEEP_ALIVE: "0"
     ports:
       - "11434:11434"
     volumes:
@@ -65,7 +69,7 @@ services:
   qwenbridge-app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: qwenbridge-server/Dockerfile
     container_name: qwenbridge-app
     restart: unless-stopped
     depends_on:
@@ -80,7 +84,7 @@ services:
     env_file:
       - .env
     environment:
-      JAVA_OPTS: ${JAVA_OPTS:-"-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError"}
+      JAVA_OPTS: ${JAVA_OPTS:-"-XX:MaxRAMPercentage=55 -XX:InitialRAMPercentage=25 -XX:+ExitOnOutOfMemoryError"}
       QWENBRIDGE_AI_PROVIDER: ollama
       QWENBRIDGE_AI_OLLAMA_BASE_URL: http://qwenbridge-ollama:11434
       QWENBRIDGE_AI_OLLAMA_CHAT_MODEL: qwen2.5
@@ -89,6 +93,13 @@ services:
       QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST: qwenbridge-redis
       QWENBRIDGE_ANALYSIS_CACHE_REDIS_PORT: 6379
       QWENBRIDGE_ANALYSIS_CACHE_ANALYSIS_TIMEOUT: 10s
+
+      QWENBRIDGE_ABUSE_PER_IP_LIMIT: "20000000"
+      QWENBRIDGE_ABUSE_PER_API_KEY_LIMIT: "20000000"
+      QWENBRIDGE_ABUSE_AI_REQUEST_QUOTA: "20000000"
+      QWENBRIDGE_ABUSE_TOKEN_QUOTA: "2000000000"
+      QWENBRIDGE_ABUSE_CONCURRENT_STREAM_LIMIT: "100000"
+      
     profiles: ["production"]
     deploy:
       resources:
@@ -105,6 +116,27 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
+
+  qwenbridge-k6:
+    image: grafana/k6:latest
+    container_name: qwenbridge-k6
+    profiles: [ "performance" ]
+    depends_on:
+      qwenbridge-app:
+        condition: service_started
+    environment:
+      BASE_URL: http://qwenbridge-app:8080
+      PERF_TOTAL_REQUESTS: ${PERF_TOTAL_REQUESTS:-1000000}
+      PERF_VUS: ${PERF_VUS:-250}
+      PERF_MAX_DURATION: ${PERF_MAX_DURATION:-30m}
+    volumes:
+      - ./scripts/performance:/scripts/performance:ro
+    command:
+      [
+        "run",
+        "/scripts/performance/v9-k6-load-test.js"
+      ]
+    restart: "no"
 
 volumes:
   ollama-data:

@@ -47,7 +47,7 @@ jobs:
           distribution: temurin
           java-version: 21
           cache: maven
-      - run: mvn -B -Dtest=ArchitectureRulesTest test
+      - run: mvn -B -pl qwenbridge-server -Dtest=ArchitectureRulesTest test
 
   api-compatibility:
     name: API Compatibility
@@ -61,7 +61,7 @@ jobs:
           cache: maven
       - run: mvn -B -DskipTests package
       - name: Verify API compatibility tests
-        run: mvn -B -Dtest=ApiVersionControllerTest,ApiHealthControllerTest test
+        run: mvn -B -pl qwenbridge-server -Dtest=ApiVersionControllerTest,ApiHealthControllerTest test
 
   dependency-scan:
     name: Dependency Scan
@@ -107,7 +107,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build image
-        run: docker build -t qwenbridge:${{ github.sha }} .
+        run: docker build -f qwenbridge-server/Dockerfile -t qwenbridge:${{ github.sha }} .
 
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@master
@@ -138,7 +138,7 @@ jobs:
           distribution: temurin
           java-version: 21
           cache: maven
-      - run: mvn -B -Dtest=DefaultBenchmarkEvaluationRunnerTest test
+      - run: mvn -B -pl qwenbridge-server -Dtest=DefaultBenchmarkEvaluationRunnerTest test
 
   docker-release-verification:
     name: Docker Release Verification
@@ -147,7 +147,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build image
-        run: docker build -t qwenbridge:ci .
+        run: docker build -f qwenbridge-server/Dockerfile -t qwenbridge:ci .
       - name: Verify image metadata
         run: docker image inspect qwenbridge:ci >/tmp/qwenbridge-image.json
       - uses: actions/upload-artifact@v4
