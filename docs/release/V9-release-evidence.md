@@ -90,3 +90,48 @@ Before final V9 release:
 - Merge `feat/v9-developer-platform` into `main`.
 - Create the annotated V9 release tag.
 - Publish release notes.
+
+## Java SDK SSE Streaming Evidence
+
+Delivered implementation:
+
+- QwenBridgeStreamingClient consumes GET /api/v1/search/stream/{requestId}
+- stream(requestId, handler) delivers raw SSE events
+- streamTyped(requestId, handler) delivers typed SDK payloads
+
+Typed payload coverage:
+
+- stream.connected -> ConnectedStreamingPayload
+- ai.token -> AITokenStreamingPayload
+- ai.completed -> AICompletedStreamingPayload
+- ai.failed -> AIFailedStreamingPayload
+- unknown or malformed event -> UnknownStreamingPayload
+
+Source evidence:
+
+- qwenbridge-java-sdk/src/main/java/io/qwenbridge/sdk/streaming/QwenBridgeStreamingClient.java
+- qwenbridge-java-sdk/src/main/java/io/qwenbridge/sdk/streaming/StreamingPayloadMapper.java
+- qwenbridge-java-sdk/src/main/java/io/qwenbridge/sdk/streaming/TypedStreamingEvent.java
+- qwenbridge-java-sdk/src/main/java/io/qwenbridge/sdk/streaming/TypedStreamingEventHandler.java
+- qwenbridge-java-sdk/src/main/java/io/qwenbridge/sdk/streaming/payload/
+- qwenbridge-java-sdk/src/test/java/io/qwenbridge/sdk/streaming/QwenBridgeStreamingClientTest.java
+- qwenbridge-java-sdk/src/test/java/io/qwenbridge/sdk/streaming/TypedStreamingPayloadTest.java
+- examples/java-sdk-example/src/main/java/io/qwenbridge/examples/TypedStreamingExample.java
+- qwenbridge-java-sdk/README.md
+
+Verification evidence:
+
+- QwenBridge server tests: 319 passed
+- QwenBridge Java SDK tests: 35 passed
+- Java SDK example module: compiled successfully
+- Maven reactor result: BUILD SUCCESS
+
+Relevant commits:
+
+- a3a2a83 feat(java-sdk): add SSE streaming client foundation
+- e7f208a feat(java-sdk): map typed SSE streaming payloads
+- c5837e0 docs(java-sdk): add typed SSE streaming example
+
+Scope boundary:
+
+This evidence confirms SDK-side SSE consumption and typed payload mapping against the existing server stream contract. It does not claim that the server already performs live token-by-token AI generation.

@@ -58,3 +58,19 @@
 - [x] Full Maven reactor build passes.
 - [ ] Pull request reviewed and merged.
 - [ ] V9 release tag created.
+
+## Java SDK SSE Streaming
+
+- [x] Add QwenBridgeStreamingClient
+- [x] Support raw SSE event consumption
+- [x] Add typed streamTyped(...) API
+- [x] Map stream.connected payloads
+- [x] Map ai.token payloads
+- [x] Map ai.completed payloads
+- [x] Map ai.failed payloads
+- [x] Preserve unknown events through fallback payload handling
+- [x] Add malformed-payload fallback behavior
+- [x] Add unit tests for raw SSE parsing
+- [x] Add unit tests for typed payload mapping
+- [x] Add typed SSE streaming example
+- [x] Document typed SSE streaming in Java SDK README
