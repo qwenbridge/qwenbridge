@@ -2,6 +2,26 @@
   "name": "@qwenbridge/sdk",
   "version": "0.1.0-SNAPSHOT",
   "description": "Official TypeScript SDK for QwenBridge",
+  "license": "Apache-2.0",
+  "author": "QwenBridge",
+  "keywords": [
+    "qwenbridge",
+    "search",
+    "ai",
+    "sdk",
+    "typescript",
+    "sse",
+    "streaming"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mahad-Banai/qwenbridge.git",
+    "directory": "qwenbridge-typescript-sdk"
+  },
+  "bugs": {
+    "url": "https://github.com/Mahad-Banai/qwenbridge/issues"
+  },
+  "homepage": "https://github.com/Mahad-Banai/qwenbridge#readme",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,27 +34,26 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "NOTICE"
   ],
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "test:watch": "vitest"
-  },
   "engines": {
     "node": ">=20"
   },
-  "keywords": [
-    "qwenbridge",
-    "search",
-    "ai",
-    "sdk",
-    "typescript"
-  ],
-  "license": "Apache-2.0",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepack": "npm run build",
+    "pack:check": "npm pack --dry-run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/node": "^22.15.3",
     "typescript": "^5.8.3",
-    "vitest": "^3.1.2"
+    "vitest": "^3.2.6"
   }
 }
