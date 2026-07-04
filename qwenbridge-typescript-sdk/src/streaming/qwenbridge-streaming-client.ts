@@ -2,9 +2,13 @@ import { QwenBridgeTransportError } from "../errors.js";
 import type { QwenBridgeClientOptions } from "../types.js";
 import type { StreamingEvent } from "./streaming-event.js";
 import type { StreamingEventHandler } from "./streaming-event-handler.js";
+import { StreamingPayloadMapper } from "./streaming-payload-mapper.js";
+import type { TypedStreamingEvent } from "./typed-streaming-event.js";
+import type { TypedStreamingEventHandler } from "./typed-streaming-event-handler.js";
 
 export class QwenBridgeStreamingClient {
   private readonly fetchFn: typeof fetch;
+  private readonly payloadMapper = new StreamingPayloadMapper();
 
   public constructor(
     private readonly options: QwenBridgeClientOptions
@@ -23,6 +27,28 @@ export class QwenBridgeStreamingClient {
   }
 
   public async stream(
+    requestId: string,
+    handler: StreamingEventHandler
+  ): Promise<void> {
+    await this.openAndParse(requestId, handler);
+  }
+
+  public async streamTyped(
+    requestId: string,
+    handler: TypedStreamingEventHandler
+  ): Promise<void> {
+    await this.openAndParse(requestId, async event => {
+      const typedEvent: TypedStreamingEvent = {
+        event: event.event,
+        data: event.data,
+        payload: this.payloadMapper.map(event)
+      };
+
+      await handler(typedEvent);
+    });
+  }
+
+  private async openAndParse(
     requestId: string,
     handler: StreamingEventHandler
   ): Promise<void> {

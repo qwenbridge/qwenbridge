@@ -95,6 +95,47 @@ describe("QwenBridgeStreamingClient", () => {
     ]);
   });
 
+  it("parses typed SSE payloads", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        [
+          "event: stream.connected",
+          "data: {\"requestId\":\"req-typed\",\"sessionId\":\"session-typed\"}",
+          "",
+          "event: ai.token",
+          "data: {\"requestId\":\"req-typed\",\"tokenIndex\":1,\"content\":\"hello\",\"terminal\":false}",
+          "",
+          "event: ai.completed",
+          "data: {\"requestId\":\"req-typed\",\"tokenCount\":1,\"terminal\":true}",
+          ""
+        ].join("\n"),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "text/event-stream"
+          }
+        }
+      )
+    );
+
+    const client = new QwenBridgeStreamingClient({
+      baseUrl: "http://localhost:8080",
+      fetch: fetchMock
+    });
+
+    const payloadKinds: string[] = [];
+
+    await client.streamTyped("req-typed", event => {
+      payloadKinds.push(event.payload.kind);
+    });
+
+    expect(payloadKinds).toEqual([
+      "connected",
+      "ai.token",
+      "ai.completed"
+    ]);
+  });
+
   it("rejects blank request id before HTTP call", async () => {
     const fetchMock = vi.fn<typeof fetch>();
 

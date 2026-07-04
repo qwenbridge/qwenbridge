@@ -1,5 +1,6 @@
 export { QwenBridgeClient } from "./qwenbridge-client.js";
 export { QwenBridgeStreamingClient } from "./streaming/qwenbridge-streaming-client.js";
+export { StreamingPayloadMapper } from "./streaming/streaming-payload-mapper.js";
 export {
   QwenBridgeApiError,
   QwenBridgeTransportError
@@ -22,6 +23,20 @@ export type {
 export type {
   StreamingEventHandler
 } from "./streaming/streaming-event-handler.js";
+export type {
+  TypedStreamingEvent
+} from "./streaming/typed-streaming-event.js";
+export type {
+  TypedStreamingEventHandler
+} from "./streaming/typed-streaming-event-handler.js";
+export type {
+  AICompletedStreamingPayload,
+  AIFailedStreamingPayload,
+  AITokenStreamingPayload,
+  ConnectedStreamingPayload,
+  StreamingPayload,
+  UnknownStreamingPayload
+} from "./streaming/payload/streaming-payload.js";
 export type {
   QwenBridgeClientOptions,
   SearchAnalyzeRequest,
