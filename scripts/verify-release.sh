@@ -93,13 +93,43 @@ require_command() {
 
 COMPOSE_PROFILE="${COMPOSE_PROFILE:-production}"
 
+create_v9_compose_override_if_needed() {
+  V9_COMPOSE_OVERRIDE=""
+
+  if [[ -f "Dockerfile" ]]; then
+    return 0
+  fi
+
+  if [[ ! -f "qwenbridge-server/Dockerfile" ]]; then
+    return 0
+  fi
+
+  V9_COMPOSE_OVERRIDE="/tmp/qwenbridge-v9-compose.override.yml"
+
+  cat > "${V9_COMPOSE_OVERRIDE}" <<'YAML'
+services:
+  qwenbridge-app:
+    build:
+      context: .
+      dockerfile: qwenbridge-server/Dockerfile
+YAML
+}
+
 compose() {
+  create_v9_compose_override_if_needed
+
+  local args=(-f "${COMPOSE_FILE}")
+
+  if [[ -n "${V9_COMPOSE_OVERRIDE:-}" ]]; then
+    args+=(-f "${V9_COMPOSE_OVERRIDE}")
+  fi
+
   if [[ -n "${COMPOSE_PROFILE}" ]]; then
-    docker compose -f "${COMPOSE_FILE}" --profile "${COMPOSE_PROFILE}" "$@"
+    docker compose "${args[@]}" --profile "${COMPOSE_PROFILE}" "$@"
     return $?
   fi
 
-  docker compose -f "${COMPOSE_FILE}" "$@"
+  docker compose "${args[@]}" "$@"
 }
 
 run_step() {
@@ -130,7 +160,7 @@ check_project_root() {
 
   [[ -f "pom.xml" ]] \
     && [[ -f "${COMPOSE_FILE}" ]] \
-    && [[ -f "Dockerfile" ]]
+    && { [[ -f "Dockerfile" ]] || [[ -f "qwenbridge-server/Dockerfile" ]]; }
 }
 
 check_required_tools() {
@@ -205,6 +235,7 @@ v8_release_docs_validation() {
 
 v8_quality_test_suite_validation() {
   mvn -q \
+    -pl qwenbridge-server \
     -Dtest='ArchitectureRulesTest,InMemoryFixedWindowRateLimiterTest,DefaultBenchmarkEvaluationRunnerTest,DefaultEvaluationThresholdPolicyTest,DefaultRankingPolicyTest,SearchResultRankerTest,DefaultRerankingServiceTest,NoOpRerankerTest' \
     test
 }
@@ -1891,9 +1922,9 @@ echo "======================================================"
 run_step "Project root validation" check_project_root
 run_step "Required tools validation" check_required_tools
 run_step "Git state validation" check_git_state
-run_step "V8 release tag validation" check_release_tag
+run_step "V9 release tag validation" check_release_tag
 run_step "V8 release docs validation" v8_release_docs_validation
-run_step "V8 quality test suite validation" v8_quality_test_suite_validation
+run_step "V9 server quality test suite validation" v8_quality_test_suite_validation
 run_step "V8 CI workflow validation" v8_ci_workflow_validation
 run_step "V8 dependency security files validation" v8_dependency_security_files_validation
 run_step "V8 abuse source validation" v8_abuse_source_validation
