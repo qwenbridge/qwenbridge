@@ -24,7 +24,7 @@ jobs:
       - name: Build and test
         run: mvn -B clean verify
       - name: Build Docker image
-        run: docker build -t qwenbridge:${{ github.ref_name }} .
+        run: docker build -f qwenbridge-server/Dockerfile -t qwenbridge:${{ github.ref_name }} .
       - name: Verify release script
         run: bash scripts/verify-release.sh
       - name: Collect release evidence
