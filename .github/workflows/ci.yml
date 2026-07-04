@@ -65,7 +65,7 @@ jobs:
   dependency-scan:
     name: Dependency Scan
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -78,7 +78,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository/org/owasp/dependency-check-data
-          key: dependency-check-data-${{ runner.os }}-v1
+          key: dependency-check-data-${{ runner.os }}-v2
           restore-keys: |
             dependency-check-data-${{ runner.os }}-
 
