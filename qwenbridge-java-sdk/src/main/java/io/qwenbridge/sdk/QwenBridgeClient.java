@@ -1,6 +1,7 @@
 package io.qwenbridge.sdk;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.qwenbridge.sdk.config.QwenBridgeClientConfig;
 import io.qwenbridge.sdk.exception.QwenBridgeApiError;
 import io.qwenbridge.sdk.exception.QwenBridgeApiException;
@@ -26,7 +27,7 @@ public class QwenBridgeClient {
     public QwenBridgeClient(QwenBridgeClientConfig config) {
         this(config, HttpClient.newBuilder()
                 .connectTimeout(config.connectTimeout())
-                .build(), new ObjectMapper());
+                .build(), new ObjectMapper().registerModule(new JavaTimeModule()));
     }
 
     QwenBridgeClient(
