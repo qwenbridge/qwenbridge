@@ -65,6 +65,7 @@ jobs:
   dependency-scan:
     name: Dependency Scan
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || github.event_name == 'schedule' }}
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
