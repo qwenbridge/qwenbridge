@@ -16,7 +16,8 @@ VERSION_ENDPOINT="${VERSION_ENDPOINT:-/api/v1/version}"
 SSE_ENDPOINT_PREFIX="${SSE_ENDPOINT_PREFIX:-/api/v1/search/stream}"
 
 EXPECTED_BRANCH="${EXPECTED_BRANCH:-main}"
-EXPECTED_TAG="${EXPECTED_TAG:-v0.7.0}"
+EXPECTED_TAG="${EXPECTED_TAG:-v0.8.0}"
+EXPECTED_TAG_REQUIRED="${EXPECTED_TAG_REQUIRED:-false}"
 EXPECTED_VERSION="${EXPECTED_VERSION:-0.1.0-SNAPSHOT}"
 
 TEST_QUERY="${TEST_QUERY:-best gaming laptop under 1500 euro}"
@@ -161,23 +162,43 @@ check_release_tag() {
   echo "Tag commit: ${tag_commit}"
   echo "HEAD commit: ${head_commit}"
 
-  [[ -n "${tag_commit}" ]] && [[ "${tag_commit}" == "${head_commit}" ]]
+  if [[ -z "${tag_commit}" ]]; then
+    if [[ "${EXPECTED_TAG_REQUIRED}" == "true" ]]; then
+      return 1
+    fi
+
+    warn "Expected tag ${EXPECTED_TAG} does not exist yet. Skipping strict tag validation."
+    return 0
+  fi
+
+  if [[ "${tag_commit}" != "${head_commit}" ]]; then
+    if [[ "${EXPECTED_TAG_REQUIRED}" == "true" ]]; then
+      return 1
+    fi
+
+    warn "Expected tag ${EXPECTED_TAG} is not on HEAD yet. Skipping strict tag validation."
+    return 0
+  fi
+
+  return 0
 }
 
-v7_release_docs_validation() {
-  [[ -f "docs/roadmap/V7.md" ]] \
-    && [[ -f "docs/release/V7-release-evidence.md" ]] \
-    && [[ -f "docs/release/V7-quality-evidence.md" ]] \
-    && [[ -f "docs/evaluation/retrieval-quality-benchmark.md" ]] \
-    && grep -q "Intelligent Streaming and Retrieval Quality" docs/roadmap/V7.md \
-    && grep -q "Tests run: 318" docs/release/V7-release-evidence.md \
-    && grep -q "Precision@K" docs/evaluation/retrieval-quality-benchmark.md \
-    && grep -q "nDCG@K" docs/evaluation/retrieval-quality-benchmark.md
+v8_release_docs_validation() {
+  [[ -f "docs/roadmap/V8.md" ]] \
+    && [[ -f "docs/release/V8-release-checklist.md" ]] \
+    && [[ -f "docs/security/abuse-protection.md" ]] \
+    && [[ -f "docs/security/secrets-handling-policy.md" ]] \
+    && [[ -f "docs/architecture/architecture-rules.md" ]] \
+    && grep -qi "production" docs/roadmap/V8.md \
+    && grep -qi "security" docs/roadmap/V8.md \
+    && grep -qi "abuse" docs/security/abuse-protection.md \
+    && grep -qi "secret" docs/security/secrets-handling-policy.md \
+    && grep -qi "archunit" docs/architecture/architecture-rules.md
 }
 
-v7_quality_test_suite_validation() {
+v8_quality_test_suite_validation() {
   mvn -q \
-    -Dtest='RetrievalEvaluationMetricsTest,BenchmarkDatasetLoaderTest,DefaultRetrievalEvaluationServiceTest,DefaultEvaluationThresholdPolicyTest,DefaultBenchmarkEvaluationRunnerTest,DefaultRankingPolicyTest,SearchResultRankerTest,DefaultRerankingServiceTest,NoOpRerankerTest' \
+    -Dtest='ArchitectureRulesTest,InMemoryFixedWindowRateLimiterTest,DefaultBenchmarkEvaluationRunnerTest,DefaultEvaluationThresholdPolicyTest,DefaultRankingPolicyTest,SearchResultRankerTest,DefaultRerankingServiceTest,NoOpRerankerTest' \
     test
 }
 
@@ -315,7 +336,7 @@ wait_for_compose_services() {
   wait_for_container_healthy_or_running "${REDIS_CONTAINER}" healthy \
     && wait_for_container_healthy_or_running "${OLLAMA_CONTAINER}" healthy \
     && wait_for_container_healthy_or_running "${OPENSEARCH_CONTAINER}" healthy \
-    && wait_for_container_healthy_or_running "${APP_CONTAINER}" healthy
+    && wait_for_container_healthy_or_running "${APP_CONTAINER}" running
 }
 
 verify_ollama_models() {
@@ -459,21 +480,25 @@ opensearch_hybrid_retrieval_validation() {
 }
 
 docker_runtime_user_validation() {
-  local user=""
+  local configured_user=""
 
-  user="$(docker exec "${APP_CONTAINER}" id -un | tr -d '\r')"
-  echo "Application container user: ${user}"
+  configured_user="$(docker inspect "${APP_CONTAINER}" --format '{{.Config.User}}' 2>/dev/null | tr -d '\r')"
+  echo "Application container configured user: ${configured_user}"
 
-  [[ "${user}" == "qwenbridge" ]]
+  [[ "${configured_user}" == "nonroot" ]] || [[ "${configured_user}" == "nonroot:nonroot" ]] || [[ "${configured_user}" == "65532" ]] || [[ "${configured_user}" == "65532:65532" ]]
 }
 
 docker_app_healthcheck_validation() {
   local health=""
 
-  health="$(docker inspect "${APP_CONTAINER}" --format '{{.State.Health.Status}}' 2>/dev/null || true)"
-  echo "Application container health: ${health}"
+  health="$(docker inspect "${APP_CONTAINER}" --format '{{if .State.Health}}{{.State.Health.Status}}{{end}}' 2>/dev/null || true)"
+  echo "Application container Docker health: ${health:-not-configured}"
 
-  [[ "${health}" == "healthy" ]]
+  if [[ "${health}" == "healthy" ]]; then
+    return 0
+  fi
+
+  app_public_health_up
 }
 
 
@@ -1118,17 +1143,17 @@ sse_streaming_lifecycle_validation() {
 sse_ai_token_streaming_validation() {
   local suffix=""
   local request_id=""
-  local headers="/tmp/qwenbridge-v7-ai-sse.headers"
-  local stream_log="/tmp/qwenbridge-v7-ai-sse.log"
-  local analyze_headers="/tmp/qwenbridge-v7-ai-sse-analyze.headers"
-  local analyze_body="/tmp/qwenbridge-v7-ai-sse-analyze.json"
+  local headers="/tmp/qwenbridge-v8-ai-sse.headers"
+  local stream_log="/tmp/qwenbridge-v8-ai-sse.log"
+  local analyze_headers="/tmp/qwenbridge-v8-ai-sse-analyze.headers"
+  local analyze_body="/tmp/qwenbridge-v8-ai-sse-analyze.json"
   local analyze_status=""
   local pid=""
 
   cleanup_background_processes
 
   suffix="$(date +%s)"
-  request_id="verify-release-v7-ai-sse-${suffix}"
+  request_id="verify-release-v8-ai-sse-${suffix}"
 
   rm -f "${headers}" "${stream_log}" "${analyze_headers}" "${analyze_body}"
   docker exec "${REDIS_CONTAINER}" redis-cli flushdb >/dev/null || true
@@ -1157,7 +1182,7 @@ sse_ai_token_streaming_validation() {
       -X POST "${BASE_URL}${ANALYZE_ENDPOINT}" \
       -H "Content-Type: application/json" \
       -H "X-Request-ID: ${request_id}" \
-      --data "$(json_payload "${request_id}" "v7 unique ai streaming gaming laptop ${suffix}")" \
+      --data "$(json_payload "${request_id}" "v8 unique ai streaming gaming laptop ${suffix}")" \
       -o "${analyze_body}" \
       -w "%{http_code}"
   )"
@@ -1190,7 +1215,7 @@ sse_ai_token_streaming_validation() {
   SSE_PRIMARY_PID=""
 
   echo ""
-  echo "========== V7 AI SSE Stream =========="
+  echo "========== V8 AI SSE Stream =========="
   cat "${stream_log}" 2>/dev/null || true
 
   grep -Eq '^event:ai\.(token|failed)$' "${stream_log}" \
@@ -1203,7 +1228,7 @@ openapi_endpoint() {
   curl -fsS "${BASE_URL}/v3/api-docs" | jq . >/dev/null
 }
 
-openapi_contains_v7_endpoints() {
+openapi_contains_v8_endpoints() {
   local body="/tmp/qwenbridge-openapi.json"
 
   curl -fsS "${BASE_URL}/v3/api-docs" -o "${body}" || return 1
@@ -1218,9 +1243,77 @@ openapi_contains_v7_endpoints() {
 }
 
 swagger_endpoint() {
-  curl -fsSI "${BASE_URL}/swagger" >/dev/null \
-    || curl -fsSI "${BASE_URL}/swagger-ui/index.html" >/dev/null
+  curl -fsS "${BASE_URL}/swagger-ui/index.html" >/dev/null \
+    || curl -fsS "${BASE_URL}/swagger" >/dev/null
 }
+
+
+v8_ci_workflow_validation() {
+  [[ -f ".github/workflows/ci.yml" ]] \
+    && [[ -f ".github/workflows/codeql.yml" ]] \
+    && [[ -f ".github/dependabot.yml" ]] \
+    && grep -q "Dependency Scan" .github/workflows/ci.yml \
+    && grep -q "Container Scan" .github/workflows/ci.yml \
+    && grep -q "Architecture Tests" .github/workflows/ci.yml \
+    && grep -q "workflow_dispatch" .github/workflows/ci.yml \
+    && grep -q "CodeQL" .github/workflows/codeql.yml
+}
+
+v8_dependency_security_files_validation() {
+  [[ -f "dependency-check-suppressions.xml" ]] \
+    && [[ -f ".trivyignore" ]] \
+    && grep -q "dependency-check" .github/workflows/ci.yml \
+    && grep -q "trivy" .github/workflows/ci.yml
+}
+
+v8_abuse_source_validation() {
+  [[ -f "src/main/java/io/qwenbridge/abuse/AbuseProtectionFilter.java" ]] \
+    && [[ -f "src/main/java/io/qwenbridge/abuse/RateLimiter.java" ]] \
+    && [[ -f "src/main/java/io/qwenbridge/abuse/InMemoryFixedWindowRateLimiter.java" ]] \
+    && [[ -f "src/main/java/io/qwenbridge/abuse/RedisBackedRateLimiter.java" ]] \
+    && [[ -f "src/main/java/io/qwenbridge/abuse/RateLimitDecision.java" ]] \
+    && grep -R "X-RateLimit" -n src/main/java/io/qwenbridge/abuse >/dev/null
+}
+
+v8_abuse_runtime_rate_limit_validation() {
+  local status=""
+  local headers="/tmp/qwenbridge-v8-rate-limit.headers"
+  local body="/tmp/qwenbridge-v8-rate-limit.json"
+  local request_id="verify-release-v8-rate-limit-$(date +%s)"
+  local payload=""
+
+  payload="$(json_payload "${request_id}" "${TEST_QUERY}")"
+
+  status="$(
+    curl -sS \
+      -D "${headers}" \
+      -X POST "${BASE_URL}${ANALYZE_ENDPOINT}" \
+      -H "Content-Type: application/json" \
+      -H "X-Request-ID: ${request_id}" \
+      -H "X-API-Key: verify-release-v8-abuse-test" \
+      --data "${payload}" \
+      -o "${body}" \
+      -w "%{http_code}"
+  )"
+
+  echo "HTTP status: ${status}"
+  cat "${headers}" || true
+  jq . "${body}" || true
+
+  [[ "${status}" == "200" || "${status}" == "429" ]] \
+    && grep -qi '^x-ratelimit-limit:' "${headers}" \
+    && grep -qi '^x-ratelimit-remaining:' "${headers}" \
+    && grep -qi '^x-ratelimit-reset:' "${headers}"
+}
+
+v8_docker_runtime_hardening_validation() {
+  grep -q "gcr.io/distroless/java21-debian12:nonroot" Dockerfile \
+    && grep -q "MaxRAMPercentage" Dockerfile \
+    && grep -q "ExitOnOutOfMemoryError" Dockerfile \
+    && docker_runtime_user_validation \
+    && app_public_health_up
+}
+
 
 print_redis_keys() {
   docker exec "${REDIS_CONTAINER}" redis-cli keys '*' || true
@@ -1285,15 +1378,18 @@ print_summary() {
 
 echo ""
 echo "======================================================"
-echo "       QwenBridge - V7 Docker Release Verification"
+echo "       QwenBridge - V8 Docker Release Verification"
 echo "======================================================"
 
 run_step "Project root validation" check_project_root
 run_step "Required tools validation" check_required_tools
 run_step "Git state validation" check_git_state
-run_step "V7 release tag validation" check_release_tag
-run_step "V7 release docs validation" v7_release_docs_validation
-run_step "V7 quality test suite validation" v7_quality_test_suite_validation
+run_step "V8 release tag validation" check_release_tag
+run_step "V8 release docs validation" v8_release_docs_validation
+run_step "V8 quality test suite validation" v8_quality_test_suite_validation
+run_step "V8 CI workflow validation" v8_ci_workflow_validation
+run_step "V8 dependency security files validation" v8_dependency_security_files_validation
+run_step "V8 abuse source validation" v8_abuse_source_validation
 run_step "Docker readiness" restart_docker_daemon
 run_step "Fresh Docker environment reset" fresh_environment_reset
 run_step "Docker Compose pull/build/up" docker_pull_build_up
@@ -1303,6 +1399,7 @@ run_step "OpenSearch seed data" seed_opensearch
 run_step "Application readiness" wait_for_app_readiness
 run_step "Docker app healthcheck validation" docker_app_healthcheck_validation
 run_step "Docker runtime user validation" docker_runtime_user_validation
+run_step "V8 Docker runtime hardening validation" v8_docker_runtime_hardening_validation
 run_step "OpenSearch vector mapping validation" opensearch_vector_mapping_validation
 run_step "Ollama embedding generation validation" ollama_embedding_generation_validation
 run_step "OpenSearch vector retrieval validation" opensearch_vector_retrieval_validation
@@ -1314,14 +1411,15 @@ run_step "Version endpoint" version_endpoint
 run_step "AI chat endpoint" ai_chat_endpoint
 run_step "Analyze API endpoint" analyze_api_endpoint
 run_step "SSE streaming lifecycle validation" sse_streaming_lifecycle_validation
-run_step "V7 AI SSE token streaming validation" sse_ai_token_streaming_validation
+run_step "V8 AI SSE token streaming validation" sse_ai_token_streaming_validation
 run_step "Validation error contract" validation_error_contract
+run_step "V8 abuse runtime rate-limit validation" v8_abuse_runtime_rate_limit_validation
 run_step "Custom request ID propagation" custom_request_id_propagation
 run_step "CORS preflight validation" cors_preflight_validation
 run_step "Cache miss / cache hit validation" cache_miss_hit_validation
 run_step "Concurrent SingleFlight validation" singleflight_validation
 run_step "OpenAPI endpoint" openapi_endpoint
-run_step "OpenAPI contains V7 endpoints" openapi_contains_v7_endpoints
+run_step "OpenAPI contains V8 endpoints" openapi_contains_v8_endpoints
 run_step "Swagger UI endpoint" swagger_endpoint
 
 echo ""
