@@ -1,0 +1,5 @@
+# V8: accepted container vulnerabilities must include CVE, expiry date, and release evidence reference.
+# Temporary upstream base-image exception.
+# distroless java21-debian12:nonroot currently ships liblcms2-2 2.14-2.
+# Remove after upstream includes Debian fix 2.14-2+deb12u1.
+CVE-2026-41254
