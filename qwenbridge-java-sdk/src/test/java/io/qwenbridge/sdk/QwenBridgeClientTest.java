@@ -120,6 +120,43 @@ class QwenBridgeClientTest {
         assertEquals("req-error", exception.apiError().requestId());
     }
 
+
+    @Test
+    void shouldMapSuccessfulAsyncAnalyzeResponse() throws Exception {
+        server = startServer(200, """
+                {
+                  "requestId": "async-req-123",
+                  "processingTimeMs": 7,
+                  "originalQuery": "laptop",
+                  "language": "en",
+                  "intent": "PRODUCT_SEARCH",
+                  "decision": "SEARCH",
+                  "confidence": 0.97,
+                  "rewrites": ["laptop"],
+                  "threatReasons": [],
+                  "semanticValidated": true,
+                  "semanticScore": 0.94,
+                  "policyPassed": true,
+                  "policyViolations": [],
+                  "executionPlan": {},
+                  "executionResult": {},
+                  "search": {},
+                  "cache": {},
+                  "pipelineTrace": []
+                }
+                """, null);
+
+        SearchAnalyzeResponse response = client()
+                .analyzeAsync(SearchAnalyzeRequest.withRequestId("async-req-123", "laptop"))
+                .join();
+
+        assertEquals("async-req-123", response.requestId());
+        assertEquals("laptop", response.originalQuery());
+        assertEquals("PRODUCT_SEARCH", response.intent());
+        assertEquals("SEARCH", response.decision());
+        assertEquals(0.97, response.confidence());
+    }
+
     @Test
     void shouldRejectBlankQueryBeforeHttpCall() {
         IllegalArgumentException exception = assertThrows(

@@ -15,6 +15,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 public class QwenBridgeClient {
 
@@ -45,6 +47,44 @@ public class QwenBridgeClient {
     }
 
     public SearchAnalyzeResponse analyze(SearchAnalyzeRequest request) {
+        try {
+            HttpResponse<String> response = httpClient.send(
+                    buildAnalyzeRequest(request),
+                    HttpResponse.BodyHandlers.ofString()
+            );
+
+            return handleAnalyzeResponse(response);
+        } catch (QwenBridgeApiException | QwenBridgeTransportException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new QwenBridgeTransportException("Failed to call QwenBridge API", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new QwenBridgeTransportException("QwenBridge API call was interrupted", e);
+        }
+    }
+
+    public CompletableFuture<SearchAnalyzeResponse> analyzeAsync(SearchAnalyzeRequest request) {
+        return httpClient.sendAsync(
+                        buildAnalyzeRequest(request),
+                        HttpResponse.BodyHandlers.ofString()
+                )
+                .handle((response, throwable) -> {
+                    if (throwable != null) {
+                        throw new CompletionException(
+                                new QwenBridgeTransportException("Failed to call QwenBridge API", throwable)
+                        );
+                    }
+
+                    try {
+                        return handleAnalyzeResponse(response);
+                    } catch (QwenBridgeApiException | QwenBridgeTransportException e) {
+                        throw new CompletionException(e);
+                    }
+                });
+    }
+
+    private HttpRequest buildAnalyzeRequest(SearchAnalyzeRequest request) {
         Objects.requireNonNull(request, "request must not be null");
 
         try {
@@ -61,11 +101,14 @@ public class QwenBridgeClient {
                 builder.header(REQUEST_ID_HEADER, request.requestId().trim());
             }
 
-            HttpResponse<String> response = httpClient.send(
-                    builder.build(),
-                    HttpResponse.BodyHandlers.ofString()
-            );
+            return builder.build();
+        } catch (IOException e) {
+            throw new QwenBridgeTransportException("Failed to serialize QwenBridge request", e);
+        }
+    }
 
+    private SearchAnalyzeResponse handleAnalyzeResponse(HttpResponse<String> response) {
+        try {
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 return objectMapper.readValue(response.body(), SearchAnalyzeResponse.class);
             }
@@ -76,10 +119,7 @@ public class QwenBridgeClient {
         } catch (QwenBridgeApiException e) {
             throw e;
         } catch (IOException e) {
-            throw new QwenBridgeTransportException("Failed to call QwenBridge API", e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new QwenBridgeTransportException("QwenBridge API call was interrupted", e);
+            throw new QwenBridgeTransportException("Failed to parse QwenBridge response", e);
         }
     }
 
