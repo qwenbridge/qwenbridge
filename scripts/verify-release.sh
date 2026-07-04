@@ -102,6 +102,23 @@ compose() {
   docker compose -f "${COMPOSE_FILE}" "$@"
 }
 
+compose_with_profiles() {
+  local args=(-f "${COMPOSE_FILE}")
+
+  local profile=""
+  for profile in "$@"; do
+    if [[ "${profile}" == "--" ]]; then
+      shift
+      break
+    fi
+
+    args+=(--profile "${profile}")
+    shift
+  done
+
+  docker compose "${args[@]}" "$@"
+}
+
 run_step() {
   local name="$1"
   shift
@@ -1862,25 +1879,41 @@ v9_performance_script_validation() {
     && grep -q "mixed_language_users" scripts/performance/v9-k6-load-test.js
 }
 
+v9_dockerized_k6_compose_validation() {
+  create_v9_performance_k6_script
+
+  compose_with_profiles production performance -- config >/tmp/qwenbridge-compose-expanded.yml || return 1
+
+  compose_with_profiles production performance -- config --services \
+    | tee /tmp/qwenbridge-compose-services.txt
+
+  grep -qx "qwenbridge-k6" /tmp/qwenbridge-compose-services.txt \
+    && grep -q "http://qwenbridge-app:8080" /tmp/qwenbridge-compose-expanded.yml \
+    && grep -q "scripts/performance" /tmp/qwenbridge-compose-expanded.yml
+}
+
 v9_optional_performance_validation() {
   create_v9_performance_k6_script
 
   if [[ "${RUN_V9_PERFORMANCE}" != "true" ]]; then
     info "RUN_V9_PERFORMANCE=false, generated performance script but skipped execution."
-    info "To run: RUN_V9_PERFORMANCE=true PERF_TOTAL_REQUESTS=1000000 PERF_VUS=250 bash scripts/verify-release.sh"
+    info "To run real dockerized k6:"
+    info "RUN_V9_PERFORMANCE=true PERF_TOTAL_REQUESTS=1000000 PERF_VUS=250 PERF_MAX_DURATION=30m bash scripts/verify-release.sh"
     return 0
   fi
 
-  if ! require_command k6; then
-    echo "k6 is required for performance validation."
-    return 1
-  fi
+  info "Running dockerized k6 performance validation."
+  info "K6 internal BASE_URL=http://qwenbridge-app:8080"
+  info "PERF_TOTAL_REQUESTS=${PERF_TOTAL_REQUESTS}"
+  info "PERF_VUS=${PERF_VUS}"
+  info "PERF_MAX_DURATION=${PERF_MAX_DURATION}"
 
-  BASE_URL="${BASE_URL}" \
-  PERF_TOTAL_REQUESTS="${PERF_TOTAL_REQUESTS}" \
-  PERF_VUS="${PERF_VUS}" \
-  PERF_MAX_DURATION="${PERF_MAX_DURATION}" \
-  k6 run scripts/performance/v9-k6-load-test.js
+  compose_with_profiles production performance -- run --rm \
+    -e BASE_URL="http://qwenbridge-app:8080" \
+    -e PERF_TOTAL_REQUESTS="${PERF_TOTAL_REQUESTS}" \
+    -e PERF_VUS="${PERF_VUS}" \
+    -e PERF_MAX_DURATION="${PERF_MAX_DURATION}" \
+    qwenbridge-k6
 }
 
 
@@ -1950,6 +1983,7 @@ run_step "V9 TypeScript SDK runtime SSE validation" v9_typescript_sdk_runtime_ss
 run_step "V9 Java SDK runtime compile validation" v9_java_sdk_runtime_compile_validation
 run_step "V9 release docs stale validation" v9_release_docs_no_stale_v8_only_validation
 run_step "V9 performance script validation" v9_performance_script_validation
+run_step "V9 dockerized k6 compose validation" v9_dockerized_k6_compose_validation
 run_step "V9 optional performance validation" v9_optional_performance_validation
 
 

@@ -106,6 +106,27 @@ services:
       retries: 10
       start_period: 30s
 
+  qwenbridge-k6:
+    image: grafana/k6:latest
+    container_name: qwenbridge-k6
+    profiles: [ "performance" ]
+    depends_on:
+      qwenbridge-app:
+        condition: service_healthy
+    environment:
+      BASE_URL: http://qwenbridge-app:8080
+      PERF_TOTAL_REQUESTS: ${PERF_TOTAL_REQUESTS:-1000000}
+      PERF_VUS: ${PERF_VUS:-250}
+      PERF_MAX_DURATION: ${PERF_MAX_DURATION:-30m}
+    volumes:
+      - ./scripts/performance:/scripts/performance:ro
+    command:
+      [
+        "run",
+        "/scripts/performance/v9-k6-load-test.js"
+      ]
+    restart: "no"
+
 volumes:
   ollama-data:
   opensearch-data:
