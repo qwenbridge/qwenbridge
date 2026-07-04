@@ -156,3 +156,10 @@ MIT
 - [Docker Deployment](docs/deployment/docker.md)
 - [V6 Release Evidence](docs/release/V6-release-evidence.md)
 - [V6 Release Checklist](docs/release/V6-release-checklist.md)
+
+## Java SDK
+
+The repository includes a Java 21 SDK for calling the Search Analyze API.
+
+- SDK documentation: `qwenbridge-java-sdk/README.md`
+- Runnable examples: `examples/java-sdk-example`
