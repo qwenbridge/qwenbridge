@@ -24,6 +24,7 @@
         <module>qwenbridge-java-sdk</module>
         <module>qwenbridge-spring-boot-starter</module>
         <module>examples/java-sdk-example</module>
+        <module>examples/spring-boot-starter-example</module>
     </modules>
 
     <properties>
