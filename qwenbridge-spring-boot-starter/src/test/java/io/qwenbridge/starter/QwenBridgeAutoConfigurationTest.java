@@ -3,7 +3,10 @@ package io.qwenbridge.starter;
 import io.qwenbridge.sdk.QwenBridgeClient;
 import io.qwenbridge.sdk.config.QwenBridgeClientConfig;
 import io.qwenbridge.sdk.streaming.QwenBridgeStreamingClient;
+import io.qwenbridge.starter.health.QwenBridgeHealthIndicator;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
@@ -112,5 +115,41 @@ class QwenBridgeAutoConfigurationTest {
                 });
     }
 
-}
 
+    @Test
+    void createsConfigurationOnlyHealthIndicatorWhenActuatorIsAvailable() {
+        contextRunner
+                .withPropertyValues("qwenbridge.base-url=http://localhost:8080")
+                .run(context -> {
+                    assertThat(context).hasSingleBean(HealthIndicator.class);
+
+                    HealthIndicator indicator = context.getBean(HealthIndicator.class);
+                    Health health = indicator.health();
+
+                    assertThat(indicator).isInstanceOf(QwenBridgeHealthIndicator.class);
+                    assertThat(health.getStatus().getCode()).isEqualTo("UP");
+                    assertThat(health.getDetails())
+                            .containsEntry("baseUrl", "http://localhost:8080")
+                            .containsEntry("mode", "configuration-only");
+                });
+    }
+
+    @Test
+    void reportsDownWhenBaseUrlIsBlank() {
+        contextRunner
+                .withPropertyValues("qwenbridge.base-url=")
+                .run(context -> {
+                    HealthIndicator indicator = context.getBean(HealthIndicator.class);
+
+                    Health health = indicator.health();
+
+                    assertThat(health.getStatus().getCode()).isEqualTo("DOWN");
+                    assertThat(health.getDetails())
+                            .containsEntry(
+                                    "reason",
+                                    "qwenbridge.base-url is not configured"
+                            );
+                });
+    }
+
+}

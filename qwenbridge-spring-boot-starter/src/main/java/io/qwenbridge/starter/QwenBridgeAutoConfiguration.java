@@ -4,6 +4,9 @@ import io.qwenbridge.sdk.QwenBridgeClient;
 import io.qwenbridge.sdk.config.QwenBridgeClientConfig;
 import io.qwenbridge.sdk.streaming.QwenBridgeStreamingClient;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import io.qwenbridge.starter.health.QwenBridgeHealthIndicator;
+import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -41,4 +44,14 @@ public class QwenBridgeAutoConfiguration {
     ) {
         return new QwenBridgeStreamingClient(config);
     }
+
+    @Bean
+    @ConditionalOnClass(HealthIndicator.class)
+    @ConditionalOnMissingBean(name = "qwenBridgeHealthIndicator")
+    public HealthIndicator qwenBridgeHealthIndicator(
+            QwenBridgeProperties properties
+    ) {
+        return new QwenBridgeHealthIndicator(properties);
+    }
+
 }
