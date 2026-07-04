@@ -71,8 +71,9 @@ public class QwenBridgeClient {
                 )
                 .handle((response, throwable) -> {
                     if (throwable != null) {
+                        Throwable cause = unwrapCompletionThrowable(throwable);
                         throw new CompletionException(
-                                new QwenBridgeTransportException("Failed to call QwenBridge API", throwable)
+                                new QwenBridgeTransportException("Failed to call QwenBridge API", cause)
                         );
                     }
 
@@ -121,6 +122,14 @@ public class QwenBridgeClient {
         } catch (IOException e) {
             throw new QwenBridgeTransportException("Failed to parse QwenBridge response", e);
         }
+    }
+
+    private Throwable unwrapCompletionThrowable(Throwable throwable) {
+        if (throwable instanceof CompletionException && throwable.getCause() != null) {
+            return throwable.getCause();
+        }
+
+        return throwable;
     }
 
     private URI endpoint(String path) {

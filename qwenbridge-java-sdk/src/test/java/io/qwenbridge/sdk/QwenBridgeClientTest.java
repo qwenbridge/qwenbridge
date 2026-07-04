@@ -3,6 +3,7 @@ package io.qwenbridge.sdk;
 import com.sun.net.httpserver.HttpServer;
 import io.qwenbridge.sdk.config.QwenBridgeClientConfig;
 import io.qwenbridge.sdk.exception.QwenBridgeApiException;
+import io.qwenbridge.sdk.exception.QwenBridgeTransportException;
 import io.qwenbridge.sdk.search.SearchAnalyzeRequest;
 import io.qwenbridge.sdk.search.SearchAnalyzeResponse;
 import org.junit.jupiter.api.AfterEach;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.time.Duration;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -157,6 +159,46 @@ class QwenBridgeClientTest {
         assertEquals(0.97, response.confidence());
     }
 
+
+    @Test
+    void shouldWrapSynchronousTransportFailure() {
+        QwenBridgeClient client = new QwenBridgeClient(new QwenBridgeClientConfig(
+                URI.create("http://localhost:" + unusedPort()),
+                Duration.ofMillis(100),
+                Duration.ofMillis(300)
+        ));
+
+        QwenBridgeTransportException exception = assertThrows(
+                QwenBridgeTransportException.class,
+                () -> client.analyze(SearchAnalyzeRequest.of("best coffee in Stockholm"))
+        );
+
+        assertEquals("Failed to call QwenBridge API", exception.getMessage());
+        assertNotNull(exception.getCause());
+    }
+
+    @Test
+    void shouldWrapAsynchronousTransportFailure() {
+        QwenBridgeClient client = new QwenBridgeClient(new QwenBridgeClientConfig(
+                URI.create("http://localhost:" + unusedPort()),
+                Duration.ofMillis(100),
+                Duration.ofMillis(300)
+        ));
+
+        CompletionException exception = assertThrows(
+                CompletionException.class,
+                () -> client.analyzeAsync(SearchAnalyzeRequest.of("best coffee in Stockholm")).join()
+        );
+
+        assertInstanceOf(QwenBridgeTransportException.class, exception.getCause());
+
+        QwenBridgeTransportException transportException =
+                (QwenBridgeTransportException) exception.getCause();
+
+        assertEquals("Failed to call QwenBridge API", transportException.getMessage());
+        assertNotNull(transportException.getCause());
+    }
+
     @Test
     void shouldRejectBlankQueryBeforeHttpCall() {
         IllegalArgumentException exception = assertThrows(
@@ -165,6 +207,17 @@ class QwenBridgeClientTest {
         );
 
         assertEquals("query must not be blank", exception.getMessage());
+    }
+
+    private int unusedPort() {
+        try {
+            HttpServer httpServer = HttpServer.create(new InetSocketAddress(0), 0);
+            int port = httpServer.getAddress().getPort();
+            httpServer.stop(0);
+            return port;
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to allocate unused port", e);
+        }
     }
 
     private QwenBridgeClient client() {
