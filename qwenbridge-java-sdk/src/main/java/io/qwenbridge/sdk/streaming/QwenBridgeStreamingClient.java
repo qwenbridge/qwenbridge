@@ -1,6 +1,8 @@
 package io.qwenbridge.sdk.streaming;
 
 import io.qwenbridge.sdk.config.QwenBridgeClientConfig;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.qwenbridge.sdk.exception.QwenBridgeTransportException;
 
 import java.io.BufferedReader;
@@ -19,12 +21,16 @@ public class QwenBridgeStreamingClient {
 
     private final QwenBridgeClientConfig config;
     private final HttpClient httpClient;
+    private final StreamingPayloadMapper payloadMapper;
 
     public QwenBridgeStreamingClient(QwenBridgeClientConfig config) {
         this.config = Objects.requireNonNull(config, "config must not be null");
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(config.connectTimeout())
                 .build();
+        this.payloadMapper = new StreamingPayloadMapper(
+                new ObjectMapper().registerModule(new JavaTimeModule())
+        );
     }
 
     public CompletableFuture<Void> stream(
@@ -55,6 +61,18 @@ public class QwenBridgeStreamingClient {
 
                     parseEvents(response.body(), handler);
                 });
+    }
+
+    public CompletableFuture<Void> streamTyped(
+            String requestId,
+            TypedStreamingEventHandler handler
+    ) {
+        Objects.requireNonNull(handler, "handler must not be null");
+
+        return stream(
+                requestId,
+                event -> handler.onEvent(payloadMapper.map(event))
+        );
     }
 
     private void parseEvents(

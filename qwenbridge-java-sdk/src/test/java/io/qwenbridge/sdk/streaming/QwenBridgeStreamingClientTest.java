@@ -40,7 +40,7 @@ class QwenBridgeStreamingClientTest {
         client.stream("req-stream", events::add).join();
 
         assertEquals(1, events.size());
-        assertEquals("stream.connected", events.getFirst().event());
+        assertEquals("stream.connected", events.getFirst().eventName());
         assertEquals(
                 "{\"requestId\":\"req-stream\",\"sessionId\":\"session-1\"}",
                 events.getFirst().data()
