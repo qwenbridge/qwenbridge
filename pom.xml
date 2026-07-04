@@ -21,6 +21,7 @@
 
     <modules>
         <module>qwenbridge-server</module>
+        <module>qwenbridge-java-sdk</module>
     </modules>
 
     <properties>
