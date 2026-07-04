@@ -6,6 +6,8 @@ import io.qwenbridge.sdk.config.QwenBridgeClientConfig;
 import io.qwenbridge.sdk.exception.QwenBridgeApiError;
 import io.qwenbridge.sdk.exception.QwenBridgeApiException;
 import io.qwenbridge.sdk.exception.QwenBridgeTransportException;
+import io.qwenbridge.sdk.retry.ExponentialBackoff;
+import io.qwenbridge.sdk.retry.RetryClassifier;
 import io.qwenbridge.sdk.search.SearchAnalyzeRequest;
 import io.qwenbridge.sdk.search.SearchAnalyzeResponse;
 
@@ -47,21 +49,44 @@ public class QwenBridgeClient {
     }
 
     public SearchAnalyzeResponse analyze(SearchAnalyzeRequest request) {
-        try {
-            HttpResponse<String> response = httpClient.send(
-                    buildAnalyzeRequest(request),
-                    HttpResponse.BodyHandlers.ofString()
-            );
+        Objects.requireNonNull(request, "request must not be null");
 
-            return handleAnalyzeResponse(response);
-        } catch (QwenBridgeApiException | QwenBridgeTransportException e) {
-            throw e;
-        } catch (IOException e) {
-            throw new QwenBridgeTransportException("Failed to call QwenBridge API", e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new QwenBridgeTransportException("QwenBridge API call was interrupted", e);
+        RuntimeException lastFailure = null;
+
+        for (int attempt = 1; attempt <= config.retryPolicy().maxAttempts(); attempt++) {
+            try {
+                HttpResponse<String> response = httpClient.send(
+                        buildAnalyzeRequest(request),
+                        HttpResponse.BodyHandlers.ofString()
+                );
+
+                return handleAnalyzeResponse(response);
+            } catch (QwenBridgeApiException | QwenBridgeTransportException e) {
+                lastFailure = e;
+
+                if (!shouldRetry(e, attempt)) {
+                    throw e;
+                }
+
+                sleepBeforeRetry(attempt);
+            } catch (IOException e) {
+                QwenBridgeTransportException wrapped =
+                        new QwenBridgeTransportException("Failed to call QwenBridge API", e);
+
+                lastFailure = wrapped;
+
+                if (!shouldRetry(wrapped, attempt)) {
+                    throw wrapped;
+                }
+
+                sleepBeforeRetry(attempt);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new QwenBridgeTransportException("QwenBridge API call was interrupted", e);
+            }
         }
+
+        throw lastFailure;
     }
 
     public CompletableFuture<SearchAnalyzeResponse> analyzeAsync(SearchAnalyzeRequest request) {
@@ -121,6 +146,28 @@ public class QwenBridgeClient {
             throw e;
         } catch (IOException e) {
             throw new QwenBridgeTransportException("Failed to parse QwenBridge response", e);
+        }
+    }
+
+    private boolean shouldRetry(Throwable throwable, int attempt) {
+        return attempt < config.retryPolicy().maxAttempts()
+                && RetryClassifier.isRetryable(throwable);
+    }
+
+    private void sleepBeforeRetry(int attempt) {
+        try {
+            Thread.sleep(
+                    ExponentialBackoff.delayForAttempt(
+                            config.retryPolicy(),
+                            attempt
+                    ).toMillis()
+            );
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new QwenBridgeTransportException(
+                    "QwenBridge retry sleep was interrupted",
+                    e
+            );
         }
     }
 

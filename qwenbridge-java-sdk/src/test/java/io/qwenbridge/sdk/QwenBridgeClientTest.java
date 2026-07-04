@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 import io.qwenbridge.sdk.config.QwenBridgeClientConfig;
 import io.qwenbridge.sdk.exception.QwenBridgeApiException;
 import io.qwenbridge.sdk.exception.QwenBridgeTransportException;
+import io.qwenbridge.sdk.retry.RetryPolicy;
 import io.qwenbridge.sdk.search.SearchAnalyzeRequest;
 import io.qwenbridge.sdk.search.SearchAnalyzeResponse;
 import org.junit.jupiter.api.AfterEach;
@@ -14,6 +15,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -159,6 +161,88 @@ class QwenBridgeClientTest {
         assertEquals(0.97, response.confidence());
     }
 
+
+
+    @Test
+    void shouldRetrySyncAnalyzeOnServiceUnavailableAndReturnSuccess() throws Exception {
+        AtomicInteger calls = new AtomicInteger();
+
+        server = HttpServer.create(new InetSocketAddress(0), 0);
+        server.createContext("/api/v1/search/analyze", exchange -> {
+            int call = calls.incrementAndGet();
+
+            if (call == 1) {
+                String errorBody = """
+                        {
+                          "timestamp": "2026-07-04T14:00:00Z",
+                          "status": 503,
+                          "error": "Service Unavailable",
+                          "code": "AI_PROVIDER_ERROR",
+                          "message": "provider temporarily unavailable",
+                          "path": "/api/v1/search/analyze",
+                          "requestId": "retry-req"
+                        }
+                        """;
+
+                byte[] bytes = errorBody.getBytes();
+                exchange.getResponseHeaders().add("Content-Type", "application/json");
+                exchange.sendResponseHeaders(503, bytes.length);
+                exchange.getResponseBody().write(bytes);
+                exchange.close();
+                return;
+            }
+
+            String successBody = """
+                    {
+                      "requestId": "retry-req",
+                      "processingTimeMs": 9,
+                      "originalQuery": "monitor",
+                      "language": "en",
+                      "intent": "PRODUCT_SEARCH",
+                      "decision": "SEARCH",
+                      "confidence": 0.99,
+                      "rewrites": ["monitor"],
+                      "threatReasons": [],
+                      "semanticValidated": true,
+                      "semanticScore": 0.98,
+                      "policyPassed": true,
+                      "policyViolations": [],
+                      "executionPlan": {},
+                      "executionResult": {},
+                      "search": {},
+                      "cache": {},
+                      "pipelineTrace": []
+                    }
+                    """;
+
+            byte[] bytes = successBody.getBytes();
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+        server.start();
+
+        QwenBridgeClient retryingClient = new QwenBridgeClient(new QwenBridgeClientConfig(
+                URI.create("http://localhost:" + server.getAddress().getPort()),
+                Duration.ofSeconds(1),
+                Duration.ofSeconds(5),
+                new RetryPolicy(
+                        2,
+                        Duration.ofMillis(1),
+                        Duration.ofMillis(1)
+                )
+        ));
+
+        SearchAnalyzeResponse response = retryingClient.analyze(
+                SearchAnalyzeRequest.withRequestId("retry-req", "monitor")
+        );
+
+        assertEquals(2, calls.get());
+        assertEquals("retry-req", response.requestId());
+        assertEquals("monitor", response.originalQuery());
+        assertEquals(0.99, response.confidence());
+    }
 
     @Test
     void shouldWrapSynchronousTransportFailure() {
