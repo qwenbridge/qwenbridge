@@ -74,3 +74,26 @@
 - [x] Add unit tests for typed payload mapping
 - [x] Add typed SSE streaming example
 - [x] Document typed SSE streaming in Java SDK README
+
+## Additional V9 release checklist: Starter and TypeScript SDK
+
+- [x] Spring Boot starter module added
+- [x] Starter auto-configures sync Java SDK client
+- [x] Starter auto-configures streaming Java SDK client
+- [x] Starter configuration properties documented
+- [x] Starter health indicator added
+- [x] Starter sample application added
+- [x] TypeScript SDK package foundation added
+- [x] TypeScript analyze client implemented
+- [x] TypeScript typed API errors implemented
+- [x] TypeScript transport errors implemented
+- [x] TypeScript retry behavior implemented
+- [x] TypeScript raw SSE stream implemented
+- [x] TypeScript typed SSE payload mapping implemented
+- [x] TypeScript examples added
+- [x] TypeScript README updated
+- [x] TypeScript publishing guide added
+- [x] TypeScript package metadata prepared
+- [x] npm build verified
+- [x] npm test verified
+- [x] npm pack dry-run verified

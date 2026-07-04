@@ -135,3 +135,62 @@ Relevant commits:
 Scope boundary:
 
 This evidence confirms SDK-side SSE consumption and typed payload mapping against the existing server stream contract. It does not claim that the server already performs live token-by-token AI generation.
+
+## Additional V9 evidence: Spring Boot Starter and TypeScript SDK
+
+### Spring Boot Starter
+
+Implemented commits:
+
+- `bf3c02e` - `feat(starter): add Spring Boot starter module skeleton`
+- `66b6ef2` - `fix(starter): correct properties source syntax`
+- `3842aba` - `feat(starter): auto-configure QwenBridge SDK clients`
+- `f8b0e21` - `feat(starter): add configuration health indicator`
+- `8d117f9` - `docs(starter): add usage documentation and sample app`
+
+Evidence:
+
+- Reactor build succeeded with Spring Boot starter module included.
+- Starter tests passed.
+- Starter sample app compiled.
+- Auto-configuration covers `QwenBridgeClient`.
+- Auto-configuration covers `QwenBridgeStreamingClient`.
+- Health indicator is available when actuator health classes are present.
+
+### TypeScript SDK
+
+Implemented commits:
+
+- `2e49e50` - `feat(typescript-sdk): add package foundation`
+- `1262a6f` - `feat(typescript-sdk): add fetch analyze client`
+- `10ad165` - `feat(typescript-sdk): add retry policy`
+- `4e8dc15` - `feat(typescript-sdk): add SSE streaming client foundation`
+- `c40a189` - `feat(typescript-sdk): map typed SSE payloads`
+- `54b14f6` - `docs(typescript-sdk): add usage examples`
+- `5f85c8b` - `docs(typescript-sdk): prepare package publishing`
+
+Verification evidence:
+
+- `npm --prefix qwenbridge-typescript-sdk install` succeeded.
+- `npm --prefix qwenbridge-typescript-sdk run build` succeeded.
+- `npm --prefix qwenbridge-typescript-sdk test` succeeded.
+- Vitest result: 6 test files passed.
+- Vitest result: 31 tests passed.
+- `npm --prefix qwenbridge-typescript-sdk run pack:check` succeeded.
+- npm dry-run package contents were reviewed.
+- npm audit result: 0 vulnerabilities.
+
+TypeScript SDK capabilities verified:
+
+- Fetch-based `analyze()` client
+- Request id header propagation
+- Typed API errors
+- Transport error wrapping
+- Retry policy
+- Retry classifier
+- Retry executor
+- Raw SSE parsing
+- Typed SSE payload mapping
+- Usage examples
+- Publish metadata
+- Publishing guide
