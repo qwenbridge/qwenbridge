@@ -1425,6 +1425,7 @@ run_step "Swagger UI endpoint" swagger_endpoint
 echo ""
 echo "========== Redis Keys =========="
 print_redis_keys
+echo "========== ========== =========="
 
 print_relevant_logs
 

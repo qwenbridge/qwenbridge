@@ -7,6 +7,7 @@ import io.qwenbridge.ai.provider.ollama.dto.OllamaChatRequest;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaChatResponse;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaEmbeddingRequest;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaEmbeddingResponse;
+import io.qwenbridge.operations.metrics.OperationsMetrics;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -15,6 +16,8 @@ import reactor.util.retry.Retry;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaStreamingChatResponse;
 import reactor.core.publisher.Flux;
 
+import java.time.Duration;
+
 
 @Component
 @Slf4j
@@ -22,13 +25,16 @@ public class OllamaClient {
 
     private final WebClient webClient;
     private final OllamaProperties properties;
+    private final OperationsMetrics metrics;
 
     public OllamaClient(
             @Qualifier("ollamaWebClient") WebClient webClient,
-            OllamaProperties properties
+            OllamaProperties properties,
+            OperationsMetrics metrics
     ) {
         this.webClient = webClient;
         this.properties = properties;
+        this.metrics = metrics;
     }
 
     public OllamaChatResponse chat(OllamaChatRequest request) {
@@ -50,6 +56,8 @@ public class OllamaClient {
     public Flux<OllamaStreamingChatResponse> streamChat(OllamaChatRequest request) {
         log.debug("Sending Ollama streaming chat request. model={}", request.model());
 
+        long started = System.nanoTime();
+
         Flux<OllamaStreamingChatResponse> pipeline = webClient.post()
                 .uri("/api/chat")
                 .bodyValue(request)
@@ -58,6 +66,8 @@ public class OllamaClient {
                         OllamaExceptionHandler::mapError)
                 .bodyToFlux(OllamaStreamingChatResponse.class)
                 .timeout(properties.readTimeout())
+                .doOnComplete(() -> recordProvider("stream", "success", started))
+                .doOnError(throwable -> recordProvider("stream", "failure", started))
                 .onErrorMap(
                         throwable -> throwable instanceof AIException
                                 ? throwable
@@ -95,12 +105,17 @@ public class OllamaClient {
                 pipeline = pipeline.retryWhen(retrySpec(operation));
             }
 
-            return pipeline
+            long started = System.nanoTime();
+            T result = pipeline
                     .blockOptional(properties.readTimeout())
                     .orElseThrow(() -> new AIException(emptyResponseMessage));
+            recordProvider(operation, "success", started);
+            return result;
         } catch (AIException exception) {
+            recordProvider(operation, "failure", System.nanoTime());
             throw exception;
         } catch (RuntimeException exception) {
+            recordProvider(operation, "failure", System.nanoTime());
             throw new AIException(
                     "Ollama %s request failed".formatted(operation),
                     exception
@@ -127,6 +142,10 @@ public class OllamaClient {
 
     private boolean isRetryable(Throwable throwable) {
         return !(throwable instanceof IllegalArgumentException);
+    }
+
+    private void recordProvider(String operation, String outcome, long started) {
+        metrics.recordAiProvider("ollama", operation, outcome, Duration.ofNanos(Math.max(0, System.nanoTime() - started)));
     }
 
 }

@@ -6,12 +6,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import io.qwenbridge.streaming.config.StreamingProperties;
+import io.qwenbridge.abuse.AbuseProtectionProperties;
 
 @ConfigurationPropertiesScan
 @SpringBootApplication
 @EnableConfigurationProperties({
         OpenSearchProperties.class,
-        StreamingProperties.class
+        StreamingProperties.class,
+        AbuseProtectionProperties.class
 })
 public class QwenBridgeApplication {
 

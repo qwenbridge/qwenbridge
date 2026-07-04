@@ -1,0 +1,28 @@
+<configuration>
+    <springProfile name="production">
+        <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeContext>false</includeContext>
+                <customFields>{"service":"qwenbridge"}</customFields>
+                <fieldNames>
+                    <timestamp>timestamp</timestamp>
+                    <level>level</level>
+                    <logger>logger</logger>
+                    <thread>thread</thread>
+                    <message>message</message>
+                </fieldNames>
+            </encoder>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="JSON" />
+        </root>
+    </springProfile>
+
+    <springProfile name="!production">
+        <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+        <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+        <root level="INFO">
+            <appender-ref ref="CONSOLE" />
+        </root>
+    </springProfile>
+</configuration>

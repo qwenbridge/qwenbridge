@@ -1,5 +1,6 @@
 package io.qwenbridge.analysis.cache.redis;
 
+import io.qwenbridge.operations.metrics.OperationsMetrics;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qwenbridge.analysis.cache.CacheKey;
 import io.qwenbridge.analysis.cache.config.AIAnalysisCacheProperties;
@@ -31,7 +32,7 @@ class RedisAIAnalysisCacheTest {
         when(ops.get("test:analysis:key")).thenReturn(payload);
 
         RedisAIAnalysisCache cache =
-                new RedisAIAnalysisCache(redis, mapper, properties);
+                new RedisAIAnalysisCache(redis, mapper, properties, mock(OperationsMetrics.class));
 
         assertThat(cache.get(new CacheKey("key")))
                 .contains(analysis);
@@ -48,7 +49,7 @@ class RedisAIAnalysisCacheTest {
         when(redis.opsForValue()).thenThrow(new RuntimeException("redis down"));
 
         RedisAIAnalysisCache cache =
-                new RedisAIAnalysisCache(redis, mapper, properties);
+                new RedisAIAnalysisCache(redis, mapper, properties, mock(OperationsMetrics.class));
 
         assertThat(cache.get(new CacheKey("key"))).isEmpty();
     }
@@ -66,7 +67,7 @@ class RedisAIAnalysisCacheTest {
         when(redis.opsForValue()).thenReturn(ops);
 
         RedisAIAnalysisCache cache =
-                new RedisAIAnalysisCache(redis, mapper, properties);
+                new RedisAIAnalysisCache(redis, mapper, properties, mock(OperationsMetrics.class));
 
         SearchAnalysis analysis = SearchAnalysis.fallback("desk");
 
@@ -94,7 +95,7 @@ class RedisAIAnalysisCacheTest {
                 .set(anyString(), anyString(), any(Duration.class));
 
         RedisAIAnalysisCache cache =
-                new RedisAIAnalysisCache(redis, mapper, properties);
+                new RedisAIAnalysisCache(redis, mapper, properties, mock(OperationsMetrics.class));
 
         cache.put(new CacheKey("key"), SearchAnalysis.fallback("desk"));
 

@@ -14,9 +14,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import io.qwenbridge.testsupport.TestMockConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.BeforeEach;
+import static org.mockito.Mockito.reset;
 
 import java.util.List;
 import java.util.Map;
@@ -29,19 +32,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(TestMockConfiguration.class)
 class SearchAnalyzeControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Autowired
     private AIService aiService;
 
-    @MockBean
+    @Autowired
     private OpenSearchClient openSearchClient;
 
-    @MockBean
+    @Autowired
     private SearchAnalysisService searchAnalysisService;
+
+    @BeforeEach
+    void resetMocks() {
+        reset(aiService, openSearchClient, searchAnalysisService);
+    }
 
     @Test
     void shouldAnalyzePersianQuery() throws Exception {

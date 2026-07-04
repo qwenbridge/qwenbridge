@@ -1,23 +1,45 @@
 spring:
   application:
     name: qwenbridge
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
 
 server:
   port: 8080
+  shutdown: graceful
+  max-http-request-header-size: 16KB
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  metrics:
+    tags:
+      application: qwenbridge
 
 qwenbridge:
   version: 0.1.0-SNAPSHOT
   streaming:
     session-timeout-ms: 300000
+    max-concurrent-streams: 25
+    max-streams-per-client: 2
+    heartbeat-interval: 15s
+    outbound-buffer-size: 256
     max-ai-stream-duration: 30s
     max-ai-token-count: 1000
     max-ai-event-count: 1100
+
+  security:
+    cors:
+      allowed-origin-patterns: "*"
+    trusted-proxy:
+      forwarded-headers-enabled: false
 
   abuse:
     enabled: true
@@ -72,3 +94,65 @@ springdoc:
 
   swagger-ui:
     path: /swagger
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+qwenbridge:
+  ai:
+    ollama:
+      streaming-enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+qwenbridge:
+  ai:
+    ollama:
+      base-url: ${QWENBRIDGE_AI_OLLAMA_BASE_URL:http://ollama:11434}
+  search:
+    opensearch:
+      base-url: ${QWENBRIDGE_SEARCH_OPENSEARCH_BASE_URL:http://opensearch:9200}
+  analysis:
+    cache:
+      redis:
+        host: ${QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST:redis}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+qwenbridge:
+  abuse:
+    enabled: false
+  analysis:
+    cache:
+      enabled: false
+
+---
+spring:
+  config:
+    activate:
+      on-profile: production
+server:
+  forward-headers-strategy: framework
+qwenbridge:
+  security:
+    cors:
+      allowed-origin-patterns: ${QWENBRIDGE_CORS_ALLOWED_ORIGINS}
+  ai:
+    ollama:
+      base-url: ${QWENBRIDGE_AI_OLLAMA_BASE_URL}
+  search:
+    opensearch:
+      base-url: ${QWENBRIDGE_SEARCH_OPENSEARCH_BASE_URL}
+  analysis:
+    cache:
+      redis:
+        host: ${QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST}
+        port: ${QWENBRIDGE_ANALYSIS_CACHE_REDIS_PORT:6379}

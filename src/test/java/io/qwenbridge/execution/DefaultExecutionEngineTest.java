@@ -1,13 +1,16 @@
 package io.qwenbridge.execution;
 
+import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.decision.SearchDecision;
 import io.qwenbridge.execution.executor.DirectAnswerExecutor;
 import io.qwenbridge.execution.executor.KeywordSearchExecutor;
+import io.qwenbridge.execution.provider.spi.SearchProviderResolver;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 class DefaultExecutionEngineTest {
 
@@ -18,7 +21,11 @@ class DefaultExecutionEngineTest {
                     List.of(
                             new KeywordSearchExecutor(),
                             new DirectAnswerExecutor()
-                    )
+                    ),
+                    mock(SearchProviderResolver.class),
+                    mock(AIService.class),
+                    new io.qwenbridge.ranking.service.SearchResultRanker(new io.qwenbridge.ranking.policy.DefaultRankingPolicy()),
+                    (query, resultSet) -> resultSet
             );
 
     @Test

@@ -1,5 +1,6 @@
 package io.qwenbridge.pipeline.step;
 
+import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.decision.DecisionType;
 import io.qwenbridge.decision.SearchBackend;
@@ -12,10 +13,14 @@ import io.qwenbridge.intent.IntentType;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.result.DecisionResult;
 import org.junit.jupiter.api.Test;
+import io.qwenbridge.execution.provider.implementation.InMemorySearchProvider;
+import io.qwenbridge.execution.provider.registry.DefaultSearchProviderRegistry;
+import io.qwenbridge.execution.provider.resolver.DefaultSearchProviderResolver;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 class DecisionStepTest {
 
@@ -46,10 +51,20 @@ class DecisionStepTest {
     private static DecisionStep step() {
         return new DecisionStep(
                 new ExecutionPlanFactory(),
-                new DefaultExecutionEngine(List.of(
-                        new KeywordSearchExecutor(),
-                        new DirectAnswerExecutor()
-                ))
+                new DefaultExecutionEngine(
+                        List.of(
+                                new KeywordSearchExecutor(),
+                                new DirectAnswerExecutor()
+                        ),
+                        new DefaultSearchProviderResolver(
+                                new DefaultSearchProviderRegistry(
+                                        List.of(new InMemorySearchProvider())
+                                )
+                        ),
+                        mock(AIService.class),
+                        new io.qwenbridge.ranking.service.SearchResultRanker(new io.qwenbridge.ranking.policy.DefaultRankingPolicy()),
+                        (query, resultSet) -> resultSet
+                )
         );
     }
 

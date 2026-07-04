@@ -5,16 +5,12 @@ import io.qwenbridge.ai.contract.EmbeddingResponse;
 import io.qwenbridge.ai.exception.AIException;
 import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.execution.executor.ExecutionOperationExecutor;
-import io.qwenbridge.execution.provider.implementation.InMemorySearchProvider;
 import io.qwenbridge.execution.provider.model.SearchRequest;
 import io.qwenbridge.execution.provider.model.SearchRequestFactory;
 import io.qwenbridge.execution.provider.model.SearchResponse;
-import io.qwenbridge.execution.provider.registry.DefaultSearchProviderRegistry;
-import io.qwenbridge.execution.provider.resolver.DefaultSearchProviderResolver;
 import io.qwenbridge.execution.provider.spi.SearchProvider;
 import io.qwenbridge.execution.provider.spi.SearchProviderResolver;
 import io.qwenbridge.pipeline.ExecutionContext;
-import io.qwenbridge.ranking.policy.DefaultRankingPolicy;
 import io.qwenbridge.ranking.service.SearchResultRanker;
 import io.qwenbridge.reranking.service.RerankingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,20 +28,6 @@ public class DefaultExecutionEngine implements ExecutionEngine {
     private final AIService aiService;
     private final SearchResultRanker searchResultRanker;
     private final RerankingService rerankingService;
-
-    public DefaultExecutionEngine(List<ExecutionOperationExecutor> executors) {
-        this(
-                executors,
-                new DefaultSearchProviderResolver(
-                        new DefaultSearchProviderRegistry(
-                                List.of(new InMemorySearchProvider())
-                        )
-                ),
-                null,
-                new SearchResultRanker(new DefaultRankingPolicy()),
-                (query, resultSet) -> resultSet
-        );
-    }
 
     @Autowired
     public DefaultExecutionEngine(
@@ -66,26 +48,6 @@ public class DefaultExecutionEngine implements ExecutionEngine {
         }
     }
 
-    public DefaultExecutionEngine(
-            List<ExecutionOperationExecutor> executors,
-            SearchProviderResolver searchProviderResolver,
-            AIService aiService
-    ) {
-        this(
-                executors,
-                searchProviderResolver,
-                aiService,
-                new SearchResultRanker(new DefaultRankingPolicy()),
-                (query, resultSet) -> resultSet
-        );
-    }
-
-    public DefaultExecutionEngine(
-            List<ExecutionOperationExecutor> executors,
-            SearchProviderResolver searchProviderResolver
-    ) {
-        this(executors, searchProviderResolver, null);
-    }
 
     @Override
     public ExecutionResult execute(ExecutionPlan plan) {

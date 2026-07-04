@@ -1,12 +1,11 @@
 package io.qwenbridge.analysis.cache.redis;
 
-import lombok.RequiredArgsConstructor;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qwenbridge.analysis.cache.AIAnalysisCache;
 import io.qwenbridge.analysis.cache.CacheKey;
 import io.qwenbridge.analysis.cache.config.AIAnalysisCacheProperties;
 import io.qwenbridge.analysis.model.SearchAnalysis;
+import io.qwenbridge.operations.metrics.OperationsMetrics;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -14,13 +13,25 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
-@RequiredArgsConstructor
 @ConditionalOnExpression("'${qwenbridge.analysis.cache.enabled:true}' == 'true' && '${qwenbridge.analysis.cache.type:redis}' == 'redis'")
 public class RedisAIAnalysisCache implements AIAnalysisCache {
 
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
     private final AIAnalysisCacheProperties properties;
+    private final OperationsMetrics metrics;
+
+    public RedisAIAnalysisCache(
+            StringRedisTemplate redisTemplate,
+            ObjectMapper objectMapper,
+            AIAnalysisCacheProperties properties,
+            OperationsMetrics metrics
+    ) {
+        this.redisTemplate = redisTemplate;
+        this.objectMapper = objectMapper;
+        this.properties = properties;
+        this.metrics = metrics;
+    }
 
     @Override
     public Optional<SearchAnalysis> get(CacheKey key) {
@@ -32,11 +43,14 @@ public class RedisAIAnalysisCache implements AIAnalysisCache {
             String payload = redisTemplate.opsForValue().get(redisKey(key));
 
             if (payload == null || payload.isBlank()) {
+                record("miss");
                 return Optional.empty();
             }
 
+            record("hit");
             return Optional.of(objectMapper.readValue(payload, SearchAnalysis.class));
         } catch (Exception ignored) {
+            record("fallback");
             return Optional.empty();
         }
     }
@@ -50,7 +64,9 @@ public class RedisAIAnalysisCache implements AIAnalysisCache {
         try {
             String payload = objectMapper.writeValueAsString(value);
             redisTemplate.opsForValue().set(redisKey(key), payload, properties.ttl());
+            record("put");
         } catch (Exception ignored) {
+            record("fallback");
             // Redis/cache failures must never break the AI pipeline.
         }
     }
@@ -63,7 +79,9 @@ public class RedisAIAnalysisCache implements AIAnalysisCache {
 
         try {
             redisTemplate.delete(redisKey(key));
+            record("evict");
         } catch (Exception ignored) {
+            record("fallback");
             // Redis/cache failures must never break the AI pipeline.
         }
     }
@@ -75,6 +93,10 @@ public class RedisAIAnalysisCache implements AIAnalysisCache {
 
     private boolean isRedis() {
         return "redis".equalsIgnoreCase(properties.type());
+    }
+
+    private void record(String result) {
+        metrics.incrementCache("analysis", result);
     }
 
     private String redisKey(CacheKey key) {

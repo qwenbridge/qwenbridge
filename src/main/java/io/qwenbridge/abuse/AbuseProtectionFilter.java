@@ -5,6 +5,7 @@ import io.qwenbridge.api.header.ApiHeaders;
 import io.qwenbridge.exception.ApiError;
 import io.qwenbridge.exception.ErrorCode;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
+import io.qwenbridge.operations.metrics.OperationsMetrics;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,6 +34,7 @@ public class AbuseProtectionFilter extends OncePerRequestFilter {
     private final RateLimiter rateLimiter;
     private final StreamingSessionRegistry streamingSessionRegistry;
     private final ObjectMapper objectMapper;
+    private final OperationsMetrics metrics;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -47,6 +49,8 @@ public class AbuseProtectionFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         RateLimitDecision decision = evaluate(request);
         applyHeaders(response, decision);
+
+        metrics.incrementRateLimit(decision.policy(), decision.allowed() ? "allowed" : "rejected");
 
         if (!decision.allowed()) {
             writeRateLimitedResponse(request, response, decision);

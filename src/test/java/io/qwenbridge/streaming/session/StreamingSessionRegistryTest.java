@@ -1,18 +1,21 @@
 package io.qwenbridge.streaming.session;
 
+import io.qwenbridge.operations.metrics.OperationsMetrics;
 import io.qwenbridge.streaming.config.StreamingProperties;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 class StreamingSessionRegistryTest {
 
     @Test
     void shouldRegisterSessionForRequestId() {
         StreamingSessionRegistry registry = new StreamingSessionRegistry(
-                new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
+                new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L),
+                mock(OperationsMetrics.class)
         );
 
         StreamingSession session = registry.register("request-1");
@@ -27,7 +30,8 @@ class StreamingSessionRegistryTest {
     @Test
     void shouldFindSessionsByRequestId() {
         StreamingSessionRegistry registry = new StreamingSessionRegistry(
-                new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
+                new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L),
+                mock(OperationsMetrics.class)
         );
 
         registry.register("request-1");
@@ -43,7 +47,8 @@ class StreamingSessionRegistryTest {
     @Test
     void shouldKeepSessionsSeparatedByRequestId() {
         StreamingSessionRegistry registry = new StreamingSessionRegistry(
-                new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
+                new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L),
+                mock(OperationsMetrics.class)
         );
 
         StreamingSession first =
@@ -67,7 +72,8 @@ class StreamingSessionRegistryTest {
     @Test
     void shouldUpdateLastSeenWhenSessionIsTouched() {
         StreamingSessionRegistry registry = new StreamingSessionRegistry(
-                new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
+                new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L),
+                mock(OperationsMetrics.class)
         );
 
         StreamingSession session =
@@ -87,7 +93,8 @@ class StreamingSessionRegistryTest {
     void shouldUseConfiguredTimeoutWhenRegisteringSession() {
         StreamingSessionRegistry registry =
                 new StreamingSessionRegistry(
-                        new StreamingProperties(12_345L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
+                        new StreamingProperties(12_345L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L),
+                        mock(OperationsMetrics.class)
                 );
 
         StreamingSession session = registry.register("request-1");
@@ -102,7 +109,8 @@ class StreamingSessionRegistryTest {
     void shouldRemoveSessionOnlyOnce() {
         StreamingSessionRegistry registry =
                 new StreamingSessionRegistry(
-                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
+                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L),
+                        mock(OperationsMetrics.class)
                 );
 
         StreamingSession session = registry.register("request-1");
@@ -117,7 +125,8 @@ class StreamingSessionRegistryTest {
     void shouldClearAllRegisteredSessions() {
         StreamingSessionRegistry registry =
                 new StreamingSessionRegistry(
-                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
+                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L),
+                        mock(OperationsMetrics.class)
                 );
 
         StreamingSession first = registry.register("request-1");
@@ -135,7 +144,8 @@ class StreamingSessionRegistryTest {
     void shouldRemoveMatchingSessionsAfterFailureEvent() {
         StreamingSessionRegistry registry =
                 new StreamingSessionRegistry(
-                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
+                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L),
+                        mock(OperationsMetrics.class)
                 );
 
         registry.register("request-1");
@@ -159,7 +169,8 @@ class StreamingSessionRegistryTest {
     void shouldSurviveConcurrentRegisterAndRemoveCycles() throws Exception {
         StreamingSessionRegistry registry =
                 new StreamingSessionRegistry(
-                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
+                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L),
+                        mock(OperationsMetrics.class)
                 );
 
         int sessionCount = 250;
@@ -192,7 +203,8 @@ class StreamingSessionRegistryTest {
     void shouldMarkRequestCancelledWhenLastSessionIsRemoved() {
         StreamingSessionRegistry registry =
                 new StreamingSessionRegistry(
-                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
+                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L),
+                        mock(OperationsMetrics.class)
                 );
 
         StreamingSession first = registry.register("request-1");
@@ -213,7 +225,8 @@ class StreamingSessionRegistryTest {
     void shouldClearCancellationWhenRequestCompletesNormally() {
         StreamingSessionRegistry registry =
                 new StreamingSessionRegistry(
-                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L)
+                        new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L),
+                        mock(OperationsMetrics.class)
                 );
 
         StreamingSession session = registry.register("request-1");

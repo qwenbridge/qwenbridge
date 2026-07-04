@@ -3,6 +3,7 @@ services:
     image: ollama/ollama:latest
     container_name: qwenbridge-ollama
     restart: unless-stopped
+    mem_limit: 4g
     ports:
       - "11434:11434"
     volumes:
@@ -32,6 +33,7 @@ services:
     image: redis:7.2-alpine
     container_name: qwenbridge-redis
     restart: unless-stopped
+    mem_limit: 256m
     ports:
       - "6379:6379"
     healthcheck:
@@ -44,6 +46,7 @@ services:
     image: opensearchproject/opensearch:2.15.0
     container_name: qwenbridge-opensearch
     restart: unless-stopped
+    mem_limit: 1g
     environment:
       discovery.type: single-node
       DISABLE_SECURITY_PLUGIN: "true"
@@ -86,8 +89,18 @@ services:
       QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST: qwenbridge-redis
       QWENBRIDGE_ANALYSIS_CACHE_REDIS_PORT: 6379
       QWENBRIDGE_ANALYSIS_CACHE_ANALYSIS_TIMEOUT: 10s
+    profiles: ["production"]
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+        reservations:
+          memory: 512m
+    labels:
+      org.opencontainers.image.title: "QwenBridge"
+      org.opencontainers.image.version: "0.8.1"
     healthcheck:
-      test: ["CMD-SHELL", "curl -fs http://localhost:8080/actuator/health >/dev/null || exit 1"]
+      test: ["CMD-SHELL", "curl -fs http://localhost:8080/api/v1/health/ready >/dev/null || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 10
