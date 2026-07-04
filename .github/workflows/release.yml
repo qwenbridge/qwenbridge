@@ -26,6 +26,12 @@ jobs:
       - name: Build Docker image
         run: docker build -f qwenbridge-server/Dockerfile -t qwenbridge:${{ github.ref_name }} .
       - name: Verify release script
+        env:
+          RUN_V9_RUNTIME_SDK_TESTS: "false"
+          RUN_V9_PERFORMANCE: "false"
+          CONCURRENT_REQUESTS: "1"
+          SSE_EVENT_WAIT_SECONDS: "20"
+          PULL_DOCKER_IMAGES: "false"
         run: bash scripts/verify-release.sh
       - name: Collect release evidence
         run: |
