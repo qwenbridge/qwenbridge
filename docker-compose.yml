@@ -65,7 +65,7 @@ services:
   qwenbridge-app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: qwenbridge-server/Dockerfile
     container_name: qwenbridge-app
     restart: unless-stopped
     depends_on:

@@ -93,43 +93,13 @@ require_command() {
 
 COMPOSE_PROFILE="${COMPOSE_PROFILE:-production}"
 
-create_v9_compose_override_if_needed() {
-  V9_COMPOSE_OVERRIDE=""
-
-  if [[ -f "Dockerfile" ]]; then
-    return 0
-  fi
-
-  if [[ ! -f "qwenbridge-server/Dockerfile" ]]; then
-    return 0
-  fi
-
-  V9_COMPOSE_OVERRIDE="/tmp/qwenbridge-v9-compose.override.yml"
-
-  cat > "${V9_COMPOSE_OVERRIDE}" <<'YAML'
-services:
-  qwenbridge-app:
-    build:
-      context: .
-      dockerfile: qwenbridge-server/Dockerfile
-YAML
-}
-
 compose() {
-  create_v9_compose_override_if_needed
-
-  local args=(-f "${COMPOSE_FILE}")
-
-  if [[ -n "${V9_COMPOSE_OVERRIDE:-}" ]]; then
-    args+=(-f "${V9_COMPOSE_OVERRIDE}")
-  fi
-
   if [[ -n "${COMPOSE_PROFILE}" ]]; then
-    docker compose "${args[@]}" --profile "${COMPOSE_PROFILE}" "$@"
+    docker compose -f "${COMPOSE_FILE}" --profile "${COMPOSE_PROFILE}" "$@"
     return $?
   fi
 
-  docker compose "${args[@]}" "$@"
+  docker compose -f "${COMPOSE_FILE}" "$@"
 }
 
 run_step() {
