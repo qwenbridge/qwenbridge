@@ -61,7 +61,7 @@ jobs:
           cache: maven
       - run: mvn -B -DskipTests package
       - name: Verify API compatibility tests
-        run: mvn -B -Dtest=ApiVersionControllerTest,ApiHealthControllerTest test
+        run: mvn -B -pl qwenbridge-server -Dtest=ApiVersionControllerTest,ApiHealthControllerTest test
 
   dependency-scan:
     name: Dependency Scan
