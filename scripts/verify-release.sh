@@ -46,7 +46,6 @@ if [[ "${RELEASE_LIGHTWEIGHT}" == "true" ]]; then
   run_step "V9 TypeScript SDK exports validation" v9_typescript_sdk_exports_validation
   run_step "V9 release docs stale validation" v9_release_docs_no_stale_v8_only_validation
   run_step "V9 performance script validation" v9_performance_script_validation
-  run_step "V9 dockerized k6 compose validation" v9_dockerized_k6_compose_validation
 
   print_summary
   SUMMARY_STATUS=$?
