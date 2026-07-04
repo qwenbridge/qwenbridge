@@ -7,7 +7,7 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "qwenbridge")
 public class QwenBridgeProperties {
 
-    private String baseUrl = "http://localhost:8080"\;
+    private String baseUrl = "http://localhost:8080";
     private Duration connectTimeout = Duration.ofSeconds(2);
     private Duration requestTimeout = Duration.ofSeconds(30);
 
