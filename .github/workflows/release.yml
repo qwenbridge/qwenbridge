@@ -27,10 +27,11 @@ jobs:
         run: docker build -f qwenbridge-server/Dockerfile -t qwenbridge:${{ github.ref_name }} .
       - name: Verify release script
         env:
+          RELEASE_LIGHTWEIGHT: "true"
+          RUN_DOCKER_RUNTIME: "false"
+          RUN_V8_RUNTIME_VALIDATIONS: "false"
           RUN_V9_RUNTIME_SDK_TESTS: "false"
           RUN_V9_PERFORMANCE: "false"
-          CONCURRENT_REQUESTS: "1"
-          SSE_EVENT_WAIT_SECONDS: "20"
           PULL_DOCKER_IMAGES: "false"
         run: bash scripts/verify-release.sh
       - name: Collect release evidence

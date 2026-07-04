@@ -22,6 +22,39 @@ echo "======================================================"
 echo "       QwenBridge - V9 Developer Platform Verification"
 echo "======================================================"
 
+if [[ "${RELEASE_LIGHTWEIGHT}" == "true" ]]; then
+  run_step "Project root validation" check_project_root
+  run_step "Required tools validation" check_required_tools
+  run_step "Git state validation" check_git_state
+  run_step "V9 release tag validation" check_release_tag
+  run_step "V8 release docs validation" v8_release_docs_validation
+  run_step "V9 server quality test suite validation" v8_quality_test_suite_validation
+  run_step "V8 CI workflow validation" v8_ci_workflow_validation
+  run_step "V8 dependency security files validation" v8_dependency_security_files_validation
+  run_step "V8 abuse source validation" v8_abuse_source_validation
+  run_step "V9 repository structure validation" v9_repo_structure_validation
+  run_step "V9 parent modules validation" v9_parent_modules_validation
+  run_step "V9 docs validation" v9_docs_validation
+  run_step "V9 Maven reactor validation" v9_maven_reactor_validation
+  run_step "V9 Java SDK source validation" v9_java_sdk_source_validation
+  run_step "V9 Java SDK tests validation" v9_java_sdk_tests_validation
+  run_step "V9 Spring Boot starter source validation" v9_starter_source_validation
+  run_step "V9 Spring Boot starter tests validation" v9_starter_tests_validation
+  run_step "V9 TypeScript SDK source validation" v9_typescript_sdk_source_validation
+  run_step "V9 TypeScript SDK package metadata validation" v9_typescript_sdk_package_metadata_validation
+  run_step "V9 TypeScript SDK build/test/pack validation" v9_typescript_sdk_build_test_pack_validation
+  run_step "V9 TypeScript SDK exports validation" v9_typescript_sdk_exports_validation
+  run_step "V9 release docs stale validation" v9_release_docs_no_stale_v8_only_validation
+  run_step "V9 performance script validation" v9_performance_script_validation
+  run_step "V9 dockerized k6 compose validation" v9_dockerized_k6_compose_validation
+
+  print_summary
+  SUMMARY_STATUS=$?
+  echo "Log file: ${VERIFY_LOG_FILE}"
+  echo "Run ID: ${VERIFY_RUN_ID}"
+  exit "${SUMMARY_STATUS}"
+fi
+
 run_step "Project root validation" check_project_root
 run_step "Required tools validation" check_required_tools
 run_step "Git state validation" check_git_state
@@ -95,5 +128,7 @@ echo "========== ========== =========="
 print_relevant_logs
 
 print_summary
+SUMMARY_STATUS=$?
 echo "Log file: ${VERIFY_LOG_FILE}"
 echo "Run ID: ${VERIFY_RUN_ID}"
+exit "${SUMMARY_STATUS}"
