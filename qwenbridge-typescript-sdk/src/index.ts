@@ -1,4 +1,5 @@
 export { QwenBridgeClient } from "./qwenbridge-client.js";
+export { QwenBridgeStreamingClient } from "./streaming/qwenbridge-streaming-client.js";
 export {
   QwenBridgeApiError,
   QwenBridgeTransportError
@@ -15,6 +16,12 @@ export type {
 export type {
   Sleeper
 } from "./retry/sleeper.js";
+export type {
+  StreamingEvent
+} from "./streaming/streaming-event.js";
+export type {
+  StreamingEventHandler
+} from "./streaming/streaming-event-handler.js";
 export type {
   QwenBridgeClientOptions,
   SearchAnalyzeRequest,
