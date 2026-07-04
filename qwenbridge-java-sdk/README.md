@@ -134,3 +134,37 @@ Runnable examples are available in:
 
 - `SyncSearchAnalyzeExample`
 - `AsyncSearchAnalyzeExample`
+
+## Typed SSE streaming usage
+
+The SDK can consume typed Server-Sent Events from the QwenBridge streaming endpoint.
+
+    import io.qwenbridge.sdk.config.QwenBridgeClientConfig;
+    import io.qwenbridge.sdk.streaming.QwenBridgeStreamingClient;
+    import io.qwenbridge.sdk.streaming.payload.AITokenStreamingPayload;
+
+    import java.net.URI;
+    import java.time.Duration;
+
+    QwenBridgeStreamingClient streamingClient = new QwenBridgeStreamingClient(
+            new QwenBridgeClientConfig(
+                    URI.create("http://localhost:8080"),
+                    Duration.ofSeconds(2),
+                    Duration.ofSeconds(30)
+            )
+    );
+
+    streamingClient.streamTyped("request-id", event -> {
+        if (event.payload() instanceof AITokenStreamingPayload token) {
+            System.out.print(token.content());
+        }
+    }).join();
+
+Typed payloads currently include:
+
+- `ConnectedStreamingPayload`
+- `AITokenStreamingPayload`
+- `AICompletedStreamingPayload`
+- `AIFailedStreamingPayload`
+- `UnknownStreamingPayload`
+
