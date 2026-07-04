@@ -8,7 +8,7 @@ public record SemanticResult(
         SemanticAnalysis analysis
 ) {
     public SemanticResult(boolean validated, double score) {
-        this(validated, score, null);
+        this(validated, score, SemanticAnalysis.basic("unknown"));
     }
 
     public static SemanticResult validated(SemanticAnalysis analysis) {
@@ -16,6 +16,6 @@ public record SemanticResult(
     }
 
     public static SemanticResult notValidated() {
-        return new SemanticResult(false, 0.0, null);
+        return new SemanticResult(false, 0.0, SemanticAnalysis.basic("unknown"));
     }
 }

@@ -9,7 +9,7 @@ public record IntentResult(
         IntentAnalysis analysis
 ) {
     public IntentResult(String intent) {
-        this(intent, 0.0, "", null);
+        this(intent, 0.0, "No intent reason provided.", IntentAnalysis.unknown());
     }
 
     public static IntentResult from(IntentAnalysis analysis) {

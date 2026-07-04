@@ -15,8 +15,8 @@ PUBLIC_HEALTH_ENDPOINT="${PUBLIC_HEALTH_ENDPOINT:-/api/v1/health}"
 VERSION_ENDPOINT="${VERSION_ENDPOINT:-/api/v1/version}"
 SSE_ENDPOINT_PREFIX="${SSE_ENDPOINT_PREFIX:-/api/v1/search/stream}"
 
-EXPECTED_BRANCH="${EXPECTED_BRANCH:-main}"
-EXPECTED_TAG="${EXPECTED_TAG:-v0.8.0}"
+EXPECTED_BRANCH="${EXPECTED_BRANCH:-feat/v8.1-production-operability}"
+EXPECTED_TAG="${EXPECTED_TAG:-v0.8.1}"
 EXPECTED_TAG_REQUIRED="${EXPECTED_TAG_REQUIRED:-false}"
 EXPECTED_VERSION="${EXPECTED_VERSION:-0.1.0-SNAPSHOT}"
 
@@ -91,7 +91,14 @@ require_command() {
   command -v "$1" >/dev/null 2>&1
 }
 
+COMPOSE_PROFILE="${COMPOSE_PROFILE:-production}"
+
 compose() {
+  if [[ -n "${COMPOSE_PROFILE}" ]]; then
+    docker compose -f "${COMPOSE_FILE}" --profile "${COMPOSE_PROFILE}" "$@"
+    return $?
+  fi
+
   docker compose -f "${COMPOSE_FILE}" "$@"
 }
 
@@ -285,10 +292,38 @@ fresh_environment_reset() {
   fi
 
   info "Stopping and removing QwenBridge Compose stack."
-  compose down -v --remove-orphans
+  compose down -v --remove-orphans || true
+
+  info "Force-removing stale QwenBridge containers."
+  docker rm -f \
+    "${APP_CONTAINER}" \
+    "${REDIS_CONTAINER}" \
+    "${OLLAMA_CONTAINER}" \
+    "${OLLAMA_CONTAINER}-init" \
+    "${OPENSEARCH_CONTAINER}" \
+    2>/dev/null || true
+
+  docker network rm qwenbridge_default 2>/dev/null || true
+}
+
+ensure_env_file() {
+  if [[ ! -f ".env" ]]; then
+    info "Creating local .env for release verification."
+    cat > .env <<'EOF'
+QWENBRIDGE_CORS_ALLOWED_ORIGINS=*
+EOF
+    return 0
+  fi
+
+  grep -q '^QWENBRIDGE_CORS_ALLOWED_ORIGINS=' .env || {
+    info "Adding missing QWENBRIDGE_CORS_ALLOWED_ORIGINS to .env."
+    printf '\nQWENBRIDGE_CORS_ALLOWED_ORIGINS=*\n' >> .env
+  }
 }
 
 docker_pull_build_up() {
+  ensure_env_file
+
   if [[ "${PULL_DOCKER_IMAGES}" == "true" ]]; then
     compose pull --ignore-pull-failures || true
   else
@@ -301,7 +336,11 @@ docker_pull_build_up() {
     compose build || return 1
   fi
 
-  compose up -d
+  compose up -d --build --force-recreate --remove-orphans
+
+  echo ""
+  echo "Compose services after up:"
+  compose ps || true
 }
 
 wait_for_container_healthy_or_running() {
@@ -340,25 +379,46 @@ wait_for_compose_services() {
 }
 
 verify_ollama_models() {
+  local attempt=""
   local models=""
 
-  models="$(docker exec "${OLLAMA_CONTAINER}" ollama list)" || return 1
-  echo "${models}"
+  for attempt in {1..180}; do
+    models="$(docker exec "${OLLAMA_CONTAINER}" ollama list 2>/dev/null || true)"
+    echo "${models}"
 
-  echo "${models}" | awk '{print $1}' | grep -q "^${QWEN_MODEL}" \
-    && echo "${models}" | awk '{print $1}' | grep -q "^${EMBEDDING_MODEL}"
+    if echo "${models}" | awk '{print $1}' | grep -q "^${QWEN_MODEL}" \
+      && echo "${models}" | awk '{print $1}' | grep -q "^${EMBEDDING_MODEL}"; then
+      return 0
+    fi
+
+    info "Waiting for Ollama models: ${QWEN_MODEL}, ${EMBEDDING_MODEL}"
+    sleep 5
+  done
+
+  docker logs --tail 240 "${OLLAMA_CONTAINER}" 2>/dev/null || true
+  docker logs --tail 240 "${OLLAMA_CONTAINER}-init" 2>/dev/null || true
+  return 1
 }
 
 seed_opensearch() {
+  local body="/tmp/qwenbridge-opensearch-count.json"
+  local count=""
+
   echo "Seeding OpenSearch index with real BGE-M3 embeddings: ${OPENSEARCH_INDEX}"
 
   OPENSEARCH_URL="${OPENSEARCH_URL}" \
   OPENSEARCH_INDEX="${OPENSEARCH_INDEX}" \
   OLLAMA_URL="${OLLAMA_URL:-http://localhost:11434}" \
   QWENBRIDGE_EMBEDDING_MODEL="${EMBEDDING_MODEL}" \
-  ./scripts/opensearch-seed.sh
+  ./scripts/opensearch-seed.sh || return 1
 
-  curl -fsS "${OPENSEARCH_URL}/${OPENSEARCH_INDEX}/_count" | jq .
+  curl -fsS "${OPENSEARCH_URL}/${OPENSEARCH_INDEX}/_count" -o "${body}" || return 1
+  jq . "${body}"
+
+  count="$(jq -r '.count // 0' "${body}")"
+  echo "OpenSearch document count: ${count}"
+
+  [[ "${count}" -gt 0 ]]
 }
 
 opensearch_vector_mapping_validation() {
@@ -547,8 +607,15 @@ json_payload() {
 }
 
 actuator_health_endpoint() {
-  curl -fsS "${BASE_URL}/actuator/health" \
-    | jq -e '.status == "UP"' >/dev/null
+  local body="/tmp/qwenbridge-actuator-health.json"
+
+  curl -fsS "${BASE_URL}/actuator/health" -o "${body}" || {
+    cat "${body}" 2>/dev/null || true
+    return 1
+  }
+
+  jq . "${body}" || true
+  jq -e '.status == "UP"' "${body}" >/dev/null
 }
 
 public_health_endpoint() {
@@ -1425,6 +1492,7 @@ run_step "Swagger UI endpoint" swagger_endpoint
 echo ""
 echo "========== Redis Keys =========="
 print_redis_keys
+echo "========== ========== =========="
 
 print_relevant_logs
 

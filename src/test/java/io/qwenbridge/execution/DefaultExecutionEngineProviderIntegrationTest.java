@@ -39,7 +39,7 @@ class DefaultExecutionEngineProviderIntegrationTest {
                 );
 
         DefaultExecutionEngine engine =
-                new DefaultExecutionEngine(List.<ExecutionOperationExecutor>of(), resolver);
+                new DefaultExecutionEngine(List.<ExecutionOperationExecutor>of(), resolver, mock(AIService.class), new io.qwenbridge.ranking.service.SearchResultRanker(new io.qwenbridge.ranking.policy.DefaultRankingPolicy()), (query, resultSet) -> resultSet);
 
         ExecutionPlan plan = ExecutionPlan.builder()
                 .mode(SearchMode.KEYWORD)
@@ -75,7 +75,7 @@ class DefaultExecutionEngineProviderIntegrationTest {
                 );
 
         DefaultExecutionEngine engine =
-                new DefaultExecutionEngine(List.<ExecutionOperationExecutor>of(), resolver);
+                new DefaultExecutionEngine(List.<ExecutionOperationExecutor>of(), resolver, mock(AIService.class), new io.qwenbridge.ranking.service.SearchResultRanker(new io.qwenbridge.ranking.policy.DefaultRankingPolicy()), (query, resultSet) -> resultSet);
 
         ExecutionPlan plan = ExecutionPlan.builder()
                 .mode(SearchMode.KEYWORD)
@@ -117,7 +117,9 @@ class DefaultExecutionEngineProviderIntegrationTest {
                 new DefaultExecutionEngine(
                         List.<ExecutionOperationExecutor>of(),
                         resolver,
-                        aiService
+                        aiService,
+                        new io.qwenbridge.ranking.service.SearchResultRanker(new io.qwenbridge.ranking.policy.DefaultRankingPolicy()),
+                        (query, resultSet) -> resultSet
                 );
 
         ExecutionPlan plan = ExecutionPlan.builder()
@@ -167,7 +169,9 @@ class DefaultExecutionEngineProviderIntegrationTest {
                 new DefaultExecutionEngine(
                         List.<ExecutionOperationExecutor>of(),
                         resolver,
-                        aiService
+                        aiService,
+                        new io.qwenbridge.ranking.service.SearchResultRanker(new io.qwenbridge.ranking.policy.DefaultRankingPolicy()),
+                        (query, resultSet) -> resultSet
                 );
 
         ExecutionPlan plan = ExecutionPlan.builder()
@@ -235,7 +239,9 @@ class DefaultExecutionEngineProviderIntegrationTest {
                 new DefaultExecutionEngine(
                         List.<ExecutionOperationExecutor>of(),
                         resolver,
-                        null
+                        mock(AIService.class),
+                        new io.qwenbridge.ranking.service.SearchResultRanker(new io.qwenbridge.ranking.policy.DefaultRankingPolicy()),
+                        (query, resultSet) -> resultSet
                 );
 
         ExecutionPlan plan = ExecutionPlan.builder()
@@ -301,7 +307,7 @@ class DefaultExecutionEngineProviderIntegrationTest {
                 new DefaultExecutionEngine(
                         List.<ExecutionOperationExecutor>of(),
                         resolver,
-                        null,
+                        mock(AIService.class),
                         new io.qwenbridge.ranking.service.SearchResultRanker(
                                 new io.qwenbridge.ranking.policy.DefaultRankingPolicy()
                         ),

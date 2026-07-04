@@ -1,5 +1,6 @@
 package io.qwenbridge.ai.provider.ollama.client;
 
+import io.qwenbridge.operations.metrics.OperationsMetrics;
 import io.qwenbridge.ai.exception.AIException;
 import io.qwenbridge.ai.provider.ollama.config.OllamaProperties;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaChatRequest;
@@ -19,13 +20,15 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 class OllamaClientStreamingTest {
 
     @Test
     void shouldReadStreamingChatChunksInOrder() {
-        OllamaClient client = new OllamaClient(
+        OllamaClient client = client(
                 webClient(request -> reactor.core.publisher.Mono.just(ClientResponse
                         .create(HttpStatus.OK)
                         .header("Content-Type", "application/x-ndjson")
@@ -56,7 +59,7 @@ class OllamaClientStreamingTest {
 
     @Test
     void shouldFailStreamingChatWhenProviderReturnsError() {
-        OllamaClient client = new OllamaClient(
+        OllamaClient client = client(
                 webClient(request -> MonoResponse.error(HttpStatus.BAD_GATEWAY, "provider failed")),
                 properties(0, Duration.ofSeconds(2))
         );
@@ -70,7 +73,7 @@ class OllamaClientStreamingTest {
     void shouldNotRetryStreamingChatAfterFailure() {
         AtomicInteger attempts = new AtomicInteger();
 
-        OllamaClient client = new OllamaClient(
+        OllamaClient client = client(
                 webClient(request -> {
                     attempts.incrementAndGet();
                     return MonoResponse.error(HttpStatus.SERVICE_UNAVAILABLE, "temporary failure");
@@ -128,4 +131,14 @@ class OllamaClientStreamingTest {
                     .build());
         }
     }
+
+    private OllamaClient client(WebClient webClient, OllamaProperties properties) {
+        return new OllamaClient(
+                webClient,
+                properties,
+                mock(OperationsMetrics.class)
+        );
+    }
+
+
 }

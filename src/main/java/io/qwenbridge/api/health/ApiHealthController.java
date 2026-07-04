@@ -1,6 +1,11 @@
 package io.qwenbridge.api.health;
 
 import io.qwenbridge.exception.ApiError;
+import io.qwenbridge.operations.health.OperationalHealthService;
+import io.qwenbridge.operations.health.OperationalStatus;
+import io.qwenbridge.operations.health.ReadinessHealthResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,11 +22,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class ApiHealthController {
 
     private final String applicationName;
+    private final OperationalHealthService operationalHealthService;
 
     public ApiHealthController(
-            @Value("${spring.application.name:qwenbridge}") String applicationName
+            @Value("${spring.application.name:qwenbridge}") String applicationName,
+            OperationalHealthService operationalHealthService
     ) {
         this.applicationName = applicationName;
+        this.operationalHealthService = operationalHealthService;
     }
 
     @Operation(
@@ -46,10 +54,26 @@ public class ApiHealthController {
     )
     @GetMapping
     public ApiHealthResponse health() {
+        return liveness();
+    }
+
+    @GetMapping("/live")
+    public ApiHealthResponse liveness() {
         return ApiHealthResponse.builder()
                 .status("UP")
                 .service(applicationName)
                 .apiVersion("v1")
                 .build();
+    }
+
+    @GetMapping("/ready")
+    public ResponseEntity<ReadinessHealthResponse> readiness() {
+        ReadinessHealthResponse response = operationalHealthService.readiness();
+
+        HttpStatus httpStatus = response.status() == OperationalStatus.DOWN
+                ? HttpStatus.SERVICE_UNAVAILABLE
+                : HttpStatus.OK;
+
+        return ResponseEntity.status(httpStatus).body(response);
     }
 }

@@ -5,12 +5,19 @@ import io.qwenbridge.ai.contract.ChatResponse;
 import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.analysis.cache.AIAnalysisCache;
 import io.qwenbridge.analysis.cache.CacheKey;
+import io.qwenbridge.analysis.model.SearchAnalysis;
+import io.qwenbridge.analysis.service.SearchAnalysisService;
+import io.qwenbridge.decision.SearchBackend;
+import io.qwenbridge.decision.SearchMode;
+import io.qwenbridge.intent.IntentType;
 import io.qwenbridge.execution.provider.opensearch.client.OpenSearchClient;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import io.qwenbridge.testsupport.TestMockConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -22,25 +29,35 @@ import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.reset;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(TestMockConfiguration.class)
 class SearchAnalyzeCacheDegradationIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Autowired
     private AIAnalysisCache cache;
 
-    @MockBean
+    @Autowired
     private AIService aiService;
 
-    @MockBean
+    @Autowired
     private OpenSearchClient openSearchClient;
+
+    @Autowired
+    private SearchAnalysisService searchAnalysisService;
+
+    @BeforeEach
+    void resetMocks() {
+        reset(cache, aiService, openSearchClient, searchAnalysisService);
+    }
 
     @Test
     void shouldDegradeSafelyWhenRedisCacheFails() throws Exception {
@@ -50,6 +67,8 @@ class SearchAnalyzeCacheDegradationIntegrationTest {
                 .put(any(CacheKey.class), any());
         when(aiService.chat(any(ChatRequest.class)))
                 .thenReturn(new ChatResponse(analysisJson()));
+        when(searchAnalysisService.analyze("table"))
+                .thenReturn(searchAnalysis());
         when(openSearchClient.search(anyString(), anyMap()))
                 .thenReturn(emptyOpenSearchResponse());
 
@@ -60,6 +79,32 @@ class SearchAnalyzeCacheDegradationIntegrationTest {
                 .andExpect(jsonPath("$.originalQuery").value("table"))
                 .andExpect(jsonPath("$.decision").value("ALLOW"))
                 .andExpect(jsonPath("$.search.available").value(true));
+    }
+
+
+    private SearchAnalysis searchAnalysis() {
+        return SearchAnalysis.builder()
+                .language("en")
+                .intent(IntentType.PRODUCT_SEARCH)
+                .intentConfidence(0.85)
+                .intentReason("Product search.")
+                .rewrites(List.of("table"))
+                .semanticValidated(true)
+                .semanticScore(0.90)
+                .semanticMeaning("Product search.")
+                .entities(List.of("table"))
+                .searchMode(SearchMode.KEYWORD)
+                .backend(SearchBackend.OPENSEARCH)
+                .keywordSearch(true)
+                .vectorSearch(false)
+                .hybridSearch(false)
+                .facets(true)
+                .rerank(false)
+                .rewriteAgain(false)
+                .answer(false)
+                .decisionConfidence(0.80)
+                .decisionReason("Keyword search is enough.")
+                .build();
     }
 
     private String analysisJson() {

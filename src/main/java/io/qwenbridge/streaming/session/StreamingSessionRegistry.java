@@ -1,6 +1,7 @@
 package io.qwenbridge.streaming.session;
 
 import io.qwenbridge.streaming.config.StreamingProperties;
+import io.qwenbridge.operations.metrics.OperationsMetrics;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -15,6 +16,7 @@ import java.util.concurrent.ConcurrentMap;
 public class StreamingSessionRegistry {
 
     private final StreamingProperties properties;
+    private final OperationsMetrics metrics;
 
     private final ConcurrentMap<String, StreamingSession> sessionsById =
             new ConcurrentHashMap<>();
@@ -22,8 +24,9 @@ public class StreamingSessionRegistry {
     private final ConcurrentMap<String, Boolean> cancelledRequests =
             new ConcurrentHashMap<>();
 
-    public StreamingSessionRegistry(StreamingProperties properties) {
+    public StreamingSessionRegistry(StreamingProperties properties, OperationsMetrics metrics) {
         this.properties = properties;
+        this.metrics = metrics;
     }
 
     public StreamingSession register(String requestId) {
@@ -43,7 +46,7 @@ public class StreamingSessionRegistry {
         emitter.onTimeout(() -> removeAfterEmitterCompletion(sessionId));
         emitter.onError(error -> removeAfterEmitterCompletion(sessionId));
 
-        sessionsById.put(sessionId, session);
+        sessionsById.put(sessionId, session);        metrics.sessionOpened();
 
         return session;
     }
@@ -80,7 +83,7 @@ public class StreamingSessionRegistry {
 
         markCancelledIfNoSessionsRemain(removed.requestId());
 
-        if (removed.close()) {
+        if (removed.close()) {            metrics.sessionClosed("registry");
             removed.emitter().complete();
         }
 
@@ -133,7 +136,7 @@ public class StreamingSessionRegistry {
         StreamingSession removed = sessionsById.remove(sessionId);
 
         if (removed != null) {
-            removed.close();
+            removed.close();            metrics.sessionClosed("emitter");
             markCancelledIfNoSessionsRemain(removed.requestId());
         }
     }
@@ -159,7 +162,7 @@ public class StreamingSessionRegistry {
             return;
         }
 
-        try {
+        try {            metrics.recordSseEvent(eventName);
             session.emitter().send(
                     SseEmitter.event()
                             .id(eventId)

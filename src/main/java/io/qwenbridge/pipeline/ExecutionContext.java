@@ -19,12 +19,16 @@ public class ExecutionContext {
     private final List<PipelineTraceItem> trace = new ArrayList<>();
 
     public ExecutionContext(String originalQuery) {
-        this(null, originalQuery);
+        this.request = RequestContext.of(originalQuery);
+        initializeDefaults();
     }
 
     public ExecutionContext(String requestId, String originalQuery) {
         this.request = RequestContext.of(requestId, originalQuery);
+        initializeDefaults();
+    }
 
+    private void initializeDefaults() {
         store(AIAnalysisCacheTrace.class, AIAnalysisCacheTrace.disabled());
         store(LanguageResult.class, LanguageResult.unknown());
         store(IntentResult.class, IntentResult.unknown());
