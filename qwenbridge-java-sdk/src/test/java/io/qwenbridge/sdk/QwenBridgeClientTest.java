@@ -244,6 +244,88 @@ class QwenBridgeClientTest {
         assertEquals(0.99, response.confidence());
     }
 
+
+    @Test
+    void shouldRetryAsyncAnalyzeOnServiceUnavailableAndReturnSuccess() throws Exception {
+        AtomicInteger calls = new AtomicInteger();
+
+        server = HttpServer.create(new InetSocketAddress(0), 0);
+        server.createContext("/api/v1/search/analyze", exchange -> {
+            int call = calls.incrementAndGet();
+
+            if (call == 1) {
+                String errorBody = """
+                        {
+                          "timestamp": "2026-07-04T14:00:00Z",
+                          "status": 503,
+                          "error": "Service Unavailable",
+                          "code": "AI_PROVIDER_ERROR",
+                          "message": "provider temporarily unavailable",
+                          "path": "/api/v1/search/analyze",
+                          "requestId": "async-retry-req"
+                        }
+                        """;
+
+                byte[] bytes = errorBody.getBytes();
+                exchange.getResponseHeaders().add("Content-Type", "application/json");
+                exchange.sendResponseHeaders(503, bytes.length);
+                exchange.getResponseBody().write(bytes);
+                exchange.close();
+                return;
+            }
+
+            String successBody = """
+                    {
+                      "requestId": "async-retry-req",
+                      "processingTimeMs": 11,
+                      "originalQuery": "keyboard",
+                      "language": "en",
+                      "intent": "PRODUCT_SEARCH",
+                      "decision": "SEARCH",
+                      "confidence": 0.96,
+                      "rewrites": ["keyboard"],
+                      "threatReasons": [],
+                      "semanticValidated": true,
+                      "semanticScore": 0.95,
+                      "policyPassed": true,
+                      "policyViolations": [],
+                      "executionPlan": {},
+                      "executionResult": {},
+                      "search": {},
+                      "cache": {},
+                      "pipelineTrace": []
+                    }
+                    """;
+
+            byte[] bytes = successBody.getBytes();
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, bytes.length);
+            exchange.getResponseBody().write(bytes);
+            exchange.close();
+        });
+        server.start();
+
+        QwenBridgeClient retryingClient = new QwenBridgeClient(new QwenBridgeClientConfig(
+                URI.create("http://localhost:" + server.getAddress().getPort()),
+                Duration.ofSeconds(1),
+                Duration.ofSeconds(5),
+                new RetryPolicy(
+                        2,
+                        Duration.ofMillis(1),
+                        Duration.ofMillis(1)
+                )
+        ));
+
+        SearchAnalyzeResponse response = retryingClient
+                .analyzeAsync(SearchAnalyzeRequest.withRequestId("async-retry-req", "keyboard"))
+                .join();
+
+        assertEquals(2, calls.get());
+        assertEquals("async-retry-req", response.requestId());
+        assertEquals("keyboard", response.originalQuery());
+        assertEquals(0.96, response.confidence());
+    }
+
     @Test
     void shouldWrapSynchronousTransportFailure() {
         QwenBridgeClient client = new QwenBridgeClient(new QwenBridgeClientConfig(

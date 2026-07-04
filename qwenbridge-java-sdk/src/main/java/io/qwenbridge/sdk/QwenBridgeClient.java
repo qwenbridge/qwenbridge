@@ -90,6 +90,14 @@ public class QwenBridgeClient {
     }
 
     public CompletableFuture<SearchAnalyzeResponse> analyzeAsync(SearchAnalyzeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return analyzeAsync(request, 1);
+    }
+
+    private CompletableFuture<SearchAnalyzeResponse> analyzeAsync(
+            SearchAnalyzeRequest request,
+            int attempt
+    ) {
         return httpClient.sendAsync(
                         buildAnalyzeRequest(request),
                         HttpResponse.BodyHandlers.ofString()
@@ -97,17 +105,25 @@ public class QwenBridgeClient {
                 .handle((response, throwable) -> {
                     if (throwable != null) {
                         Throwable cause = unwrapCompletionThrowable(throwable);
-                        throw new CompletionException(
-                                new QwenBridgeTransportException("Failed to call QwenBridge API", cause)
+                        return asyncFailure(
+                                request,
+                                attempt,
+                                new QwenBridgeTransportException(
+                                        "Failed to call QwenBridge API",
+                                        cause
+                                )
                         );
                     }
 
                     try {
-                        return handleAnalyzeResponse(response);
+                        return CompletableFuture.completedFuture(
+                                handleAnalyzeResponse(response)
+                        );
                     } catch (QwenBridgeApiException | QwenBridgeTransportException e) {
-                        throw new CompletionException(e);
+                        return asyncFailure(request, attempt, e);
                     }
-                });
+                })
+                .thenCompose(future -> future);
     }
 
     private HttpRequest buildAnalyzeRequest(SearchAnalyzeRequest request) {
@@ -147,6 +163,23 @@ public class QwenBridgeClient {
         } catch (IOException e) {
             throw new QwenBridgeTransportException("Failed to parse QwenBridge response", e);
         }
+    }
+
+    private CompletableFuture<SearchAnalyzeResponse> asyncFailure(
+            SearchAnalyzeRequest request,
+            int attempt,
+            RuntimeException failure
+    ) {
+        if (!shouldRetry(failure, attempt)) {
+            return CompletableFuture.failedFuture(failure);
+        }
+
+        return CompletableFuture
+                .supplyAsync(() -> {
+                    sleepBeforeRetry(attempt);
+                    return null;
+                })
+                .thenCompose(ignored -> analyzeAsync(request, attempt + 1));
     }
 
     private boolean shouldRetry(Throwable throwable, int attempt) {
