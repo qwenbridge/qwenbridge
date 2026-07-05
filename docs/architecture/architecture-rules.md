@@ -1,13 +1,11 @@
-# V8 Architecture Enforcement
+# Architecture Rules
 
-QwenBridge V8 protects module boundaries with ArchUnit tests.
+Architecture rules are enforced by tests and code review.
 
-## Enforced rules
-
-- API/controller packages must not depend directly on concrete provider implementations.
-- Provider SPI packages must not depend on API/web packages.
-- API, pipeline, domain service, and provider layers are validated by the architecture test suite.
-
-## Release rule
-
-A release is not valid unless the `architecture-test` CI job passes.
+- API packages must not expose provider DTOs as public contracts.
+- Provider implementations must depend on provider-neutral SPI contracts.
+- Pipeline steps communicate through typed execution-context keys and result values.
+- Execution operations are handled by dedicated executors.
+- Streaming delivery must not become a dependency of core pipeline execution.
+- Threat detection must remain modular and independently testable.
+- New architectural decisions require documentation and, where durable, an ADR.
