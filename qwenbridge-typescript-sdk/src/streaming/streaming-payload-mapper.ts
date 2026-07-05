@@ -4,6 +4,8 @@ import type {
   AIFailedStreamingPayload,
   AITokenStreamingPayload,
   ConnectedStreamingPayload,
+  PipelineStreamingPayload,
+  StageStreamingPayload,
   StreamingPayload,
   UnknownStreamingPayload
 } from "./payload/streaming-payload.js";
@@ -49,6 +51,32 @@ export class StreamingPayloadMapper {
       } satisfies AIFailedStreamingPayload;
     }
 
+    if (this.isObject(parsed) && this.isKnownRuntimeEvent(event.event)) {
+      const terminal =
+          event.event === "pipeline.completed"
+          || event.event === "pipeline.failed"
+          || event.event === "pipeline.stopped";
+
+      const mapped = {
+        kind: event.event,
+        requestId: this.stringValue(parsed.requestId),
+        event: this.stringValue(parsed.event) || event.event,
+        stage: this.stringValue(parsed.stage),
+        type: this.stringValue(parsed.type),
+        sequenceNumber: this.numberValue(parsed.sequenceNumber),
+        terminal,
+        payload: this.objectValue(parsed.payload)
+      };
+
+      if (event.event.startsWith("pipeline.")) {
+        const pipelinePayload = mapped as PipelineStreamingPayload;
+        return pipelinePayload;
+      }
+
+      const stagePayload = mapped as StageStreamingPayload;
+      return stagePayload;
+    }
+
     return {
       kind: "unknown",
       event: event.event,
@@ -80,4 +108,14 @@ export class StreamingPayloadMapper {
   private booleanValue(value: unknown): boolean {
     return typeof value === "boolean" ? value : false;
   }
+
+  private isKnownRuntimeEvent(eventName: string): boolean {
+    return /^pipeline\.(started|completed|failed|stopped)$/.test(eventName)
+        || /^(language|normalization|threat|ai_analysis|intent|rewrite|semantic|policy|decision|confidence)\.(started|completed|failed|skipped|checked|detected)$/.test(eventName);
+  }
+
+  private objectValue(value: unknown): Record<string, unknown> {
+    return this.isObject(value) ? value : {};
+  }
+
 }

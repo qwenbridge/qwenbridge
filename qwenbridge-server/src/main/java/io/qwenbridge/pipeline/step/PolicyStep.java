@@ -45,7 +45,7 @@ public class PolicyStep implements PipelineStep<PolicyResult> {
                 violations.add("ADULT_CONTENT");
             }
 
-            if (normalized.split("\\s+").length > 6) {
+            if (normalized.split("\\s+").length > 40) {
                 violations.add("BROAD_EXPANSION");
             }
         }

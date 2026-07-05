@@ -42,4 +42,20 @@ class PolicyStepTest {
         assertThat(result.passed()).isFalse();
         assertThat(result.violations()).contains("ADULT_CONTENT");
     }
+
+    @Test
+    void shouldPassNormalLongShoppingQueryRewrite() {
+        ExecutionContext context = new ExecutionContext("best gaming laptop under 1500 euro");
+        context.store(
+                RewriteResult.class,
+                new RewriteResult(true, "mock", List.of("best gaming laptop under 1500 euro"))
+        );
+
+        PolicyStep step = new PolicyStep();
+
+        PolicyResult result = step.execute(context);
+
+        assertThat(result.passed()).isTrue();
+        assertThat(result.violations()).isEmpty();
+    }
 }

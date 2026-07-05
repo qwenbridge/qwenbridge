@@ -34,6 +34,8 @@ export type {
   AIFailedStreamingPayload,
   AITokenStreamingPayload,
   ConnectedStreamingPayload,
+  PipelineStreamingPayload,
+  StageStreamingPayload,
   StreamingPayload,
   UnknownStreamingPayload
 } from "./streaming/payload/streaming-payload.js";
