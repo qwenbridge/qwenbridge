@@ -12,6 +12,7 @@
 
   <artifactId>qwenbridge-spring-boot-starter</artifactId>
   <name>QwenBridge Spring Boot Starter</name>
+  <url>https://github.com/Mahad-Banai/qwenbridge/tree/main/qwenbridge-spring-boot-starter</url>
   <description>Spring Boot auto-configuration for the QwenBridge Java SDK</description>
 
   <dependencies>

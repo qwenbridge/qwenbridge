@@ -13,6 +13,10 @@
   <artifactId>qwenbridge-java-sdk-example</artifactId>
   <name>QwenBridge Java SDK Example</name>
 
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>io.qwenbridge</groupId>

@@ -12,6 +12,7 @@
 
   <artifactId>qwenbridge-java-sdk</artifactId>
   <name>QwenBridge Java SDK</name>
+  <url>https://github.com/Mahad-Banai/qwenbridge/tree/main/qwenbridge-java-sdk</url>
   <description>Official Java SDK for QwenBridge</description>
 
   <dependencies>
