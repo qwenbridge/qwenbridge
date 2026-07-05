@@ -2,6 +2,8 @@
 
 Official TypeScript SDK for QwenBridge.
 
+The SDK supports search analysis, typed errors, retry handling, raw SSE streaming, and typed SSE streaming.
+
 ## Requirements
 
 - Node.js 20+
@@ -10,23 +12,24 @@ Official TypeScript SDK for QwenBridge.
 
 ## Install
 
+After public release:
+
+```bash
+npm install @qwenbridge/sdk
+```
+
 Local monorepo development:
 
-~~~bash
-npm install
+```bash
+cd qwenbridge-typescript-sdk
+npm ci
 npm run build
 npm test
-~~~
+```
 
-Package usage after publishing:
+## Analyze a search query
 
-~~~bash
-npm install @qwenbridge/sdk
-~~~
-
-## Analyze search query
-
-~~~ts
+```ts
 import { QwenBridgeClient } from "@qwenbridge/sdk";
 
 const client = new QwenBridgeClient({
@@ -47,11 +50,11 @@ const response = await client.analyze({
 console.log(response.intent);
 console.log(response.decision);
 console.log(response.confidence);
-~~~
+```
 
 ## Typed errors
 
-~~~ts
+```ts
 import {
   QwenBridgeApiError,
   QwenBridgeClient,
@@ -63,9 +66,7 @@ const client = new QwenBridgeClient({
 });
 
 try {
-  await client.analyze({
-    query: "iphone"
-  });
+  await client.analyze({ query: "iphone" });
 } catch (error) {
   if (error instanceof QwenBridgeApiError) {
     console.error(error.status, error.code, error.requestId);
@@ -75,11 +76,11 @@ try {
     throw error;
   }
 }
-~~~
+```
 
 ## Raw SSE stream
 
-~~~ts
+```ts
 import { QwenBridgeStreamingClient } from "@qwenbridge/sdk";
 
 const streamingClient = new QwenBridgeStreamingClient({
@@ -89,11 +90,11 @@ const streamingClient = new QwenBridgeStreamingClient({
 await streamingClient.stream("request-123", event => {
   console.log(event.event, event.data);
 });
-~~~
+```
 
 ## Typed SSE stream
 
-~~~ts
+```ts
 import { QwenBridgeStreamingClient } from "@qwenbridge/sdk";
 
 const streamingClient = new QwenBridgeStreamingClient({
@@ -112,18 +113,14 @@ await streamingClient.streamTyped("request-123", event => {
       console.log("\nCompleted:", event.payload.tokenCount);
       break;
     case "ai.failed":
-      console.error(
-        "AI failed:",
-        event.payload.code,
-        event.payload.message
-      );
+      console.error("AI failed:", event.payload.code, event.payload.message);
       break;
     case "unknown":
       console.log("Unknown SSE event:", event.event, event.data);
       break;
   }
 });
-~~~
+```
 
 ## Retry behavior
 
@@ -134,30 +131,41 @@ Retryable failures:
 - HTTP `408`
 - HTTP `429`
 - HTTP `500` through `599`
-- Fetch transport failures
+- fetch transport failures
 
 Non-retryable failures:
 
-- Validation failures
-- Authentication and authorization failures
-- Other non-transient HTTP `4xx` responses
+- validation failures
+- authentication and authorization failures
+- other non-transient HTTP `4xx` responses
 
 ## Development
 
-~~~bash
-npm install
+```bash
+npm ci
 npm run build
 npm test
-~~~
+```
 
-The examples are source examples intended to document SDK usage. They require a running QwenBridge server.
+## Examples
 
-~~~bash
-QWENBRIDGE_BASE_URL=http://localhost:8080 \
-node --experimental-strip-types examples/sync-analyze.ts
-~~~
+Runnable examples are available in:
 
-~~~bash
-QWENBRIDGE_BASE_URL=http://localhost:8080 \
-node --experimental-strip-types examples/typed-stream.ts
-~~~
+```text
+examples/typescript-sdk-example
+```
+
+Example guide:
+
+```text
+docs/examples/typescript-sdk-example.md
+```
+
+## Publishing
+
+Publishing documentation is available in:
+
+```text
+PUBLISHING.md
+docs/publishing/npm.md
+```

@@ -1,165 +1,220 @@
 # QwenBridge
 
-> **AI-native Search Decision Engine**
+**QwenBridge is an AI-native search decision engine and developer platform.**
 
-QwenBridge is a developer-first platform for understanding a user query,
-reasoning about it with AI, producing an execution plan, and executing
-that plan through a modular execution engine.
+It accepts a user query, analyzes it through an AI-first pipeline, creates an execution plan, runs search operations through pluggable providers, and exposes the result through REST APIs, Server-Sent Events, Java SDK, Spring Boot Starter, and TypeScript SDK.
 
-## Features
+Current public release track: **V9 — Developer Platform**
 
--   AI-first query understanding
--   Language detection
--   Intent analysis
--   Query rewriting
--   Semantic analysis
--   AI decision engine
--   Execution planning
--   Modular execution engine
--   Provider-based AI architecture
--   REST API
+## What QwenBridge does
+
+QwenBridge combines query understanding, threat analysis, semantic reasoning, retrieval, ranking, reranking, streaming, and operational safety into one modular platform.
+
+Core capabilities:
+
+- AI-native query analysis
+- language detection
+- intent detection
+- input normalization
+- policy and threat analysis
+- query rewrite
+- semantic analysis
+- AI decision making
+- execution planning
+- keyword, vector, and hybrid search
+- ranking and reranking
+- request-scoped SSE streaming
+- provider abstraction for AI and search backends
+- Redis-backed cache support
+- OpenSearch integration
+- production health, metrics, tracing, and logging
+- Java SDK
+- Spring Boot Starter
+- TypeScript SDK
 
 ## Architecture
 
-``` text
+```text
 User Query
-     │
-Language
-     │
-Intent
-     │
-Policy / Threat
-     │
+    │
+    ▼
+Input Normalization
+    │
+    ▼
+Language Detection
+    │
+    ▼
+Intent Analysis
+    │
+    ▼
+Policy and Threat Analysis
+    │
+    ▼
 Rewrite
-     │
-Semantic
-     │
-Decision
-     │
+    │
+    ▼
+Semantic Analysis
+    │
+    ▼
+AI Decision
+    │
+    ▼
+Confidence Scoring
+    │
+    ▼
 Execution Plan
-     │
+    │
+    ▼
 Execution Engine
-     │
+    │
+    ├── Direct Answer
+    ├── Keyword Search
+    ├── Vector Search
+    ├── Hybrid Search
+    ├── Facet
+    ├── Rerank
+    └── Return Results
+    │
+    ▼
 Execution Result
 ```
 
-## Pipeline
+## Main modules
 
-1.  Language Detection
-2.  Intent Detection
-3.  Policy Evaluation
-4.  Threat Analysis
-5.  Query Rewrite
-6.  Semantic Analysis
-7.  AI Decision
-8.  Confidence Scoring
-9.  Execution Plan Generation
-10. Execution Engine
-11. Execution Result
-
-## Execution Engine
-
-Supported operations:
-
--   Direct Answer
--   Keyword Search
--   Vector Search
--   Hybrid Search
--   Facet
--   Rerank
--   Return Results
-
-## AI Stack
-
--   Qwen
--   BGE-M3
--   Ollama
-
-## Project Structure
-
-``` text
-src/main/java/io/qwenbridge
-├── ai
-├── api
-├── decision
-├── execution
-├── intent
-├── pipeline
-├── rewrite
-├── semantic
-└── model
+```text
+qwenbridge-server
+qwenbridge-java-sdk
+qwenbridge-spring-boot-starter
+qwenbridge-typescript-sdk
+examples
+docs
+scripts
 ```
 
+## AI and search stack
 
-## AI Provider Reliability
+QwenBridge is provider-oriented. The default local stack uses:
 
-V6 launches with deterministic Ollama routing. Provider calls are bounded by
-connect/read timeouts and a small retry count. QwenBridge does not perform
-automatic provider failover in V6; an unavailable AI provider returns a
-controlled `502 AI_PROVIDER_ERROR`.
+- Qwen through Ollama
+- BGE embeddings through Ollama
+- OpenSearch for retrieval
+- Redis for cache and rate limiting support
+- Spring Boot for the server runtime
 
-See [`docs/architecture/provider-reliability.md`](docs/architecture/provider-reliability.md).
-
-## REST API
+## Public APIs
 
 Current public API version: `v1`
 
-- `POST /api/v1/search/analyze`
-- `GET /api/v1/search/stream/{requestId}`
-- `POST /api/v1/ai/chat`
+REST:
 
-Response includes language, intent, rewrite, semantic analysis,
-decision, execution plan, execution result, confidence, cache metadata,
-and pipeline trace.
-
-Streaming uses request-scoped server-sent events with stable v1 event names
-and a frozen public event envelope. See `docs/api/sse.md`.
-
-## Documentation
-
--   [REST API](docs/api/rest-api.md)
--   [SSE API](docs/api/sse.md)
--   [AI Provider Reliability](docs/architecture/provider-reliability.md)
--   [Retrieval Verification](docs/architecture/retrieval-verification.md)
--   [V6 Roadmap](docs/roadmap/V6.md)
-
-## Testing
-
-``` bash
-mvn clean test
+```text
+POST /api/v1/search/analyze
+POST /api/v1/ai/chat
+GET  /api/v1/health
+GET  /api/v1/version
 ```
 
-## Roadmap
+Streaming:
 
--   ✅ V1 Foundation
--   ✅ V2 AI-native Search Core
--   ⏳ V3 Real Search Providers
--   ⏳ V4 Retrieval Intelligence
--   ✅ V5 Production AI Search Platform
--   🔒 V6 Public Product Hardening
+```text
+GET /api/v1/search/stream/{requestId}
+```
 
-## Design Principles
+The SSE API uses a stable public event envelope and typed event payloads.
 
--   AI-first
--   Provider abstraction
--   Step-based pipeline
--   Immutable domain models
--   Extensible execution engine
+API documentation:
+
+- [REST API](docs/api/rest-api.md)
+- [SSE API](docs/api/sse.md)
+
+## SDKs and starters
+
+Java SDK:
+
+- [Java SDK README](qwenbridge-java-sdk/README.md)
+- [Java SDK example](docs/examples/java-sdk-example.md)
+
+Spring Boot Starter:
+
+- [Spring Boot Starter README](qwenbridge-spring-boot-starter/README.md)
+- [Spring Boot Starter example](docs/examples/spring-boot-starter-example.md)
+
+TypeScript SDK:
+
+- [TypeScript SDK README](qwenbridge-typescript-sdk/README.md)
+- [TypeScript SDK publishing](qwenbridge-typescript-sdk/PUBLISHING.md)
+- [TypeScript SDK example](docs/examples/typescript-sdk-example.md)
+
+## Local development
+
+Start dependencies:
+
+```bash
+docker compose up -d
+```
+
+Run the full Java verification suite:
+
+```bash
+mvn clean verify
+```
+
+Run the release verification script:
+
+```bash
+bash scripts/verify-release.sh
+```
+
+Development documentation:
+
+- [Local Development](docs/development/local-development.md)
+- [Testing](docs/development/testing.md)
+- [Code Quality](docs/development/code-quality.md)
+- [Branching and Pull Request Policy](docs/development/branching-and-pr-policy.md)
+
+## Operations
+
+Operational documentation:
+
+- [Configuration](docs/operations/configuration.md)
+- [Health](docs/operations/health.md)
+- [Logging](docs/operations/logging.md)
+- [Metrics](docs/operations/metrics.md)
+- [Tracing](docs/operations/tracing.md)
+- [Runbook](docs/operations/runbook.md)
+- [Docker Deployment](docs/deployment/docker.md)
+
+## Architecture documentation
+
+- [Architecture Overview](docs/architecture/overview.md)
+- [Modules](docs/architecture/modules.md)
+- [Pipeline](docs/architecture/pipeline.md)
+- [AI Stack](docs/architecture/ai-stack.md)
+- [Architecture Rules](docs/architecture/architecture-rules.md)
+- [Provider Reliability](docs/architecture/provider-reliability.md)
+- [Ranking Policy](docs/architecture/ranking-policy.md)
+- [Retrieval Verification](docs/architecture/retrieval-verification.md)
+
+## Release documentation
+
+- [Release History](docs/release/README.md)
+- [V9 Roadmap](docs/roadmap/V9.md)
+- [V9 Release Checklist](docs/release/V9-release-checklist.md)
+- [V9 Release Evidence](docs/release/V9-release-evidence.md)
+- [Maven Central Publishing](docs/publishing/maven-central.md)
+- [npm Publishing](docs/publishing/npm.md)
+- [Release Process](docs/publishing/release-process.md)
+
+## Security
+
+Security documentation:
+
+- [Security Policy](SECURITY.md)
+- [Abuse Protection](docs/security/abuse-protection.md)
+- [Secrets Handling Policy](docs/security/secrets-handling-policy.md)
+
+Do not commit secrets, tokens, passwords, private endpoints, generated build output, dependency folders, or local environment files.
 
 ## License
 
-MIT
-
-
-## Deployment and Release
-
-- [Docker Deployment](docs/deployment/docker.md)
-- [V6 Release Evidence](docs/release/V6-release-evidence.md)
-- [V6 Release Checklist](docs/release/V6-release-checklist.md)
-
-## Java SDK
-
-The repository includes a Java 21 SDK for calling the Search Analyze API.
-
-- SDK documentation: `qwenbridge-java-sdk/README.md`
-- Runnable examples: `examples/java-sdk-example`
+QwenBridge is licensed under the MIT License. See [LICENSE](LICENSE).

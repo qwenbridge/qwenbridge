@@ -1,31 +1,47 @@
-# Contributing
+# Contributing to QwenBridge
 
-## Requirements
+Thank you for considering a contribution to QwenBridge.
 
-- Java 21
-- Maven 3.9+
+QwenBridge is maintained as a quality-gated developer platform. Contributions should be focused, tested, documented, and safe for public release.
 
-## Local workflow
+## Development setup
 
-Run tests before opening a pull request:
+Read:
 
-    mvn clean test
+- `docs/development/local-development.md`
+- `docs/development/testing.md`
+- `docs/development/code-quality.md`
+- `docs/development/branching-and-pr-policy.md`
 
-## V1 scope rules
+## Before opening a pull request
 
-V1 is only for search-box intelligence.
+Run:
 
-Do not add:
+```bash
+mvn clean verify
+bash scripts/verify-release.sh
+```
 
-- Database
-- Product catalog
-- Forms
-- Payments
-- API Gateway behavior
+For TypeScript SDK changes:
 
-## Architecture rules
+```bash
+cd qwenbridge-typescript-sdk
+npm ci
+npm run build
+npm test
+```
 
-- Each pipeline step produces one result object.
-- ExecutionContext is a typed result store.
-- Avoid God Objects.
-- Every final decision must be one of ALLOW, REWRITE, CLARIFY, or BLOCK.
+## Pull request expectations
+
+A pull request should include:
+
+- a focused description
+- tests for changed behavior
+- documentation updates for public behavior changes
+- no committed secrets
+- no committed build output
+- no `target`, `node_modules`, `dist`, or local IDE files
+
+## Architecture changes
+
+If a change affects architecture, provider boundaries, public API contracts, execution flow, streaming semantics, or release behavior, update the relevant documentation or add an ADR.
