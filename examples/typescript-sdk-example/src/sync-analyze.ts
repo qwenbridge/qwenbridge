@@ -1,4 +1,4 @@
-import { QwenBridgeClient } from "../src/index.js";
+import { QwenBridgeClient } from "@qwenbridge/sdk";
 
 const client = new QwenBridgeClient({
   baseUrl: process.env.QWENBRIDGE_BASE_URL ?? "http://localhost:8080"
