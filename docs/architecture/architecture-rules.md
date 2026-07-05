@@ -1,6 +1,6 @@
 # Architecture Rules
 
-Architecture rules are enforced by tests and code review.
+Architecture rules are enforced by ArchUnit tests and code review.
 
 - API packages must not expose provider DTOs as public contracts.
 - Provider implementations must depend on provider-neutral SPI contracts.
