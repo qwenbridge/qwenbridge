@@ -4,5 +4,5 @@ import io.qwenbridge.intent.IntentAnalysis;
 
 public interface AIIntentService {
 
-    IntentAnalysis analyze(String query);
+  IntentAnalysis analyze(String query);
 }

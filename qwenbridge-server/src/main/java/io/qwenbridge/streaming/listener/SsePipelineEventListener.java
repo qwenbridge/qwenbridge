@@ -14,44 +14,38 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SsePipelineEventListener {
 
-    private final StreamingSessionRegistry registry;
+  private final StreamingSessionRegistry registry;
 
-    private final PipelineStreamingEventMapper mapper;
+  private final PipelineStreamingEventMapper mapper;
 
-    private final PipelineEventTerminalPolicy terminalPolicy;
+  private final PipelineEventTerminalPolicy terminalPolicy;
 
-    @EventListener
-    public void onPipelineEvent(PipelineEvent<?> event) {
-        PipelineStreamingEvent streamingEvent = mapper.map(event);
+  @EventListener
+  public void onPipelineEvent(PipelineEvent<?> event) {
+    PipelineStreamingEvent streamingEvent = mapper.map(event);
 
-        if (streamingEvent.requestId() == null || streamingEvent.requestId().isBlank()) {
-            return;
-        }
-
-        if (terminalPolicy.isFailure(event.stage(), event.type())) {
-            registry.failRequest(
-                    streamingEvent.requestId(),
-                    streamingEvent.id(),
-                    "stream.failure",
-                    new FailureStreamingPayload(
-                            streamingEvent.requestId(),
-                            "PIPELINE_FAILED",
-                            "Pipeline failed before completion",
-                            true
-                    )
-            );
-            return;
-        }
-
-        registry.sendToRequest(
-                streamingEvent.requestId(),
-                streamingEvent.id(),
-                streamingEvent.event(),
-                streamingEvent
-        );
-
-        if (terminalPolicy.isTerminal(event.stage(), event.type())) {
-            registry.completeRequest(streamingEvent.requestId());
-        }
+    if (streamingEvent.requestId() == null || streamingEvent.requestId().isBlank()) {
+      return;
     }
+
+    if (terminalPolicy.isFailure(event.stage(), event.type())) {
+      registry.failRequest(
+          streamingEvent.requestId(),
+          streamingEvent.id(),
+          "stream.failure",
+          new FailureStreamingPayload(
+              streamingEvent.requestId(),
+              "PIPELINE_FAILED",
+              "Pipeline failed before completion",
+              true));
+      return;
+    }
+
+    registry.sendToRequest(
+        streamingEvent.requestId(), streamingEvent.id(), streamingEvent.event(), streamingEvent);
+
+    if (terminalPolicy.isTerminal(event.stage(), event.type())) {
+      registry.completeRequest(streamingEvent.requestId());
+    }
+  }
 }

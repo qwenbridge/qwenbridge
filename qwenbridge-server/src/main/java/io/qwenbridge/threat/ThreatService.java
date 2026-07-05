@@ -1,7 +1,5 @@
 package io.qwenbridge.threat;
 
-import lombok.RequiredArgsConstructor;
-
 import io.qwenbridge.threat.correlation.ThreatCorrelationService;
 import io.qwenbridge.threat.correlation.ThreatRiskLevel;
 import io.qwenbridge.threat.correlation.ThreatRiskProfile;
@@ -13,80 +11,79 @@ import io.qwenbridge.threat.model.ThreatAnalysis;
 import io.qwenbridge.threat.model.ThreatDecision;
 import io.qwenbridge.threat.model.ThreatFinding;
 import io.qwenbridge.threat.scoring.ThreatScoringService;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class ThreatService {
 
-    private final ThreatDetectorRegistry detectorRegistry;
-    private final ThreatScoringService scoringService;
-    private final ThreatDecisionEngine decisionEngine;
-    private final ThreatCorrelationService correlationService;
-    private final ThreatExplanationBuilder explanationBuilder;
+  private final ThreatDetectorRegistry detectorRegistry;
+  private final ThreatScoringService scoringService;
+  private final ThreatDecisionEngine decisionEngine;
+  private final ThreatCorrelationService correlationService;
+  private final ThreatExplanationBuilder explanationBuilder;
 
-    public ThreatResult analyze(String query) {
-        return toResult(analyzeDetailed(query));
+  public ThreatResult analyze(String query) {
+    return toResult(analyzeDetailed(query));
+  }
+
+  public ThreatResult toResult(ThreatAnalysis analysis) {
+    List<String> reasons = new ArrayList<>();
+
+    reasons.addAll(
+        analysis.findings().stream()
+            .map(ThreatFinding::reason)
+            .filter(reason -> reason != null && !reason.isBlank())
+            .toList());
+
+    reasons.addAll(
+        analysis.riskProfile().correlations().stream()
+            .map(correlation -> correlation.reason())
+            .filter(reason -> reason != null && !reason.isBlank())
+            .toList());
+
+    return new ThreatResult(analysis.safe(), reasons);
+  }
+
+  public ThreatAnalysis analyzeDetailed(String query) {
+    String safeQuery = query == null ? "" : query;
+    List<ThreatFinding> findings = new ArrayList<>();
+
+    for (ThreatDetector detector : detectorRegistry.detectors()) {
+      List<ThreatFinding> detectorFindings = detector.detect(safeQuery);
+
+      if (detectorFindings != null && !detectorFindings.isEmpty()) {
+        findings.addAll(detectorFindings);
+      }
     }
 
-    public ThreatResult toResult(ThreatAnalysis analysis) {
-        List<String> reasons = new ArrayList<>();
+    double baseScore = scoringService.score(findings);
+    ThreatRiskProfile riskProfile = correlationService.correlate(findings);
+    double effectiveScore = Math.max(baseScore, riskProfile.correlatedScore());
 
-        reasons.addAll(analysis.findings().stream()
-                .map(ThreatFinding::reason)
-                .filter(reason -> reason != null && !reason.isBlank())
-                .toList());
+    ThreatDecision decision = decide(effectiveScore, riskProfile.riskLevel());
 
-        reasons.addAll(analysis.riskProfile().correlations().stream()
-                .map(correlation -> correlation.reason())
-                .filter(reason -> reason != null && !reason.isBlank())
-                .toList());
+    ThreatAnalysis analysis = ThreatAnalysis.from(findings, decision, riskProfile);
 
-        return new ThreatResult(
-                analysis.safe(),
-                reasons
-        );
+    return analysis.withExplanation(explanationBuilder.build(analysis));
+  }
+
+  private ThreatDecision decide(double score, ThreatRiskLevel riskLevel) {
+    if (riskLevel == ThreatRiskLevel.CRITICAL) {
+      return ThreatDecision.BLOCK;
     }
 
-    public ThreatAnalysis analyzeDetailed(String query) {
-        String safeQuery = query == null ? "" : query;
-        List<ThreatFinding> findings = new ArrayList<>();
-
-        for (ThreatDetector detector : detectorRegistry.detectors()) {
-            List<ThreatFinding> detectorFindings = detector.detect(safeQuery);
-
-            if (detectorFindings != null && !detectorFindings.isEmpty()) {
-                findings.addAll(detectorFindings);
-            }
-        }
-
-        double baseScore = scoringService.score(findings);
-        ThreatRiskProfile riskProfile = correlationService.correlate(findings);
-        double effectiveScore = Math.max(baseScore, riskProfile.correlatedScore());
-
-        ThreatDecision decision = decide(effectiveScore, riskProfile.riskLevel());
-
-        ThreatAnalysis analysis = ThreatAnalysis.from(findings, decision, riskProfile);
-
-        return analysis.withExplanation(explanationBuilder.build(analysis));
+    if (riskLevel == ThreatRiskLevel.HIGH) {
+      return ThreatDecision.BLOCK;
     }
 
-    private ThreatDecision decide(double score, ThreatRiskLevel riskLevel) {
-        if (riskLevel == ThreatRiskLevel.CRITICAL) {
-            return ThreatDecision.BLOCK;
-        }
-
-        if (riskLevel == ThreatRiskLevel.HIGH) {
-            return ThreatDecision.BLOCK;
-        }
-
-        if (riskLevel == ThreatRiskLevel.MEDIUM) {
-            return ThreatDecision.REVIEW;
-        }
-
-        return decisionEngine.decide(score);
+    if (riskLevel == ThreatRiskLevel.MEDIUM) {
+      return ThreatDecision.REVIEW;
     }
+
+    return decisionEngine.decide(score);
+  }
 }

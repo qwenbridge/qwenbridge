@@ -8,25 +8,22 @@ import org.springframework.data.redis.connection.lettuce.LettuceClientConfigurat
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 
 @Configuration
-@ConditionalOnExpression("'${qwenbridge.analysis.cache.enabled:true}' == 'true' && '${qwenbridge.analysis.cache.type:redis}' == 'redis'")
+@ConditionalOnExpression(
+    "'${qwenbridge.analysis.cache.enabled:true}' == 'true' &&"
+        + " '${qwenbridge.analysis.cache.type:redis}' == 'redis'")
 public class RedisAIAnalysisCacheConfiguration {
 
-    @Bean
-    public LettuceConnectionFactory redisConnectionFactory(
-            AIAnalysisCacheProperties properties
-    ) {
-        RedisStandaloneConfiguration redis =
-                new RedisStandaloneConfiguration(
-                        properties.redis().host(),
-                        properties.redis().port()
-                );
+  @Bean
+  public LettuceConnectionFactory redisConnectionFactory(AIAnalysisCacheProperties properties) {
+    RedisStandaloneConfiguration redis =
+        new RedisStandaloneConfiguration(properties.redis().host(), properties.redis().port());
 
-        LettuceClientConfiguration client =
-                LettuceClientConfiguration.builder()
-                        .commandTimeout(properties.redis().commandTimeout())
-                        .shutdownTimeout(properties.redis().connectTimeout())
-                        .build();
+    LettuceClientConfiguration client =
+        LettuceClientConfiguration.builder()
+            .commandTimeout(properties.redis().commandTimeout())
+            .shutdownTimeout(properties.redis().connectTimeout())
+            .build();
 
-        return new LettuceConnectionFactory(redis, client);
-    }
+    return new LettuceConnectionFactory(redis, client);
+  }
 }

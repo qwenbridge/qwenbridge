@@ -1,6 +1,3 @@
 package io.qwenbridge.ai.contract;
 
-public record ChatResponse(
-        String content
-) {
-}
+public record ChatResponse(String content) {}

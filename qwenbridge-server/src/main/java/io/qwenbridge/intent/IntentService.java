@@ -1,9 +1,8 @@
 package io.qwenbridge.intent;
 
-import lombok.RequiredArgsConstructor;
-
-import lombok.extern.slf4j.Slf4j;
 import io.qwenbridge.intent.ai.AIIntentService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -11,18 +10,21 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class IntentService {
 
-    private final AIIntentService aiIntentService;
+  private final AIIntentService aiIntentService;
 
-    public IntentAnalysis analyze(String query) {
-        try {
-            return aiIntentService.analyze(query);
-        } catch (Exception exception) {
-            log.warn("AI intent analysis failed. Falling back to product search intent. query={}", query, exception);
-            return IntentAnalysis.productSearch();
-        }
+  public IntentAnalysis analyze(String query) {
+    try {
+      return aiIntentService.analyze(query);
+    } catch (Exception exception) {
+      log.warn(
+          "AI intent analysis failed. Falling back to product search intent. query={}",
+          query,
+          exception);
+      return IntentAnalysis.productSearch();
     }
+  }
 
-    public String detect(String query) {
-        return analyze(query).type().name();
-    }
+  public String detect(String query) {
+    return analyze(query).type().name();
+  }
 }

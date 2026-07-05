@@ -1,35 +1,31 @@
 package io.qwenbridge.execution.provider.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.result.RewriteResult;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class SearchRequestFactoryTest {
 
-    @Test
-    void shouldCreateRequestFromOriginalQueryWhenRewriteDoesNotExist() {
-        ExecutionContext context = new ExecutionContext("iphone");
+  @Test
+  void shouldCreateRequestFromOriginalQueryWhenRewriteDoesNotExist() {
+    ExecutionContext context = new ExecutionContext("iphone");
 
-        SearchRequest request = SearchRequestFactory.from(context);
+    SearchRequest request = SearchRequestFactory.from(context);
 
-        assertThat(request.query()).isEqualTo("iphone");
-    }
+    assertThat(request.query()).isEqualTo("iphone");
+  }
 
-    @Test
-    void shouldCreateRequestFromRewrittenQueryWhenAvailable() {
-        ExecutionContext context = new ExecutionContext("iphon");
+  @Test
+  void shouldCreateRequestFromRewrittenQueryWhenAvailable() {
+    ExecutionContext context = new ExecutionContext("iphon");
 
-        context.store(
-                RewriteResult.class,
-                new RewriteResult(true, "qwen", List.of("iphone"))
-        );
+    context.store(RewriteResult.class, new RewriteResult(true, "qwen", List.of("iphone")));
 
-        SearchRequest request = SearchRequestFactory.from(context);
+    SearchRequest request = SearchRequestFactory.from(context);
 
-        assertThat(request.query()).isEqualTo("iphone");
-    }
+    assertThat(request.query()).isEqualTo("iphone");
+  }
 }

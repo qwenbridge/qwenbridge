@@ -8,22 +8,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class JailbreakDetector extends PatternBasedThreatDetector {
 
-    public JailbreakDetector(ThreatRuleLoader ruleLoader) {
-        super(ruleLoader.load("threat-rules/jailbreak.yml", ThreatType.JAILBREAK));
-    }
+  public JailbreakDetector(ThreatRuleLoader ruleLoader) {
+    super(ruleLoader.load("threat-rules/jailbreak.yml", ThreatType.JAILBREAK));
+  }
 
-    @Override
-    public String name() {
-        return "jailbreak-detector";
-    }
+  @Override
+  public String name() {
+    return "jailbreak-detector";
+  }
 
-    @Override
-    public ThreatType type() {
-        return ThreatType.JAILBREAK;
-    }
+  @Override
+  public ThreatType type() {
+    return ThreatType.JAILBREAK;
+  }
 
-    @Override
-    public int order() {
-        return 110;
-    }
+  @Override
+  public int order() {
+    return 110;
+  }
 }

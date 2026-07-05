@@ -3,5 +3,5 @@ package io.qwenbridge.sdk.streaming;
 @FunctionalInterface
 public interface StreamingEventHandler {
 
-    void onEvent(StreamingEvent event);
+  void onEvent(StreamingEvent event);
 }

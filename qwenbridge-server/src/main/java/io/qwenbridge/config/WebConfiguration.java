@@ -8,31 +8,24 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfiguration implements WebMvcConfigurer {
 
-    private final String allowedOriginPatterns;
+  private final String allowedOriginPatterns;
 
-    public WebConfiguration(@Value("${qwenbridge.security.cors.allowed-origin-patterns:*}") String allowedOriginPatterns) {
-        this.allowedOriginPatterns = allowedOriginPatterns;
-    }
+  public WebConfiguration(
+      @Value("${qwenbridge.security.cors.allowed-origin-patterns:*}")
+          String allowedOriginPatterns) {
+    this.allowedOriginPatterns = allowedOriginPatterns;
+  }
 
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
+  @Override
+  public void addCorsMappings(CorsRegistry registry) {
 
-        registry.addMapping("/api/**")
-                .allowedOriginPatterns(allowedOriginPatterns.split(","))
-                .allowedMethods(
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "DELETE",
-                        "PATCH",
-                        "OPTIONS")
-                .allowedHeaders("*")
-                .exposedHeaders(
-                        "X-Request-Id",
-                        "X-QwenBridge-Version",
-                        "X-Trace-Id",
-                        "traceparent")
-                .allowCredentials(false)
-                .maxAge(3600);
-    }
+    registry
+        .addMapping("/api/**")
+        .allowedOriginPatterns(allowedOriginPatterns.split(","))
+        .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+        .allowedHeaders("*")
+        .exposedHeaders("X-Request-Id", "X-QwenBridge-Version", "X-Trace-Id", "traceparent")
+        .allowCredentials(false)
+        .maxAge(3600);
+  }
 }

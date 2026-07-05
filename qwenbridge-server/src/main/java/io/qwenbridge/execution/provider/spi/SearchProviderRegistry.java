@@ -5,9 +5,9 @@ import java.util.Optional;
 
 public interface SearchProviderRegistry {
 
-    void register(SearchProvider provider);
+  void register(SearchProvider provider);
 
-    Optional<SearchProvider> find(String providerName);
+  Optional<SearchProvider> find(String providerName);
 
-    Collection<SearchProvider> providers();
+  Collection<SearchProvider> providers();
 }

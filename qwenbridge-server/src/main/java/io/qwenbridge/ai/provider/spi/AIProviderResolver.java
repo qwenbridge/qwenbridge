@@ -4,7 +4,7 @@ import io.qwenbridge.ai.value.ProviderId;
 
 public interface AIProviderResolver {
 
-    AIProvider resolve(ProviderId providerId);
+  AIProvider resolve(ProviderId providerId);
 
-    AIProvider resolveDefault();
+  AIProvider resolveDefault();
 }

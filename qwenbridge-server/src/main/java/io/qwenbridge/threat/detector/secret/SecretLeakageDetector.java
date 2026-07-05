@@ -8,22 +8,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class SecretLeakageDetector extends PatternBasedThreatDetector {
 
-    public SecretLeakageDetector(ThreatRuleLoader ruleLoader) {
-        super(ruleLoader.load("threat-rules/secret-leakage.yml", ThreatType.SECRET_LEAKAGE));
-    }
+  public SecretLeakageDetector(ThreatRuleLoader ruleLoader) {
+    super(ruleLoader.load("threat-rules/secret-leakage.yml", ThreatType.SECRET_LEAKAGE));
+  }
 
-    @Override
-    public String name() {
-        return "secret-leakage-detector";
-    }
+  @Override
+  public String name() {
+    return "secret-leakage-detector";
+  }
 
-    @Override
-    public ThreatType type() {
-        return ThreatType.SECRET_LEAKAGE;
-    }
+  @Override
+  public ThreatType type() {
+    return ThreatType.SECRET_LEAKAGE;
+  }
 
-    @Override
-    public int order() {
-        return 100;
-    }
+  @Override
+  public int order() {
+    return 100;
+  }
 }

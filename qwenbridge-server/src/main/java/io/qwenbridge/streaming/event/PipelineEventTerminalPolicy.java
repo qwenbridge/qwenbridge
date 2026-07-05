@@ -7,24 +7,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class PipelineEventTerminalPolicy {
 
-    public boolean isTerminal(
-            PipelineStage stage,
-            PipelineEventType type
-    ) {
-        if (stage != PipelineStage.PIPELINE) {
-            return false;
-        }
-
-        return type == PipelineEventType.COMPLETED
-                || type == PipelineEventType.FAILED
-                || type == PipelineEventType.STOPPED;
+  public boolean isTerminal(PipelineStage stage, PipelineEventType type) {
+    if (stage != PipelineStage.PIPELINE) {
+      return false;
     }
 
-    public boolean isFailure(
-            PipelineStage stage,
-            PipelineEventType type
-    ) {
-        return stage == PipelineStage.PIPELINE
-                && type == PipelineEventType.FAILED;
-    }
+    return type == PipelineEventType.COMPLETED
+        || type == PipelineEventType.FAILED
+        || type == PipelineEventType.STOPPED;
+  }
+
+  public boolean isFailure(PipelineStage stage, PipelineEventType type) {
+    return stage == PipelineStage.PIPELINE && type == PipelineEventType.FAILED;
+  }
 }

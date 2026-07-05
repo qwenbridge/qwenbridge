@@ -8,22 +8,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class PathTraversalDetector extends PatternBasedThreatDetector {
 
-    public PathTraversalDetector(ThreatRuleLoader ruleLoader) {
-        super(ruleLoader.load("threat-rules/path-traversal.yml", ThreatType.PATH_TRAVERSAL));
-    }
+  public PathTraversalDetector(ThreatRuleLoader ruleLoader) {
+    super(ruleLoader.load("threat-rules/path-traversal.yml", ThreatType.PATH_TRAVERSAL));
+  }
 
-    @Override
-    public String name() {
-        return "path-traversal-detector";
-    }
+  @Override
+  public String name() {
+    return "path-traversal-detector";
+  }
 
-    @Override
-    public ThreatType type() {
-        return ThreatType.PATH_TRAVERSAL;
-    }
+  @Override
+  public ThreatType type() {
+    return ThreatType.PATH_TRAVERSAL;
+  }
 
-    @Override
-    public int order() {
-        return 50;
-    }
+  @Override
+  public int order() {
+    return 50;
+  }
 }

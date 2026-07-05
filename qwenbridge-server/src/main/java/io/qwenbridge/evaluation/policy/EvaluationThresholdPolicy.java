@@ -5,5 +5,5 @@ import io.qwenbridge.evaluation.model.EvaluationResult;
 
 public interface EvaluationThresholdPolicy {
 
-    EvaluationGateResult evaluate(EvaluationResult result);
+  EvaluationGateResult evaluate(EvaluationResult result);
 }

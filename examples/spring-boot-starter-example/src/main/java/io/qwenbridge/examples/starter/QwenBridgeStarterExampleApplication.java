@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class QwenBridgeStarterExampleApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(QwenBridgeStarterExampleApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(QwenBridgeStarterExampleApplication.class, args);
+  }
 }

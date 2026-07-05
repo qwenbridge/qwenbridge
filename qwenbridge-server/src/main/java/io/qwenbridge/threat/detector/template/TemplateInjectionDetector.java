@@ -8,22 +8,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class TemplateInjectionDetector extends PatternBasedThreatDetector {
 
-    public TemplateInjectionDetector(ThreatRuleLoader ruleLoader) {
-        super(ruleLoader.load("threat-rules/template-injection.yml", ThreatType.TEMPLATE_INJECTION));
-    }
+  public TemplateInjectionDetector(ThreatRuleLoader ruleLoader) {
+    super(ruleLoader.load("threat-rules/template-injection.yml", ThreatType.TEMPLATE_INJECTION));
+  }
 
-    @Override
-    public String name() {
-        return "template-injection-detector";
-    }
+  @Override
+  public String name() {
+    return "template-injection-detector";
+  }
 
-    @Override
-    public ThreatType type() {
-        return ThreatType.TEMPLATE_INJECTION;
-    }
+  @Override
+  public ThreatType type() {
+    return ThreatType.TEMPLATE_INJECTION;
+  }
 
-    @Override
-    public int order() {
-        return 60;
-    }
+  @Override
+  public int order() {
+    return 60;
+  }
 }

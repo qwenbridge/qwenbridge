@@ -4,10 +4,9 @@ import io.qwenbridge.event.model.PipelineEvent;
 
 public interface PipelineEventPublisher {
 
-    void publish(PipelineEvent<?> event);
+  void publish(PipelineEvent<?> event);
 
-    default boolean isEnabled() {
-        return true;
-    }
-
+  default boolean isEnabled() {
+    return true;
+  }
 }

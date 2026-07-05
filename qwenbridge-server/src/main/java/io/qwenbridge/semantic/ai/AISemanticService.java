@@ -4,5 +4,5 @@ import io.qwenbridge.semantic.SemanticAnalysis;
 
 public interface AISemanticService {
 
-    SemanticAnalysis analyze(String query);
+  SemanticAnalysis analyze(String query);
 }
