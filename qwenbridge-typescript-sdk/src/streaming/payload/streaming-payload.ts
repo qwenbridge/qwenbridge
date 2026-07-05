@@ -1,14 +1,38 @@
 export type StreamingPayload =
-  | ConnectedStreamingPayload
-  | AITokenStreamingPayload
-  | AICompletedStreamingPayload
-  | AIFailedStreamingPayload
-  | UnknownStreamingPayload;
+    | ConnectedStreamingPayload
+    | PipelineStreamingPayload
+    | StageStreamingPayload
+    | AITokenStreamingPayload
+    | AICompletedStreamingPayload
+    | AIFailedStreamingPayload
+    | UnknownStreamingPayload;
 
 export interface ConnectedStreamingPayload {
   kind: "connected";
   requestId: string;
   sessionId: string;
+}
+
+export interface PipelineStreamingPayload {
+  kind: "pipeline.started" | "pipeline.completed" | "pipeline.failed" | "pipeline.stopped";
+  requestId: string;
+  event: string;
+  stage: string;
+  type: string;
+  sequenceNumber: number;
+  terminal: boolean;
+  payload: Record<string, unknown>;
+}
+
+export interface StageStreamingPayload {
+  kind: string;
+  requestId: string;
+  event: string;
+  stage: string;
+  type: string;
+  sequenceNumber: number;
+  terminal: boolean;
+  payload: Record<string, unknown>;
 }
 
 export interface AITokenStreamingPayload {
