@@ -1,17 +1,18 @@
 package io.qwenbridge.exception;
 
-import lombok.extern.slf4j.Slf4j;
-import io.qwenbridge.api.header.ApiHeaders;
 import io.qwenbridge.ai.exception.AIException;
+import io.qwenbridge.api.header.ApiHeaders;
 import io.qwenbridge.execution.provider.exception.SearchProviderException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -68,6 +69,19 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST,
                 ErrorCode.BAD_REQUEST,
                 "Malformed JSON request body",
+                request
+        );
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    ResponseEntity<ApiError> handleHttpMediaTypeNotSupported(
+            HttpMediaTypeNotSupportedException exception,
+            HttpServletRequest request
+    ) {
+        return buildError(
+                HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+                ErrorCode.BAD_REQUEST,
+                "Unsupported content type",
                 request
         );
     }

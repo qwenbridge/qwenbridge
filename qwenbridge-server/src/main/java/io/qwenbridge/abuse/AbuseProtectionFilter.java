@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qwenbridge.api.header.ApiHeaders;
 import io.qwenbridge.exception.ApiError;
 import io.qwenbridge.exception.ErrorCode;
-import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import io.qwenbridge.operations.metrics.OperationsMetrics;
+import io.qwenbridge.operations.tracing.TraceContextFilter;
+import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +20,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.HexFormat;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -29,6 +33,8 @@ public class AbuseProtectionFilter extends OncePerRequestFilter {
 
     public static final String API_KEY_HEADER = "X-API-Key";
     public static final String RATE_LIMIT_POLICY_HEADER = "X-RateLimit-Policy";
+
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     private final AbuseProtectionProperties properties;
     private final RateLimiter rateLimiter;
@@ -85,7 +91,9 @@ public class AbuseProtectionFilter extends OncePerRequestFilter {
                     properties.perApiKeyLimit(),
                     1
             );
-            if (!apiKeyDecision.allowed()) return apiKeyDecision;
+            if (!apiKeyDecision.allowed()) {
+                return apiKeyDecision;
+            }
         }
 
         RateLimitDecision ipDecision = rateLimiter.consume(
@@ -94,7 +102,9 @@ public class AbuseProtectionFilter extends OncePerRequestFilter {
                 properties.perIpLimit(),
                 1
         );
-        if (!ipDecision.allowed()) return ipDecision;
+        if (!ipDecision.allowed()) {
+            return ipDecision;
+        }
 
         if (isAiRequest(request)) {
             return rateLimiter.consume(
@@ -130,7 +140,10 @@ public class AbuseProtectionFilter extends OncePerRequestFilter {
     }
 
     private void applyHeaders(HttpServletResponse response, RateLimitDecision decision) {
-        response.setHeader(HttpHeaders.RETRY_AFTER, String.valueOf(Math.max(1, decision.resetAt().getEpochSecond() - Instant.now().getEpochSecond())));
+        response.setHeader(
+                HttpHeaders.RETRY_AFTER,
+                String.valueOf(Math.max(1, decision.resetAt().getEpochSecond() - Instant.now().getEpochSecond()))
+        );
         response.setHeader("X-RateLimit-Limit", String.valueOf(decision.limit()));
         response.setHeader("X-RateLimit-Remaining", String.valueOf(decision.remaining()));
         response.setHeader("X-RateLimit-Reset", String.valueOf(decision.resetAt().getEpochSecond()));
@@ -142,8 +155,18 @@ public class AbuseProtectionFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             RateLimitDecision decision
     ) throws IOException {
+        String requestId = resolveRequestId(request);
+        String traceId = resolveTraceId(request);
+        String traceparent = resolveTraceparent(request, traceId);
+
         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
         response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        response.setHeader(ApiHeaders.REQUEST_ID, requestId);
+        response.setHeader(ApiHeaders.QWENBRIDGE_VERSION, "0.1.0-SNAPSHOT");
+        response.setHeader(TraceContextFilter.TRACE_ID_HEADER, traceId);
+        response.setHeader(TraceContextFilter.TRACEPARENT_HEADER, traceparent);
 
         ApiError body = ApiError.builder()
                 .timestamp(Instant.now())
@@ -152,14 +175,47 @@ public class AbuseProtectionFilter extends OncePerRequestFilter {
                 .code(ErrorCode.RATE_LIMITED.name())
                 .message("Request rejected by QwenBridge abuse protection policy: " + decision.policy())
                 .path(request.getRequestURI())
-                .requestId(requestId(request))
+                .requestId(requestId)
                 .build();
 
         objectMapper.writeValue(response.getWriter(), body);
     }
 
-    private String requestId(HttpServletRequest request) {
+    private String resolveRequestId(HttpServletRequest request) {
+        Object attribute = request.getAttribute(ApiHeaders.REQUEST_ID);
+        if (attribute instanceof String value && !value.isBlank()) {
+            return value.trim();
+        }
+
         String headerValue = request.getHeader(ApiHeaders.REQUEST_ID);
-        return headerValue == null ? "" : headerValue.trim();
+        if (headerValue != null && !headerValue.isBlank()) {
+            return headerValue.trim();
+        }
+
+        return UUID.randomUUID().toString();
+    }
+
+    private String resolveTraceId(HttpServletRequest request) {
+        String traceparent = request.getHeader(TraceContextFilter.TRACEPARENT_HEADER);
+        if (traceparent != null && traceparent.matches("^[0-9a-f]{2}-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$")) {
+            return traceparent.substring(3, 35);
+        }
+
+        return randomHex(16);
+    }
+
+    private String resolveTraceparent(HttpServletRequest request, String traceId) {
+        String traceparent = request.getHeader(TraceContextFilter.TRACEPARENT_HEADER);
+        if (traceparent != null && traceparent.matches("^[0-9a-f]{2}-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$")) {
+            return traceparent;
+        }
+
+        return "00-" + traceId + "-" + randomHex(8) + "-01";
+    }
+
+    private String randomHex(int bytes) {
+        byte[] value = new byte[bytes];
+        RANDOM.nextBytes(value);
+        return HexFormat.of().formatHex(value);
     }
 }

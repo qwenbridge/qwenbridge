@@ -15,6 +15,11 @@ source "${SCRIPT_DIR}/verification/05-api-runtime.sh"
 source "${SCRIPT_DIR}/verification/06-sse.sh"
 source "${SCRIPT_DIR}/verification/07-v8-validations.sh"
 source "${SCRIPT_DIR}/verification/08-v9-validations.sh"
+source "${SCRIPT_DIR}/verification/09-input-security.sh"
+source "${SCRIPT_DIR}/verification/10-language-quality.sh"
+source "${SCRIPT_DIR}/verification/11-retrieval-quality.sh"
+source "${SCRIPT_DIR}/verification/12-api-resilience.sh"
+source "${SCRIPT_DIR}/verification/13-performance-quality.sh"
 source "${SCRIPT_DIR}/verification/99-summary.sh"
 
 echo ""
@@ -46,6 +51,7 @@ if [[ "${RELEASE_LIGHTWEIGHT}" == "true" ]]; then
   run_step "V9 TypeScript SDK exports validation" v9_typescript_sdk_exports_validation
   run_step "V9 release docs stale validation" v9_release_docs_no_stale_v8_only_validation
   run_step "V9 performance script validation" v9_performance_script_validation
+  run_step "V9 quality performance scripts validation" v9_quality_performance_scripts_validation
 
   print_summary
   SUMMARY_STATUS=$?
@@ -84,6 +90,10 @@ run_step "Public health endpoint" public_health_endpoint
 run_step "Version endpoint" version_endpoint
 run_step "AI chat endpoint" ai_chat_endpoint
 run_step "Analyze API endpoint" analyze_api_endpoint
+run_step "Input security corpus validation" input_security_corpus_validation
+run_step "Language quality corpus validation" language_quality_corpus_validation
+run_step "Retrieval quality corpus validation" retrieval_quality_corpus_validation
+run_step "API resilience corpus validation" api_resilience_corpus_validation
 run_step "SSE streaming lifecycle validation" sse_streaming_lifecycle_validation
 run_step "V8 AI SSE token streaming validation" sse_ai_token_streaming_validation
 run_step "Validation error contract" validation_error_contract
@@ -115,6 +125,7 @@ run_step "V9 TypeScript SDK runtime analyze validation" v9_typescript_sdk_runtim
 run_step "V9 TypeScript SDK runtime SSE validation" v9_typescript_sdk_runtime_sse_validation
 run_step "V9 Java SDK runtime compile validation" v9_java_sdk_runtime_compile_validation
 run_step "V9 release docs stale validation" v9_release_docs_no_stale_v8_only_validation
+run_step "V9 quality performance scripts validation" v9_quality_performance_scripts_validation
 run_step "V9 performance script validation" v9_performance_script_validation
 run_step "V9 dockerized k6 compose validation" v9_dockerized_k6_compose_validation
 run_step "V9 optional performance validation" v9_optional_performance_validation
