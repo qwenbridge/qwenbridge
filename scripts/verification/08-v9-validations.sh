@@ -90,8 +90,11 @@ v9_typescript_sdk_source_validation() {
     && [[ -f "${TS_SDK_DIR}/src/streaming/qwenbridge-streaming-client.ts" ]] \
     && [[ -f "${TS_SDK_DIR}/src/streaming/streaming-payload-mapper.ts" ]] \
     && [[ -f "${TS_SDK_DIR}/src/retry/retry-policy.ts" ]] \
-    && [[ -f "${TS_SDK_DIR}/examples/sync-analyze.ts" ]] \
-    && [[ -f "${TS_SDK_DIR}/examples/typed-stream.ts" ]]
+    && [[ -f "examples/typescript-sdk-example/package.json" ]] \
+    && [[ -f "examples/typescript-sdk-example/README.md" ]] \
+    && [[ -f "examples/typescript-sdk-example/tsconfig.json" ]] \
+    && [[ -f "examples/typescript-sdk-example/src/sync-analyze.ts" ]] \
+    && [[ -f "examples/typescript-sdk-example/src/typed-stream.ts" ]]
 }
 
 v9_typescript_sdk_package_metadata_validation() {
