@@ -6,13 +6,12 @@
   <parent>
     <groupId>io.qwenbridge</groupId>
     <artifactId>qwenbridge-parent</artifactId>
-    <version>0.9.1</version>
+    <version>0.1.0-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
-  <artifactId>qwenbridge-spring-boot-starter-example</artifactId>
-  <name>QwenBridge Spring Boot Starter Example</name>
-  <description>Example Spring Boot application using the QwenBridge starter</description>
+  <artifactId>qwenbridge-java-sdk-example</artifactId>
+  <name>QwenBridge Java SDK Example</name>
 
   <properties>
     <maven.deploy.skip>true</maven.deploy.skip>
@@ -21,18 +20,8 @@
   <dependencies>
     <dependency>
       <groupId>io.qwenbridge</groupId>
-      <artifactId>qwenbridge-spring-boot-starter</artifactId>
+      <artifactId>qwenbridge-java-sdk</artifactId>
       <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-actuator</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
   </dependencies>
 </project>
