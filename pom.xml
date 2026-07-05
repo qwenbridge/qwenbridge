@@ -12,11 +12,35 @@
 
   <groupId>io.qwenbridge</groupId>
   <artifactId>qwenbridge-parent</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.9.1</version>
   <packaging>pom</packaging>
 
   <name>QwenBridge Parent</name>
   <description>QwenBridge developer platform and SDK ecosystem</description>
+  <url>https://github.com/Mahad-Banai/qwenbridge</url>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>Mahad-Banai</id>
+      <name>Mohammad Banai</name>
+      <url>https://github.com/Mahad-Banai</url>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:https://github.com/Mahad-Banai/qwenbridge.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/Mahad-Banai/qwenbridge.git</developerConnection>
+    <url>https://github.com/Mahad-Banai/qwenbridge</url>
+    <tag>HEAD</tag>
+  </scm>
 
   <modules>
     <module>qwenbridge-server</module>
@@ -37,6 +61,11 @@
     <spotbugs-maven-plugin.version>4.9.3.0</spotbugs-maven-plugin.version>
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
+
+    <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+    <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
+    <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
+    <central-publishing-maven-plugin.version>0.11.0</central-publishing-maven-plugin.version>
   </properties>
 
   <build>
@@ -153,6 +182,74 @@
         </plugins>
       </build>
     </profile>
+
+    <profile>
+      <id>central-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>${maven-source-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${maven-javadoc-plugin.version}</version>
+            <configuration>
+              <failOnError>true</failOnError>
+              <source>${java.version}</source>
+              <doclint>none</doclint>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>${maven-gpg-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>${central-publishing-maven-plugin.version}</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <autoPublish>false</autoPublish>
+              <waitUntil>uploaded</waitUntil>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
   </profiles>
 
 </project>

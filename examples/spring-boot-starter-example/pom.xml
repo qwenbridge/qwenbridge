@@ -6,13 +6,17 @@
   <parent>
     <groupId>io.qwenbridge</groupId>
     <artifactId>qwenbridge-parent</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.9.1</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <artifactId>qwenbridge-spring-boot-starter-example</artifactId>
   <name>QwenBridge Spring Boot Starter Example</name>
   <description>Example Spring Boot application using the QwenBridge starter</description>
+
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
 
   <dependencies>
     <dependency>

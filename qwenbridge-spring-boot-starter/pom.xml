@@ -6,12 +6,13 @@
   <parent>
     <groupId>io.qwenbridge</groupId>
     <artifactId>qwenbridge-parent</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.9.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>qwenbridge-spring-boot-starter</artifactId>
   <name>QwenBridge Spring Boot Starter</name>
+  <url>https://github.com/Mahad-Banai/qwenbridge/tree/main/qwenbridge-spring-boot-starter</url>
   <description>Spring Boot auto-configuration for the QwenBridge Java SDK</description>
 
   <dependencies>
