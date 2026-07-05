@@ -5,5 +5,5 @@ import io.qwenbridge.ranking.model.RankingScore;
 
 public interface RankingPolicy {
 
-    RankingScore score(SearchHit hit);
+  RankingScore score(SearchHit hit);
 }

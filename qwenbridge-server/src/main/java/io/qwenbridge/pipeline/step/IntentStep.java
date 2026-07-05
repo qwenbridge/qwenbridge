@@ -9,35 +9,34 @@ import org.springframework.stereotype.Component;
 @Component
 public class IntentStep implements PipelineStep<IntentResult> {
 
+  @Override
+  public PipelineStage stage() {
+    return PipelineStage.INTENT;
+  }
 
+  @Override
+  public String name() {
+    return "IntentStep";
+  }
 
-    @Override
-    public PipelineStage stage() {
-        return PipelineStage.INTENT;
+  @Override
+  public int order() {
+    return 30;
+  }
+
+  @Override
+  public Class<IntentResult> resultType() {
+    return IntentResult.class;
+  }
+
+  @Override
+  public IntentResult execute(ExecutionContext context) {
+    SearchAnalysis analysis = context.get(SearchAnalysis.class);
+
+    if (analysis == null) {
+      return IntentResult.unknown();
     }
-@Override
-    public String name() {
-        return "IntentStep";
-    }
 
-    @Override
-    public int order() {
-        return 30;
-    }
-
-    @Override
-    public Class<IntentResult> resultType() {
-        return IntentResult.class;
-    }
-
-    @Override
-    public IntentResult execute(ExecutionContext context) {
-        SearchAnalysis analysis = context.get(SearchAnalysis.class);
-
-        if (analysis == null) {
-            return IntentResult.unknown();
-        }
-
-        return analysis.toIntentResult();
-    }
+    return analysis.toIntentResult();
+  }
 }

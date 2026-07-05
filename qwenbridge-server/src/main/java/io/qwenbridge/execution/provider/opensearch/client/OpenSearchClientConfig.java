@@ -8,10 +8,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class OpenSearchClientConfig {
 
-    @Bean
-    public WebClient openSearchWebClient(OpenSearchProperties properties) {
-        return WebClient.builder()
-                .baseUrl(properties.baseUrl())
-                .build();
-    }
+  @Bean
+  public WebClient openSearchWebClient(OpenSearchProperties properties) {
+    return WebClient.builder().baseUrl(properties.baseUrl()).build();
+  }
 }

@@ -8,22 +8,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class LdapInjectionDetector extends PatternBasedThreatDetector {
 
-    public LdapInjectionDetector(ThreatRuleLoader ruleLoader) {
-        super(ruleLoader.load("threat-rules/ldap-injection.yml", ThreatType.LDAP_INJECTION));
-    }
+  public LdapInjectionDetector(ThreatRuleLoader ruleLoader) {
+    super(ruleLoader.load("threat-rules/ldap-injection.yml", ThreatType.LDAP_INJECTION));
+  }
 
-    @Override
-    public String name() {
-        return "ldap-injection-detector";
-    }
+  @Override
+  public String name() {
+    return "ldap-injection-detector";
+  }
 
-    @Override
-    public ThreatType type() {
-        return ThreatType.LDAP_INJECTION;
-    }
+  @Override
+  public ThreatType type() {
+    return ThreatType.LDAP_INJECTION;
+  }
 
-    @Override
-    public int order() {
-        return 80;
-    }
+  @Override
+  public int order() {
+    return 80;
+  }
 }

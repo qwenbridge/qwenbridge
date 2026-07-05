@@ -11,19 +11,18 @@ import reactor.netty.http.client.HttpClient;
 @Configuration
 public class OllamaClientConfig {
 
-    @Bean
-    WebClient ollamaWebClient(
-            WebClient.Builder builder,
-            OllamaProperties properties
-    ) {
-        HttpClient httpClient = HttpClient.create()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,
-                        Math.toIntExact(properties.connectTimeout().toMillis()))
-                .responseTimeout(properties.readTimeout());
+  @Bean
+  WebClient ollamaWebClient(WebClient.Builder builder, OllamaProperties properties) {
+    HttpClient httpClient =
+        HttpClient.create()
+            .option(
+                ChannelOption.CONNECT_TIMEOUT_MILLIS,
+                Math.toIntExact(properties.connectTimeout().toMillis()))
+            .responseTimeout(properties.readTimeout());
 
-        return builder
-                .baseUrl(properties.baseUrl().toString())
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .build();
-    }
+    return builder
+        .baseUrl(properties.baseUrl().toString())
+        .clientConnector(new ReactorClientHttpConnector(httpClient))
+        .build();
+  }
 }

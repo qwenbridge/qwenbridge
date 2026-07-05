@@ -3,78 +3,68 @@ package io.qwenbridge.execution.provider.opensearch.mapper;
 import io.qwenbridge.execution.provider.model.SearchHit;
 import io.qwenbridge.execution.provider.model.SearchResponse;
 import io.qwenbridge.execution.provider.model.SearchResultSet;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Map;
+import org.springframework.stereotype.Component;
 
 @Component
 public class OpenSearchResponseMapper {
 
-    @SuppressWarnings("unchecked")
-    public SearchResponse from(Map<String, Object> response) {
-        Map<String, Object> hitsRoot =
-                (Map<String, Object>) response.getOrDefault("hits", Map.of());
+  @SuppressWarnings("unchecked")
+  public SearchResponse from(Map<String, Object> response) {
+    Map<String, Object> hitsRoot = (Map<String, Object>) response.getOrDefault("hits", Map.of());
 
-        Number totalHits = extractTotalHits(hitsRoot);
+    Number totalHits = extractTotalHits(hitsRoot);
 
-        List<Map<String, Object>> rawHits =
-                (List<Map<String, Object>>) hitsRoot.getOrDefault("hits", List.of());
+    List<Map<String, Object>> rawHits =
+        (List<Map<String, Object>>) hitsRoot.getOrDefault("hits", List.of());
 
-        List<SearchHit> hits = rawHits.stream()
-                .map(this::toSearchHit)
-                .toList();
+    List<SearchHit> hits = rawHits.stream().map(this::toSearchHit).toList();
 
-        return new SearchResponse(
-                new SearchResultSet(
-                        hits,
-                        totalHits.longValue(),
-                        extractTookMillis(response)
-                )
-        );
+    return new SearchResponse(
+        new SearchResultSet(hits, totalHits.longValue(), extractTookMillis(response)));
+  }
+
+  @SuppressWarnings("unchecked")
+  private SearchHit toSearchHit(Map<String, Object> rawHit) {
+    String id = rawHit.getOrDefault("_id", "").toString();
+
+    double score = 0.0;
+    Object rawScore = rawHit.get("_score");
+    if (rawScore instanceof Number number) {
+      score = number.doubleValue();
     }
 
-    @SuppressWarnings("unchecked")
-    private SearchHit toSearchHit(Map<String, Object> rawHit) {
-        String id = rawHit.getOrDefault("_id", "").toString();
+    Map<String, Object> source = (Map<String, Object>) rawHit.getOrDefault("_source", Map.of());
 
-        double score = 0.0;
-        Object rawScore = rawHit.get("_score");
-        if (rawScore instanceof Number number) {
-            score = number.doubleValue();
-        }
+    return SearchHit.of(id, score, source);
+  }
 
-        Map<String, Object> source =
-                (Map<String, Object>) rawHit.getOrDefault("_source", Map.of());
+  @SuppressWarnings("unchecked")
+  private Number extractTotalHits(Map<String, Object> hitsRoot) {
+    Object total = hitsRoot.get("total");
 
-        return SearchHit.of(id, score, source);
+    if (total instanceof Number number) {
+      return number;
     }
 
-    @SuppressWarnings("unchecked")
-    private Number extractTotalHits(Map<String, Object> hitsRoot) {
-        Object total = hitsRoot.get("total");
-
-        if (total instanceof Number number) {
-            return number;
-        }
-
-        if (total instanceof Map<?, ?> totalMap) {
-            Object value = ((Map<String, Object>) totalMap).get("value");
-            if (value instanceof Number number) {
-                return number;
-            }
-        }
-
-        return 0;
+    if (total instanceof Map<?, ?> totalMap) {
+      Object value = ((Map<String, Object>) totalMap).get("value");
+      if (value instanceof Number number) {
+        return number;
+      }
     }
 
-    private long extractTookMillis(Map<String, Object> response) {
-        Object took = response.get("took");
+    return 0;
+  }
 
-        if (took instanceof Number number) {
-            return number.longValue();
-        }
+  private long extractTookMillis(Map<String, Object> response) {
+    Object took = response.get("took");
 
-        return 0;
+    if (took instanceof Number number) {
+      return number.longValue();
     }
+
+    return 0;
+  }
 }

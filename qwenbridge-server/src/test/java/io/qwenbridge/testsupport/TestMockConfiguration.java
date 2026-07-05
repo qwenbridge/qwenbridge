@@ -13,33 +13,33 @@ import org.springframework.context.annotation.Primary;
 @TestConfiguration(proxyBeanMethods = false)
 public class TestMockConfiguration {
 
-    @Bean
-    @Primary
-    AIService aiService() {
-        return Mockito.mock(AIService.class);
-    }
+  @Bean
+  @Primary
+  AIService aiService() {
+    return Mockito.mock(AIService.class);
+  }
 
-    @Bean
-    @Primary
-    OpenSearchClient openSearchClient() {
-        return Mockito.mock(OpenSearchClient.class);
-    }
+  @Bean
+  @Primary
+  OpenSearchClient openSearchClient() {
+    return Mockito.mock(OpenSearchClient.class);
+  }
 
-    @Bean
-    @Primary
-    SearchAnalysisService searchAnalysisService() {
-        return Mockito.mock(SearchAnalysisService.class);
-    }
+  @Bean
+  @Primary
+  SearchAnalysisService searchAnalysisService() {
+    return Mockito.mock(SearchAnalysisService.class);
+  }
 
-    @Bean
-    @Primary
-    OperationalHealthService operationalHealthService() {
-        return Mockito.mock(OperationalHealthService.class);
-    }
+  @Bean
+  @Primary
+  OperationalHealthService operationalHealthService() {
+    return Mockito.mock(OperationalHealthService.class);
+  }
 
-    @Bean
-    @Primary
-    AIAnalysisCache aiAnalysisCache() {
-        return Mockito.mock(AIAnalysisCache.class);
-    }
+  @Bean
+  @Primary
+  AIAnalysisCache aiAnalysisCache() {
+    return Mockito.mock(AIAnalysisCache.class);
+  }
 }

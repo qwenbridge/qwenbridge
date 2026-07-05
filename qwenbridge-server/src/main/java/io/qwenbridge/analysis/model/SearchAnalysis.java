@@ -1,7 +1,5 @@
 package io.qwenbridge.analysis.model;
 
-import lombok.Builder;
-
 import io.qwenbridge.decision.SearchBackend;
 import io.qwenbridge.decision.SearchDecision;
 import io.qwenbridge.decision.SearchMode;
@@ -10,126 +8,125 @@ import io.qwenbridge.intent.IntentType;
 import io.qwenbridge.pipeline.result.IntentResult;
 import io.qwenbridge.pipeline.result.RewriteResult;
 import io.qwenbridge.pipeline.result.SemanticResult;
-import io.qwenbridge.semantic.SemanticAnalysis;
 import io.qwenbridge.semantic.SemanticAmbiguity;
+import io.qwenbridge.semantic.SemanticAnalysis;
 import io.qwenbridge.semantic.SemanticEntity;
 import io.qwenbridge.semantic.SemanticEntityType;
-
 import java.util.List;
+import lombok.Builder;
 
 @Builder
 public record SearchAnalysis(
-        String language,
-        IntentType intent,
-        double intentConfidence,
-        String intentReason,
-        List<String> rewrites,
-        boolean semanticValidated,
-        double semanticScore,
-        String semanticMeaning,
-        List<String> entities,
-        SearchMode searchMode,
-        SearchBackend backend,
-        boolean keywordSearch,
-        boolean vectorSearch,
-        boolean hybridSearch,
-        boolean facets,
-        boolean rerank,
-        boolean rewriteAgain,
-        boolean answer,
-        double decisionConfidence,
-        String decisionReason
-) {
-    public SearchAnalysis {
-        language = blankToDefault(language, "unknown");
-        intent = intent == null ? IntentType.UNKNOWN : intent;
-        intentReason = blankToDefault(intentReason, "No intent reason provided.");
-        rewrites = rewrites == null ? List.of() : List.copyOf(rewrites);
-        semanticMeaning = blankToDefault(semanticMeaning, "No semantic meaning provided.");
-        entities = entities == null ? List.of() : List.copyOf(entities);
-        searchMode = searchMode == null ? SearchMode.KEYWORD : searchMode;
-        backend = backend == null ? SearchBackend.OPENSEARCH : backend;
-        decisionReason = blankToDefault(decisionReason, "No decision reason provided.");
-        intentConfidence = clamp(intentConfidence);
-        semanticScore = clamp(semanticScore);
-        decisionConfidence = clamp(decisionConfidence);
-    }
+    String language,
+    IntentType intent,
+    double intentConfidence,
+    String intentReason,
+    List<String> rewrites,
+    boolean semanticValidated,
+    double semanticScore,
+    String semanticMeaning,
+    List<String> entities,
+    SearchMode searchMode,
+    SearchBackend backend,
+    boolean keywordSearch,
+    boolean vectorSearch,
+    boolean hybridSearch,
+    boolean facets,
+    boolean rerank,
+    boolean rewriteAgain,
+    boolean answer,
+    double decisionConfidence,
+    String decisionReason) {
+  public SearchAnalysis {
+    language = blankToDefault(language, "unknown");
+    intent = intent == null ? IntentType.UNKNOWN : intent;
+    intentReason = blankToDefault(intentReason, "No intent reason provided.");
+    rewrites = rewrites == null ? List.of() : List.copyOf(rewrites);
+    semanticMeaning = blankToDefault(semanticMeaning, "No semantic meaning provided.");
+    entities = entities == null ? List.of() : List.copyOf(entities);
+    searchMode = searchMode == null ? SearchMode.KEYWORD : searchMode;
+    backend = backend == null ? SearchBackend.OPENSEARCH : backend;
+    decisionReason = blankToDefault(decisionReason, "No decision reason provided.");
+    intentConfidence = clamp(intentConfidence);
+    semanticScore = clamp(semanticScore);
+    decisionConfidence = clamp(decisionConfidence);
+  }
 
-    public IntentResult toIntentResult() {
-        return IntentResult.from(new IntentAnalysis(intent, intentReason, intentConfidence));
-    }
+  public IntentResult toIntentResult() {
+    return IntentResult.from(new IntentAnalysis(intent, intentReason, intentConfidence));
+  }
 
-    public RewriteResult toRewriteResult() {
-        return new RewriteResult(!rewrites.isEmpty(), "qwen-analysis", rewrites);
-    }
+  public RewriteResult toRewriteResult() {
+    return new RewriteResult(!rewrites.isEmpty(), "qwen-analysis", rewrites);
+  }
 
-    public SemanticResult toSemanticResult(String originalQuery) {
-        String normalizedQuery = rewrites.isEmpty() ? originalQuery.trim().toLowerCase() : rewrites.getFirst();
+  public SemanticResult toSemanticResult(String originalQuery) {
+    String normalizedQuery =
+        rewrites.isEmpty() ? originalQuery.trim().toLowerCase() : rewrites.getFirst();
 
-        SemanticAnalysis analysis = new SemanticAnalysis(
-                originalQuery,
-                normalizedQuery,
-                semanticMeaning,
-                entities.stream()
-                        .filter(value -> value != null && !value.isBlank())
-                        .map(value -> new SemanticEntity(value, SemanticEntityType.UNKNOWN, semanticScore))
-                        .toList(),
-                List.of(),
-                SemanticAmbiguity.none(),
-                semanticScore
-        );
+    SemanticAnalysis analysis =
+        new SemanticAnalysis(
+            originalQuery,
+            normalizedQuery,
+            semanticMeaning,
+            entities.stream()
+                .filter(value -> value != null && !value.isBlank())
+                .map(value -> new SemanticEntity(value, SemanticEntityType.UNKNOWN, semanticScore))
+                .toList(),
+            List.of(),
+            SemanticAmbiguity.none(),
+            semanticScore);
 
-        return new SemanticResult(semanticValidated, semanticScore, analysis);
-    }
+    return new SemanticResult(semanticValidated, semanticScore, analysis);
+  }
 
-    public SearchDecision toSearchDecision() {
-        return new SearchDecision(
-                searchMode,
-                backend,
-                keywordSearch,
-                vectorSearch,
-                hybridSearch,
-                facets,
-                rerank,
-                rewriteAgain,
-                answer,
-                decisionConfidence,
-                decisionReason
-        );
-    }
+  public SearchDecision toSearchDecision() {
+    return new SearchDecision(
+        searchMode,
+        backend,
+        keywordSearch,
+        vectorSearch,
+        hybridSearch,
+        facets,
+        rerank,
+        rewriteAgain,
+        answer,
+        decisionConfidence,
+        decisionReason);
+  }
 
-    public static SearchAnalysis fallback(String query) {
-        String normalized = query == null ? "" : query.trim();
+  public static SearchAnalysis fallback(String query) {
+    String normalized = query == null ? "" : query.trim();
 
-        return SearchAnalysis.builder()
-                .language("unknown")
-                .intent(IntentType.UNKNOWN)
-                .intentConfidence(0.20)
-                .intentReason("AI analysis failed; fallback analysis was used.")
-                .rewrites(normalized.isBlank() ? List.of() : List.of(normalized))
-                .semanticValidated(false)
-                .semanticScore(0.20)
-                .semanticMeaning(normalized.isBlank() ? "Unknown query." : normalized)
-                .entities(List.of())
-                .searchMode(SearchMode.KEYWORD)
-                .backend(SearchBackend.OPENSEARCH)
-                .keywordSearch(true)
-                .vectorSearch(false)
-                .hybridSearch(false)
-                .facets(true)
-                .rerank(false)
-                .rewriteAgain(false)
-                .answer(false)
-                .decisionConfidence(0.50)
-                .decisionReason("Fallback keyword search decision.")
-                .build();
-    }
+    return SearchAnalysis.builder()
+        .language("unknown")
+        .intent(IntentType.UNKNOWN)
+        .intentConfidence(0.20)
+        .intentReason("AI analysis failed; fallback analysis was used.")
+        .rewrites(normalized.isBlank() ? List.of() : List.of(normalized))
+        .semanticValidated(false)
+        .semanticScore(0.20)
+        .semanticMeaning(normalized.isBlank() ? "Unknown query." : normalized)
+        .entities(List.of())
+        .searchMode(SearchMode.KEYWORD)
+        .backend(SearchBackend.OPENSEARCH)
+        .keywordSearch(true)
+        .vectorSearch(false)
+        .hybridSearch(false)
+        .facets(true)
+        .rerank(false)
+        .rewriteAgain(false)
+        .answer(false)
+        .decisionConfidence(0.50)
+        .decisionReason("Fallback keyword search decision.")
+        .build();
+  }
 
-    private static String blankToDefault(String value, String fallback) {
-        return value == null || value.isBlank() ? fallback : value;
-    }
+  private static String blankToDefault(String value, String fallback) {
+    return value == null || value.isBlank() ? fallback : value;
+  }
 
-    private static double clamp(double value) {
-        return Math.max(0.0, Math.min(1.0, value));
-    }
+  private static double clamp(double value) {
+    return Math.max(0.0, Math.min(1.0, value));
+  }
 }

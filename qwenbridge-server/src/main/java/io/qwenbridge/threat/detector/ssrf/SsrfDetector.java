@@ -8,22 +8,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class SsrfDetector extends PatternBasedThreatDetector {
 
-    public SsrfDetector(ThreatRuleLoader ruleLoader) {
-        super(ruleLoader.load("threat-rules/ssrf.yml", ThreatType.SSRF));
-    }
+  public SsrfDetector(ThreatRuleLoader ruleLoader) {
+    super(ruleLoader.load("threat-rules/ssrf.yml", ThreatType.SSRF));
+  }
 
-    @Override
-    public String name() {
-        return "ssrf-detector";
-    }
+  @Override
+  public String name() {
+    return "ssrf-detector";
+  }
 
-    @Override
-    public ThreatType type() {
-        return ThreatType.SSRF;
-    }
+  @Override
+  public ThreatType type() {
+    return ThreatType.SSRF;
+  }
 
-    @Override
-    public int order() {
-        return 90;
-    }
+  @Override
+  public int order() {
+    return 90;
+  }
 }

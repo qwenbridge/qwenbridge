@@ -1,5 +1,16 @@
 package io.qwenbridge.streaming.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import io.qwenbridge.ai.contract.ChatRequest;
 import io.qwenbridge.ai.contract.ChatResponse;
 import io.qwenbridge.ai.service.AIService;
@@ -11,223 +22,209 @@ import io.qwenbridge.execution.provider.opensearch.client.OpenSearchClient;
 import io.qwenbridge.intent.IntentType;
 import io.qwenbridge.streaming.ai.AIStreamingEventPublisher;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
+import io.qwenbridge.testsupport.TestMockConfiguration;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import io.qwenbridge.testsupport.TestMockConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.reset;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestMockConfiguration.class)
 class SearchStreamingPipelineIntegrationTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-    @Autowired
-    private StreamingSessionRegistry registry;
+  @Autowired private StreamingSessionRegistry registry;
 
-    @Autowired
-    private AIStreamingEventPublisher aiStreamingEventPublisher;
+  @Autowired private AIStreamingEventPublisher aiStreamingEventPublisher;
 
-    @Autowired
-    private AIService aiService;
+  @Autowired private AIService aiService;
 
-    @Autowired
-    private OpenSearchClient openSearchClient;
+  @Autowired private OpenSearchClient openSearchClient;
 
-    @Autowired
-    private SearchAnalysisService searchAnalysisService;
+  @Autowired private SearchAnalysisService searchAnalysisService;
 
-    @BeforeEach
-    void resetMocks() {
-        reset(aiService, openSearchClient, searchAnalysisService);
-    }
+  @BeforeEach
+  void resetMocks() {
+    reset(aiService, openSearchClient, searchAnalysisService);
+  }
 
-    @AfterEach
-    void tearDown() {
-        registry.clear();
-    }
+  @AfterEach
+  void tearDown() {
+    registry.clear();
+  }
 
-    @Test
-    void shouldCompleteOnlyStreamSessionsForMatchingPipelineRequest() throws Exception {
-        String requestId = "stream-request-1";
-        String unrelatedRequestId = "stream-request-2";
+  @Test
+  void shouldCompleteOnlyStreamSessionsForMatchingPipelineRequest() throws Exception {
+    String requestId = "stream-request-1";
+    String unrelatedRequestId = "stream-request-2";
 
-        openStream(requestId);
-        openStream(unrelatedRequestId);
+    openStream(requestId);
+    openStream(unrelatedRequestId);
 
-        assertThat(registry.findByRequestId(requestId)).hasSize(1);
-        assertThat(registry.findByRequestId(unrelatedRequestId)).hasSize(1);
+    assertThat(registry.findByRequestId(requestId)).hasSize(1);
+    assertThat(registry.findByRequestId(unrelatedRequestId)).hasSize(1);
 
-        stubSuccessfulPipeline();
+    stubSuccessfulPipeline();
 
-        mockMvc.perform(post("/api/v1/search/analyze")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "requestId": "%s",
-                                  "query": "table"
-                                }
-                                """.formatted(requestId)))
-                .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            post("/api/v1/search/analyze")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "requestId": "%s",
+                      "query": "table"
+                    }
+                    """
+                        .formatted(requestId)))
+        .andExpect(status().isOk());
 
-        assertThat(registry.findByRequestId(requestId)).isEmpty();
+    assertThat(registry.findByRequestId(requestId)).isEmpty();
 
-        assertThat(registry.findByRequestId(unrelatedRequestId))
-                .hasSize(1);
-    }
+    assertThat(registry.findByRequestId(unrelatedRequestId)).hasSize(1);
+  }
 
+  @Test
+  void shouldPublishAiEventsBeforeTerminalPipelineCompletedEvent() throws Exception {
+    String requestId = "stream-order-1";
 
-    @Test
-    void shouldPublishAiEventsBeforeTerminalPipelineCompletedEvent() throws Exception {
-        String requestId = "stream-order-1";
+    MvcResult stream = openStreamResult(requestId);
 
-        MvcResult stream = openStreamResult(requestId);
+    when(searchAnalysisService.analyze("table", requestId))
+        .thenAnswer(
+            invocation -> {
+              aiStreamingEventPublisher.token(requestId, 1L, "hel");
+              aiStreamingEventPublisher.token(requestId, 2L, "lo");
+              aiStreamingEventPublisher.completed(requestId, 2L);
+              return searchAnalysis();
+            });
 
-        when(searchAnalysisService.analyze("table", requestId))
-                .thenAnswer(invocation -> {
-                    aiStreamingEventPublisher.token(requestId, 1L, "hel");
-                    aiStreamingEventPublisher.token(requestId, 2L, "lo");
-                    aiStreamingEventPublisher.completed(requestId, 2L);
-                    return searchAnalysis();
-                });
+    when(openSearchClient.search(anyString(), anyMap())).thenReturn(emptyOpenSearchResponse());
 
-        when(openSearchClient.search(anyString(), anyMap()))
-                .thenReturn(emptyOpenSearchResponse());
+    mockMvc
+        .perform(
+            post("/api/v1/search/analyze")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "requestId": "%s",
+                      "query": "table"
+                    }
+                    """
+                        .formatted(requestId)))
+        .andExpect(status().isOk());
 
-        mockMvc.perform(post("/api/v1/search/analyze")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "requestId": "%s",
-                                  "query": "table"
-                                }
-                                """.formatted(requestId)))
-                .andExpect(status().isOk());
+    String streamBody = stream.getResponse().getContentAsString();
 
-        String streamBody = stream.getResponse().getContentAsString();
+    assertThat(streamBody).contains("event:stream.connected");
+    assertThat(streamBody).contains("event:pipeline.started");
+    assertThat(streamBody).contains("event:ai.token");
+    assertThat(streamBody).contains("event:ai.completed");
+    assertThat(streamBody).contains("event:pipeline.completed");
 
-        assertThat(streamBody).contains("event:stream.connected");
-        assertThat(streamBody).contains("event:pipeline.started");
-        assertThat(streamBody).contains("event:ai.token");
-        assertThat(streamBody).contains("event:ai.completed");
-        assertThat(streamBody).contains("event:pipeline.completed");
+    assertThat(streamBody.indexOf("event:pipeline.started"))
+        .isLessThan(streamBody.indexOf("event:ai.token"));
 
-        assertThat(streamBody.indexOf("event:pipeline.started"))
-                .isLessThan(streamBody.indexOf("event:ai.token"));
+    assertThat(streamBody.indexOf("event:ai.token"))
+        .isLessThan(streamBody.indexOf("event:ai.completed"));
 
-        assertThat(streamBody.indexOf("event:ai.token"))
-                .isLessThan(streamBody.indexOf("event:ai.completed"));
+    assertThat(streamBody.indexOf("event:ai.completed"))
+        .isLessThan(streamBody.indexOf("event:pipeline.completed"));
 
-        assertThat(streamBody.indexOf("event:ai.completed"))
-                .isLessThan(streamBody.indexOf("event:pipeline.completed"));
+    assertThat(registry.findByRequestId(requestId)).isEmpty();
+  }
 
-        assertThat(registry.findByRequestId(requestId)).isEmpty();
-    }
+  private void openStream(String requestId) throws Exception {
+    openStreamResult(requestId);
+  }
 
-    private void openStream(String requestId) throws Exception {
-        openStreamResult(requestId);
-    }
+  private MvcResult openStreamResult(String requestId) throws Exception {
+    return mockMvc
+        .perform(get("/api/v1/search/stream/{requestId}", requestId))
+        .andExpect(request().asyncStarted())
+        .andExpect(status().isOk())
+        .andReturn();
+  }
 
-    private MvcResult openStreamResult(String requestId) throws Exception {
-        return mockMvc.perform(get("/api/v1/search/stream/{requestId}", requestId))
-                .andExpect(request().asyncStarted())
-                .andExpect(status().isOk())
-                .andReturn();
-    }
+  private void stubSuccessfulPipeline() {
+    when(aiService.chat(any(ChatRequest.class))).thenReturn(new ChatResponse(analysisJson()));
 
-    private void stubSuccessfulPipeline() {
-        when(aiService.chat(any(ChatRequest.class)))
-                .thenReturn(new ChatResponse(analysisJson()));
+    when(searchAnalysisService.analyze("table")).thenReturn(searchAnalysis());
 
-        when(searchAnalysisService.analyze("table"))
-                .thenReturn(searchAnalysis());
+    when(openSearchClient.search(anyString(), anyMap())).thenReturn(emptyOpenSearchResponse());
+  }
 
-        when(openSearchClient.search(anyString(), anyMap()))
-                .thenReturn(emptyOpenSearchResponse());
-    }
+  private SearchAnalysis searchAnalysis() {
+    return SearchAnalysis.builder()
+        .language("en")
+        .intent(IntentType.PRODUCT_SEARCH)
+        .intentConfidence(0.90)
+        .intentReason("User is searching for a product.")
+        .rewrites(List.of("table"))
+        .semanticValidated(true)
+        .semanticScore(0.85)
+        .semanticMeaning("Product search query.")
+        .entities(List.of("table"))
+        .searchMode(SearchMode.KEYWORD)
+        .backend(SearchBackend.OPENSEARCH)
+        .keywordSearch(true)
+        .vectorSearch(false)
+        .hybridSearch(false)
+        .facets(true)
+        .rerank(false)
+        .rewriteAgain(false)
+        .answer(false)
+        .decisionConfidence(0.85)
+        .decisionReason("Use OpenSearch keyword search.")
+        .build();
+  }
 
-    private SearchAnalysis searchAnalysis() {
-        return SearchAnalysis.builder()
-                .language("en")
-                .intent(IntentType.PRODUCT_SEARCH)
-                .intentConfidence(0.90)
-                .intentReason("User is searching for a product.")
-                .rewrites(List.of("table"))
-                .semanticValidated(true)
-                .semanticScore(0.85)
-                .semanticMeaning("Product search query.")
-                .entities(List.of("table"))
-                .searchMode(SearchMode.KEYWORD)
-                .backend(SearchBackend.OPENSEARCH)
-                .keywordSearch(true)
-                .vectorSearch(false)
-                .hybridSearch(false)
-                .facets(true)
-                .rerank(false)
-                .rewriteAgain(false)
-                .answer(false)
-                .decisionConfidence(0.85)
-                .decisionReason("Use OpenSearch keyword search.")
-                .build();
-    }
+  private String analysisJson() {
+    return """
+           {
+             "language": "en",
+             "intent": "PRODUCT_SEARCH",
+             "intentConfidence": 0.85,
+             "intentReason": "Product search.",
+             "rewrites": ["table"],
+             "semanticValidated": true,
+             "semanticScore": 0.90,
+             "semanticMeaning": "Product search.",
+             "entities": ["table"],
+             "searchMode": "KEYWORD",
+             "backend": "OPENSEARCH",
+             "keywordSearch": true,
+             "vectorSearch": false,
+             "hybridSearch": false,
+             "facets": true,
+             "rerank": false,
+             "rewriteAgain": false,
+             "answer": false,
+             "decisionConfidence": 0.80,
+             "decisionReason": "Keyword search is enough."
+           }
+           """;
+  }
 
-    private String analysisJson() {
-        return """
-                {
-                  "language": "en",
-                  "intent": "PRODUCT_SEARCH",
-                  "intentConfidence": 0.85,
-                  "intentReason": "Product search.",
-                  "rewrites": ["table"],
-                  "semanticValidated": true,
-                  "semanticScore": 0.90,
-                  "semanticMeaning": "Product search.",
-                  "entities": ["table"],
-                  "searchMode": "KEYWORD",
-                  "backend": "OPENSEARCH",
-                  "keywordSearch": true,
-                  "vectorSearch": false,
-                  "hybridSearch": false,
-                  "facets": true,
-                  "rerank": false,
-                  "rewriteAgain": false,
-                  "answer": false,
-                  "decisionConfidence": 0.80,
-                  "decisionReason": "Keyword search is enough."
-                }
-                """;
-    }
-
-    private Map<String, Object> emptyOpenSearchResponse() {
-        return Map.of(
-                "took", 0,
-                "hits", Map.of(
-                        "total", Map.of("value", 0),
-                        "hits", List.of()
-                )
-        );
-    }
+  private Map<String, Object> emptyOpenSearchResponse() {
+    return Map.of(
+        "took",
+        0,
+        "hits",
+        Map.of(
+            "total", Map.of("value", 0),
+            "hits", List.of()));
+  }
 }

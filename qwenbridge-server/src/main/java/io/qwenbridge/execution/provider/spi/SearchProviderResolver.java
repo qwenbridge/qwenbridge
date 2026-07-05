@@ -5,7 +5,7 @@ import io.qwenbridge.pipeline.ExecutionContext;
 
 public interface SearchProviderResolver {
 
-    SearchProvider resolve(ExecutionContext context);
+  SearchProvider resolve(ExecutionContext context);
 
-    SearchProvider resolve(SearchBackend backend);
+  SearchProvider resolve(SearchBackend backend);
 }

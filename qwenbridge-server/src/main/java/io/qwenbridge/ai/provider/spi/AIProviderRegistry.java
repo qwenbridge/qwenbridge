@@ -4,5 +4,5 @@ import io.qwenbridge.ai.value.ProviderId;
 
 public interface AIProviderRegistry {
 
-    AIProvider get(ProviderId providerId);
+  AIProvider get(ProviderId providerId);
 }

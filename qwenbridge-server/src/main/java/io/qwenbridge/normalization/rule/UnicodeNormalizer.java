@@ -1,23 +1,22 @@
 package io.qwenbridge.normalization.rule;
 
-import org.springframework.stereotype.Component;
-
 import java.text.Normalizer;
+import org.springframework.stereotype.Component;
 
 @Component
 public class UnicodeNormalizer implements InputNormalizationRule {
 
-    @Override
-    public String name() {
-        return "unicode";
+  @Override
+  public String name() {
+    return "unicode";
+  }
+
+  @Override
+  public String normalize(String input) {
+    if (input == null || input.isBlank()) {
+      return input;
     }
 
-    @Override
-    public String normalize(String input) {
-        if (input == null || input.isBlank()) {
-            return input;
-        }
-
-        return Normalizer.normalize(input, Normalizer.Form.NFKC);
-    }
+    return Normalizer.normalize(input, Normalizer.Form.NFKC);
+  }
 }

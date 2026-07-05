@@ -8,22 +8,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class NoSqlInjectionDetector extends PatternBasedThreatDetector {
 
-    public NoSqlInjectionDetector(ThreatRuleLoader ruleLoader) {
-        super(ruleLoader.load("threat-rules/nosql-injection.yml", ThreatType.NOSQL_INJECTION));
-    }
+  public NoSqlInjectionDetector(ThreatRuleLoader ruleLoader) {
+    super(ruleLoader.load("threat-rules/nosql-injection.yml", ThreatType.NOSQL_INJECTION));
+  }
 
-    @Override
-    public String name() {
-        return "nosql-injection-detector";
-    }
+  @Override
+  public String name() {
+    return "nosql-injection-detector";
+  }
 
-    @Override
-    public ThreatType type() {
-        return ThreatType.NOSQL_INJECTION;
-    }
+  @Override
+  public ThreatType type() {
+    return ThreatType.NOSQL_INJECTION;
+  }
 
-    @Override
-    public int order() {
-        return 70;
-    }
+  @Override
+  public int order() {
+    return 70;
+  }
 }

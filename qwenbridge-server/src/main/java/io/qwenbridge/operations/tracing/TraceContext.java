@@ -1,4 +1,3 @@
 package io.qwenbridge.operations.tracing;
 
-public record TraceContext(String traceId, String traceparent) {
-}
+public record TraceContext(String traceId, String traceparent) {}

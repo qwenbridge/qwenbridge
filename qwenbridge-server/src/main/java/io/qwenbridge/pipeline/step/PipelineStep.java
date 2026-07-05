@@ -5,18 +5,17 @@ import io.qwenbridge.pipeline.ExecutionContext;
 
 public interface PipelineStep<T> {
 
-    String name();
+  String name();
 
-    PipelineStage stage();
+  PipelineStage stage();
 
-    int order();
+  int order();
 
-    Class<T> resultType();
+  Class<T> resultType();
 
-    T execute(ExecutionContext context);
+  T execute(ExecutionContext context);
 
-    default boolean publishEvents() {
-        return true;
-    }
-
+  default boolean publishEvents() {
+    return true;
+  }
 }

@@ -2,43 +2,41 @@ package io.qwenbridge.analysis.cache.coalescing;
 
 import io.qwenbridge.analysis.cache.CacheKey;
 import io.qwenbridge.analysis.model.SearchAnalysis;
-import org.springframework.stereotype.Component;
-
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
+import org.springframework.stereotype.Component;
 
 @Component
 public class AIAnalysisSingleFlight {
 
-    private final ConcurrentHashMap<CacheKey, CompletableFuture<SearchAnalysis>> inFlight =
-            new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<CacheKey, CompletableFuture<SearchAnalysis>> inFlight =
+      new ConcurrentHashMap<>();
 
-    public SearchAnalysis execute(CacheKey key, Supplier<SearchAnalysis> supplier) {
-        Objects.requireNonNull(key, "cache key must not be null");
-        Objects.requireNonNull(supplier, "supplier must not be null");
+  public SearchAnalysis execute(CacheKey key, Supplier<SearchAnalysis> supplier) {
+    Objects.requireNonNull(key, "cache key must not be null");
+    Objects.requireNonNull(supplier, "supplier must not be null");
 
-        CompletableFuture<SearchAnalysis> future =
-                inFlight.computeIfAbsent(key, ignored -> {
-                    CompletableFuture<SearchAnalysis> created =
-                            CompletableFuture.supplyAsync(supplier);
+    CompletableFuture<SearchAnalysis> future =
+        inFlight.computeIfAbsent(
+            key,
+            ignored -> {
+              CompletableFuture<SearchAnalysis> created = CompletableFuture.supplyAsync(supplier);
 
-                    created.whenComplete((result, throwable) ->
-                            inFlight.remove(key, created)
-                    );
+              created.whenComplete((result, throwable) -> inFlight.remove(key, created));
 
-                    return created;
-                });
+              return created;
+            });
 
-        try {
-            return future.join();
-        } finally {
-            inFlight.remove(key, future);
-        }
+    try {
+      return future.join();
+    } finally {
+      inFlight.remove(key, future);
     }
+  }
 
-    public int inFlightCount() {
-        return inFlight.size();
-    }
+  public int inFlightCount() {
+    return inFlight.size();
+  }
 }

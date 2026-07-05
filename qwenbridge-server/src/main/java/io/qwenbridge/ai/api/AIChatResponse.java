@@ -1,6 +1,3 @@
 package io.qwenbridge.ai.api;
 
-public record AIChatResponse(
-        String content
-) {
-}
+public record AIChatResponse(String content) {}

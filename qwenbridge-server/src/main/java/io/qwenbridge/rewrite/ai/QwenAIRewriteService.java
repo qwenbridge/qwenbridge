@@ -1,22 +1,23 @@
 package io.qwenbridge.rewrite.ai;
 
-import lombok.RequiredArgsConstructor;
-
 import io.qwenbridge.ai.contract.ChatRequest;
 import io.qwenbridge.ai.contract.ChatResponse;
 import io.qwenbridge.ai.service.AIService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-
 public class QwenAIRewriteService implements AIRewriteService {
 
-    private final AIService aiService;
+  private final AIService aiService;
 
-    @Override
-    public String rewrite(String query) {
-        ChatResponse response = aiService.chat(new ChatRequest("""
+  @Override
+  public String rewrite(String query) {
+    ChatResponse response =
+        aiService.chat(
+            new ChatRequest(
+                """
                 Rewrite the following user search query.
 
                 Rules:
@@ -28,8 +29,9 @@ public class QwenAIRewriteService implements AIRewriteService {
 
                 Query:
                 %s
-                """.formatted(query)));
+                """
+                    .formatted(query)));
 
-        return response.content() == null ? query : response.content().trim();
-    }
+    return response.content() == null ? query : response.content().trim();
+  }
 }

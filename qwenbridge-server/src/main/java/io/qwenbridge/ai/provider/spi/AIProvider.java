@@ -11,11 +11,11 @@ import reactor.core.publisher.Flux;
 
 public interface AIProvider {
 
-    ProviderId providerId();
+  ProviderId providerId();
 
-    ChatResponse chat(ChatRequest request);
+  ChatResponse chat(ChatRequest request);
 
-    Flux<StreamingChatChunk> streamChat(StreamingChatRequest request);
+  Flux<StreamingChatChunk> streamChat(StreamingChatRequest request);
 
-    EmbeddingResponse embed(EmbeddingRequest request);
+  EmbeddingResponse embed(EmbeddingRequest request);
 }

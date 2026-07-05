@@ -5,7 +5,7 @@ import io.qwenbridge.execution.provider.model.SearchResponse;
 
 public interface SearchProvider {
 
-    String name();
+  String name();
 
-    SearchResponse search(SearchRequest request);
+  SearchResponse search(SearchRequest request);
 }

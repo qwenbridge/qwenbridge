@@ -10,13 +10,12 @@ import org.springframework.stereotype.Component;
 @Component
 @Primary
 @RequiredArgsConstructor
-public class SpringPipelineEventPublisher
-        implements PipelineEventPublisher {
+public class SpringPipelineEventPublisher implements PipelineEventPublisher {
 
-    private final ApplicationEventPublisher applicationEventPublisher;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
-    @Override
-    public void publish(PipelineEvent<?> event) {
-        applicationEventPublisher.publishEvent(event);
-    }
+  @Override
+  public void publish(PipelineEvent<?> event) {
+    applicationEventPublisher.publishEvent(event);
+  }
 }

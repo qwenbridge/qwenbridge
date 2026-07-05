@@ -5,14 +5,14 @@ import io.qwenbridge.ai.value.ProviderId;
 
 public abstract class AbstractAIProvider implements AIProvider {
 
-    private final ProviderId providerId;
+  private final ProviderId providerId;
 
-    protected AbstractAIProvider(ProviderId providerId) {
-        this.providerId = providerId;
-    }
+  protected AbstractAIProvider(ProviderId providerId) {
+    this.providerId = providerId;
+  }
 
-    @Override
-    public ProviderId providerId() {
-        return providerId;
-    }
+  @Override
+  public ProviderId providerId() {
+    return providerId;
+  }
 }

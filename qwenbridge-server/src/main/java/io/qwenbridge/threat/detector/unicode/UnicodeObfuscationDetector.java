@@ -8,22 +8,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class UnicodeObfuscationDetector extends PatternBasedThreatDetector {
 
-    public UnicodeObfuscationDetector(ThreatRuleLoader ruleLoader) {
-        super(ruleLoader.load("threat-rules/unicode-obfuscation.yml", ThreatType.UNICODE_OBFUSCATION));
-    }
+  public UnicodeObfuscationDetector(ThreatRuleLoader ruleLoader) {
+    super(ruleLoader.load("threat-rules/unicode-obfuscation.yml", ThreatType.UNICODE_OBFUSCATION));
+  }
 
-    @Override
-    public String name() {
-        return "unicode-obfuscation-detector";
-    }
+  @Override
+  public String name() {
+    return "unicode-obfuscation-detector";
+  }
 
-    @Override
-    public ThreatType type() {
-        return ThreatType.UNICODE_OBFUSCATION;
-    }
+  @Override
+  public ThreatType type() {
+    return ThreatType.UNICODE_OBFUSCATION;
+  }
 
-    @Override
-    public int order() {
-        return 120;
-    }
+  @Override
+  public int order() {
+    return 120;
+  }
 }

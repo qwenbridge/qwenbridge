@@ -1,34 +1,33 @@
 package io.qwenbridge.event.model;
 
 public enum PipelineStage {
+  REQUEST,
 
-    REQUEST,
+  NORMALIZATION,
 
-    NORMALIZATION,
+  THREAT,
 
-    THREAT,
+  LANGUAGE,
 
-    LANGUAGE,
+  AI_ANALYSIS,
 
-    AI_ANALYSIS,
+  INTENT,
 
-    INTENT,
+  SEMANTIC,
 
-    SEMANTIC,
+  REWRITE,
 
-    REWRITE,
+  POLICY,
 
-    POLICY,
+  DECISION,
 
-    DECISION,
+  EXECUTION,
 
-    EXECUTION,
+  SEARCH,
 
-    SEARCH,
+  ANSWER,
 
-    ANSWER,
+  RESPONSE,
 
-    RESPONSE,
-
-    PIPELINE
+  PIPELINE
 }

@@ -8,22 +8,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class PromptInjectionDetector extends PatternBasedThreatDetector {
 
-    public PromptInjectionDetector(ThreatRuleLoader ruleLoader) {
-        super(ruleLoader.load("threat-rules/prompt-injection.yml", ThreatType.PROMPT_INJECTION));
-    }
+  public PromptInjectionDetector(ThreatRuleLoader ruleLoader) {
+    super(ruleLoader.load("threat-rules/prompt-injection.yml", ThreatType.PROMPT_INJECTION));
+  }
 
-    @Override
-    public String name() {
-        return "prompt-injection-detector";
-    }
+  @Override
+  public String name() {
+    return "prompt-injection-detector";
+  }
 
-    @Override
-    public ThreatType type() {
-        return ThreatType.PROMPT_INJECTION;
-    }
+  @Override
+  public ThreatType type() {
+    return ThreatType.PROMPT_INJECTION;
+  }
 
-    @Override
-    public int order() {
-        return 30;
-    }
+  @Override
+  public int order() {
+    return 30;
+  }
 }

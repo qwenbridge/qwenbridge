@@ -7,47 +7,40 @@ import io.qwenbridge.evaluation.model.EvaluationQuery;
 import io.qwenbridge.evaluation.model.EvaluationResult;
 import io.qwenbridge.evaluation.policy.EvaluationThresholdPolicy;
 import io.qwenbridge.evaluation.service.RetrievalEvaluationService;
-import org.springframework.stereotype.Service;
-
 import java.io.Reader;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.springframework.stereotype.Service;
 
 @Service
 public class DefaultBenchmarkEvaluationRunner implements BenchmarkEvaluationRunner {
 
-    private final BenchmarkDatasetLoader datasetLoader;
-    private final RetrievalEvaluationService evaluationService;
-    private final EvaluationThresholdPolicy thresholdPolicy;
+  private final BenchmarkDatasetLoader datasetLoader;
+  private final RetrievalEvaluationService evaluationService;
+  private final EvaluationThresholdPolicy thresholdPolicy;
 
-    public DefaultBenchmarkEvaluationRunner(
-            BenchmarkDatasetLoader datasetLoader,
-            RetrievalEvaluationService evaluationService,
-            EvaluationThresholdPolicy thresholdPolicy
-    ) {
-        this.datasetLoader = Objects.requireNonNull(datasetLoader, "datasetLoader must not be null");
-        this.evaluationService = Objects.requireNonNull(evaluationService, "evaluationService must not be null");
-        this.thresholdPolicy = Objects.requireNonNull(thresholdPolicy, "thresholdPolicy must not be null");
-    }
+  public DefaultBenchmarkEvaluationRunner(
+      BenchmarkDatasetLoader datasetLoader,
+      RetrievalEvaluationService evaluationService,
+      EvaluationThresholdPolicy thresholdPolicy) {
+    this.datasetLoader = Objects.requireNonNull(datasetLoader, "datasetLoader must not be null");
+    this.evaluationService =
+        Objects.requireNonNull(evaluationService, "evaluationService must not be null");
+    this.thresholdPolicy =
+        Objects.requireNonNull(thresholdPolicy, "thresholdPolicy must not be null");
+  }
 
-    @Override
-    public BenchmarkEvaluationReport run(
-            Reader benchmarkReader,
-            Map<String, List<String>> rankedResultsByQueryId,
-            int k
-    ) {
-        Objects.requireNonNull(benchmarkReader, "benchmarkReader must not be null");
-        Objects.requireNonNull(rankedResultsByQueryId, "rankedResultsByQueryId must not be null");
+  @Override
+  public BenchmarkEvaluationReport run(
+      Reader benchmarkReader, Map<String, List<String>> rankedResultsByQueryId, int k) {
+    Objects.requireNonNull(benchmarkReader, "benchmarkReader must not be null");
+    Objects.requireNonNull(rankedResultsByQueryId, "rankedResultsByQueryId must not be null");
 
-        List<EvaluationQuery> queries = datasetLoader.load(benchmarkReader);
-        EvaluationResult result = evaluationService.evaluate(
-                queries,
-                rankedResultsByQueryId,
-                k
-        );
-        EvaluationGateResult gate = thresholdPolicy.evaluate(result);
+    List<EvaluationQuery> queries = datasetLoader.load(benchmarkReader);
+    EvaluationResult result = evaluationService.evaluate(queries, rankedResultsByQueryId, k);
+    EvaluationGateResult gate = thresholdPolicy.evaluate(result);
 
-        return new BenchmarkEvaluationReport(result, gate);
-    }
+    return new BenchmarkEvaluationReport(result, gate);
+  }
 }
