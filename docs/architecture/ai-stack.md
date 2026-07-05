@@ -1,29 +1,15 @@
 # AI Stack
 
-QwenBridge follows an AI-first, provider-agnostic architecture.
-
-## Current Stack
-
-Ollama ↓ Qwen ↓ BGE-M3 ↓ QwenBridge Pipeline
+QwenBridge uses an AI Provider SPI to isolate application behavior from a concrete model runtime.
 
 ## Responsibilities
 
-### Qwen
+- QwenBridge owns prompts, parsing, reliability policy, typed contracts, and pipeline behavior.
+- The AI provider owns transport to the model runtime.
+- Ollama is the default local provider implementation.
 
--   Intent analysis
--   Query rewrite
--   Decision generation
--   Structured JSON output
+## AI capabilities
 
-### BGE-M3
+The provider boundary supports chat, embeddings, and streaming chat. Higher-level services use those capabilities for query analysis, rewrite, intent, semantic analysis, and decisions.
 
--   Embeddings
--   Semantic similarity
--   Semantic validation
-
-### Ollama
-
--   Local model runtime
-
-The provider abstraction allows replacing models without changing
-business logic.
+Provider failures are converted into application-level failures with request correlation and safe diagnostics.

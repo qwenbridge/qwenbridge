@@ -1,40 +1,29 @@
 # Ranking Policy
 
-## Overview
+Ranking gives QwenBridge a deterministic scoring layer before optional reranking.
 
-V7 introduces a formal ranking foundation for QwenBridge retrieval quality.
+## Goals
 
-The ranking policy converts raw retrieval signals into a normalized final ranking score.
+- make result ordering explicit
+- support hybrid retrieval
+- keep scoring explainable
+- allow safe fallback when reranking is unavailable
+- make quality changes testable
 
-## Score Components
+## Ranking score
 
-| Component | Meaning |
-| --- | --- |
-| `lexicalScore` | Keyword or BM25-style score normalized to `[0.0, 1.0]`. |
-| `vectorScore` | Embedding similarity score normalized to `[0.0, 1.0]`. |
-| `metadataBoost` | Business/category/metadata boost normalized to `[0.0, 1.0]`. |
-| `freshnessBoost` | Recency boost reserved for future use, normalized to `[0.0, 1.0]`. |
-| `finalScore` | Weighted final ranking score normalized to `[0.0, 1.0]`. |
+A ranking score should consider available provider signals such as:
 
-## Default Weights
+- keyword match strength
+- vector similarity
+- hybrid score
+- source confidence
+- result metadata
 
-| Signal | Weight |
-| --- | --- |
-| Lexical | `0.45` |
-| Vector | `0.45` |
-| Metadata | `0.07` |
-| Freshness | `0.03` |
+## Reranking
 
-## Normalization Rules
+Reranking is an optional second-stage operation. If reranking fails or is disabled, QwenBridge must safely return the ranked result set rather than fail the whole request unless the execution policy explicitly requires reranking.
 
-All component scores are clamped to the `[0.0, 1.0]` range.
+## Testing
 
-Invalid numeric values such as `NaN` and infinity are treated as `0.0`.
-
-If no explicit `lexicalScore` metadata exists, the provider `SearchHit.score` is used as the lexical fallback.
-
-## Current Scope
-
-This foundation defines the scoring model and default policy.
-
-Future V7 slices will connect the ranking policy to hybrid retrieval results and reranking.
+Ranking behavior must be covered by unit tests and benchmark evaluation where relevant.

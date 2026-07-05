@@ -1,16 +1,44 @@
-# QwenBridge Operational Health
+# Health
 
-## Endpoints
+QwenBridge exposes health and readiness information for local development, CI verification, and production operations.
 
-| Endpoint | Purpose | Contract |
-| --- | --- | --- |
-| `GET /api/v1/health/live` | Process liveness | Returns `UP` when the application process can serve HTTP. It does not check remote dependencies. |
-| `GET /api/v1/health/ready` | Dependency-aware readiness | Checks Redis, OpenSearch and Ollama and returns aggregate status. |
-| `GET /actuator/health/liveness` | Spring Boot probe | Kubernetes/container liveness probe. |
-| `GET /actuator/health/readiness` | Spring Boot probe | Kubernetes/container readiness probe. |
+## Health endpoint
 
-## Status model
+```text
+GET /api/v1/health
+```
 
-`UP` means all checked dependencies are available. `DEGRADED` means at least one optional or recoverable dependency is unavailable but the app can still respond through fallback behavior. `DOWN` is reserved for non-recoverable readiness failure.
+The health endpoint reports API availability and operational state.
 
-Dependency responses expose sanitized reasons only: `available`, `not_configured`, `empty_ping_response`, or `unavailable`. Internal exception messages, hosts, credentials and stack traces are intentionally not returned.
+## Dependency health
+
+QwenBridge can check the health of external dependencies such as:
+
+- Ollama
+- OpenSearch
+- Redis
+
+Each dependency check should report:
+
+- dependency name
+- status
+- reason or error summary
+- latency where available
+
+## Readiness
+
+A deployment should be considered ready only when required dependencies and production configuration are valid.
+
+Readiness should fail when a required dependency is unavailable and the selected deployment profile requires that dependency.
+
+## Health usage
+
+Use health checks for:
+
+- container readiness probes
+- deployment verification
+- release verification
+- operational debugging
+- dependency outage detection
+
+Do not use health checks as a substitute for full release verification.

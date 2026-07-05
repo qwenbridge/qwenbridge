@@ -1,93 +1,98 @@
 # QwenBridge Java SDK
 
-Official Java client for the QwenBridge Search Analyze API.
+Official Java client for the QwenBridge public API.
+
+The SDK supports synchronous search analysis, asynchronous search analysis, typed API errors, retry handling, and typed SSE streaming.
 
 ## Requirements
 
 - Java 21+
+- Maven 3.9+
 - A running QwenBridge server
 
 ## Installation
 
-For local development inside the QwenBridge monorepo:
+Local monorepo development:
 
-    <dependency>
-        <groupId>io.qwenbridge</groupId>
-        <artifactId>qwenbridge-java-sdk</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
-    </dependency>
+```xml
+<dependency>
+    <groupId>io.qwenbridge</groupId>
+    <artifactId>qwenbridge-java-sdk</artifactId>
+    <version>0.9.0</version>
+</dependency>
+```
 
-## Synchronous usage
+Before Maven Central publishing, install locally:
 
-    import io.qwenbridge.sdk.QwenBridgeClient;
-    import io.qwenbridge.sdk.config.QwenBridgeClientConfig;
-    import io.qwenbridge.sdk.search.SearchAnalyzeRequest;
-    import io.qwenbridge.sdk.search.SearchAnalyzeResponse;
+```bash
+mvn -pl qwenbridge-java-sdk install
+```
 
-    import java.net.URI;
-    import java.time.Duration;
-    import java.util.UUID;
+## Create a client
 
-    QwenBridgeClient client = new QwenBridgeClient(new QwenBridgeClientConfig(
-            URI.create("http://localhost:8080"),
-            Duration.ofSeconds(2),
-            Duration.ofSeconds(30)
-    ));
+```java
+import io.qwenbridge.sdk.QwenBridgeClient;
+import io.qwenbridge.sdk.config.QwenBridgeClientConfig;
 
-    SearchAnalyzeResponse response = client.analyze(
-            SearchAnalyzeRequest.withRequestId(
-                    UUID.randomUUID().toString(),
-                    "best mechanical keyboard"
-            )
-    );
+import java.net.URI;
+import java.time.Duration;
 
+QwenBridgeClient client = new QwenBridgeClient(new QwenBridgeClientConfig(
+        URI.create("http://localhost:8080"),
+        Duration.ofSeconds(2),
+        Duration.ofSeconds(30)
+));
+```
+
+For local development:
+
+```java
+QwenBridgeClient client = QwenBridgeClient.localDefault();
+```
+
+## Synchronous analysis
+
+```java
+import io.qwenbridge.sdk.search.SearchAnalyzeRequest;
+import io.qwenbridge.sdk.search.SearchAnalyzeResponse;
+
+SearchAnalyzeResponse response = client.analyze(
+        SearchAnalyzeRequest.withRequestId(
+                "request-123",
+                "best laptop for software development"
+        )
+);
+
+System.out.println(response.intent());
+System.out.println(response.decision());
+System.out.println(response.confidence());
+```
+
+## Asynchronous analysis
+
+```java
+client.analyzeAsync(
+        SearchAnalyzeRequest.withRequestId(
+                "request-456",
+                "best wireless headphones"
+        )
+).thenAccept(response -> {
     System.out.println(response.intent());
     System.out.println(response.decision());
     System.out.println(response.confidence());
-
-## Asynchronous usage
-
-    import io.qwenbridge.sdk.QwenBridgeClient;
-    import io.qwenbridge.sdk.config.QwenBridgeClientConfig;
-    import io.qwenbridge.sdk.search.SearchAnalyzeRequest;
-
-    import java.net.URI;
-    import java.time.Duration;
-    import java.util.UUID;
-
-    QwenBridgeClient client = new QwenBridgeClient(new QwenBridgeClientConfig(
-            URI.create("http://localhost:8080"),
-            Duration.ofSeconds(2),
-            Duration.ofSeconds(30)
-    ));
-
-    client.analyzeAsync(
-                    SearchAnalyzeRequest.withRequestId(
-                            UUID.randomUUID().toString(),
-                            "best gaming monitor"
-                    )
-            )
-            .thenAccept(response -> {
-                System.out.println(response.intent());
-                System.out.println(response.decision());
-                System.out.println(response.confidence());
-            })
-            .join();
-
-## Local default client
-
-For a QwenBridge server running locally on the default address:
-
-    QwenBridgeClient client = QwenBridgeClient.localDefault();
+}).join();
+```
 
 ## Request IDs
 
-Use a request ID to correlate SDK calls with server logs, pipeline events, and API error responses.
+A request ID correlates SDK calls with server logs, pipeline events, SSE streams, and API error responses.
 
-    SearchAnalyzeRequest request = SearchAnalyzeRequest.withRequestId(
-            "checkout-search-8f9f0d",
-            "wireless noise cancelling headphones"
-    );
+```java
+SearchAnalyzeRequest request = SearchAnalyzeRequest.withRequestId(
+        "checkout-search-8f9f0d",
+        "wireless noise cancelling headphones"
+);
+```
 
 The SDK sends this value as the `X-Request-Id` HTTP header.
 
@@ -103,64 +108,49 @@ Retryable failures include:
 - HTTP `502`
 - HTTP `503`
 - HTTP `504`
-- Transport failures such as connection failures and timeouts
+- transport failures such as connection failures and timeouts
 
-The retry mechanism uses exponential backoff. Non-retryable API failures, such as validation errors (`400`) and authorization failures (`401` / `403`), are returned immediately.
+Non-retryable API failures, such as validation errors and authorization failures, are returned immediately.
 
 ## Exceptions
 
-### QwenBridgeApiException
+`QwenBridgeApiException` is thrown when QwenBridge returns a non-success HTTP response.
 
-Thrown when QwenBridge returns a non-success HTTP response. The structured API error is available through `apiError()`.
+```java
+try {
+    client.analyze(SearchAnalyzeRequest.of("iphone"));
+} catch (QwenBridgeApiException exception) {
+    System.out.println(exception.apiError().status());
+    System.out.println(exception.apiError().code());
+    System.out.println(exception.apiError().message());
+    System.out.println(exception.apiError().requestId());
+}
+```
 
-    try {
-        client.analyze(SearchAnalyzeRequest.of("iphone"));
-    } catch (QwenBridgeApiException exception) {
-        System.out.println(exception.apiError().status());
-        System.out.println(exception.apiError().code());
-        System.out.println(exception.apiError().message());
-        System.out.println(exception.apiError().requestId());
+`QwenBridgeTransportException` is thrown when the SDK cannot communicate with QwenBridge due to a transport-level failure.
+
+## Typed SSE streaming
+
+```java
+import io.qwenbridge.sdk.streaming.QwenBridgeStreamingClient;
+import io.qwenbridge.sdk.streaming.payload.AITokenStreamingPayload;
+
+QwenBridgeStreamingClient streamingClient = new QwenBridgeStreamingClient(
+        new QwenBridgeClientConfig(
+                URI.create("http://localhost:8080"),
+                Duration.ofSeconds(2),
+                Duration.ofSeconds(30)
+        )
+);
+
+streamingClient.streamTyped("request-123", event -> {
+    if (event.payload() instanceof AITokenStreamingPayload token) {
+        System.out.print(token.content());
     }
+}).join();
+```
 
-### QwenBridgeTransportException
-
-Thrown when the SDK cannot communicate with QwenBridge due to a transport-level failure, such as connection refusal, timeout, interrupted request, or an invalid response body.
-
-## Examples
-
-Runnable examples are available in:
-
-    examples/java-sdk-example
-
-- `SyncSearchAnalyzeExample`
-- `AsyncSearchAnalyzeExample`
-
-## Typed SSE streaming usage
-
-The SDK can consume typed Server-Sent Events from the QwenBridge streaming endpoint.
-
-    import io.qwenbridge.sdk.config.QwenBridgeClientConfig;
-    import io.qwenbridge.sdk.streaming.QwenBridgeStreamingClient;
-    import io.qwenbridge.sdk.streaming.payload.AITokenStreamingPayload;
-
-    import java.net.URI;
-    import java.time.Duration;
-
-    QwenBridgeStreamingClient streamingClient = new QwenBridgeStreamingClient(
-            new QwenBridgeClientConfig(
-                    URI.create("http://localhost:8080"),
-                    Duration.ofSeconds(2),
-                    Duration.ofSeconds(30)
-            )
-    );
-
-    streamingClient.streamTyped("request-id", event -> {
-        if (event.payload() instanceof AITokenStreamingPayload token) {
-            System.out.print(token.content());
-        }
-    }).join();
-
-Typed payloads currently include:
+Typed payloads include:
 
 - `ConnectedStreamingPayload`
 - `AITokenStreamingPayload`
@@ -168,3 +158,16 @@ Typed payloads currently include:
 - `AIFailedStreamingPayload`
 - `UnknownStreamingPayload`
 
+## Examples
+
+Runnable examples are available in:
+
+```text
+examples/java-sdk-example
+```
+
+Example guide:
+
+```text
+docs/examples/java-sdk-example.md
+```

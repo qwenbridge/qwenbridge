@@ -1,53 +1,51 @@
-# Docker Deployment Guide
+# Docker Deployment
 
-## Overview
+QwenBridge includes Docker support for local development and deployment verification.
 
-QwenBridge V6 runs as a Docker Compose stack with:
+## Build server image
 
-- QwenBridge API
-- Ollama
-- Redis
+```bash
+mvn -pl qwenbridge-server clean package
+docker build -t qwenbridge-server:local qwenbridge-server
+```
+
+## Start local dependencies
+
+```bash
+docker compose up -d
+```
+
+The compose stack is intended for local development and release verification.
+
+## Verify containers
+
+```bash
+docker compose ps
+```
+
+Check the expected dependencies:
+
 - OpenSearch
+- Redis
+- Ollama, when configured through the local stack
 
-## Quick Start
+## Run release verification
 
-    cp .env.example .env
-    docker compose up -d --build
+```bash
+bash scripts/verify-release.sh
+```
 
-## Health Checks
+## Production notes
 
-    curl -fsS http://localhost:8080/actuator/health | jq .
-    curl -fsS http://localhost:8080/api/v1/health | jq .
+For production, configure:
 
-Expected result:
+- explicit environment variables
+- externalized secrets
+- readiness and liveness probes
+- log aggregation
+- metrics scraping
+- resource limits
+- dependency timeouts
+- TLS and network controls
 
-    {
-      "status": "UP"
-    }
-
-## Runtime Security
-
-The QwenBridge application container runs as the non-root `qwenbridge` user.
-
-    docker exec qwenbridge-app id -un
-
-Expected result:
-
-    qwenbridge
-
-## Persistent Volumes
-
-Docker Compose defines persistent volumes for:
-
-- `ollama-data`
-- `opensearch-data`
-
-## Release Verification
-
-Run:
-
-    FORCE_FRESH=false PULL_DOCKER_IMAGES=false ./scripts/verify-release.sh
-
-Expected result:
-
-    RESULT: RELEASE VERIFICATION PASSED
+Do not use local development credentials or local-only configuration in production.

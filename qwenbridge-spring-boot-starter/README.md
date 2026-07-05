@@ -2,110 +2,110 @@
 
 Spring Boot auto-configuration for the QwenBridge Java SDK.
 
+The starter creates ready-to-use QwenBridge client beans and optional Actuator health integration.
+
 ## Requirements
 
 - Java 21+
 - Spring Boot 3.5+
 - QwenBridge Java SDK
-- Optional: Spring Boot Actuator for health integration
+- Optional: Spring Boot Actuator
 
 ## Installation
 
-For local development inside the QwenBridge monorepo:
+```xml
+<dependency>
+    <groupId>io.qwenbridge</groupId>
+    <artifactId>qwenbridge-spring-boot-starter</artifactId>
+    <version>0.9.0</version>
+</dependency>
+```
 
-    <dependency>
-        <groupId>io.qwenbridge</groupId>
-        <artifactId>qwenbridge-spring-boot-starter</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
-    </dependency>
+Before Maven Central publishing, install locally:
+
+```bash
+mvn -pl qwenbridge-java-sdk,qwenbridge-spring-boot-starter install
+```
 
 ## Configuration
 
-    qwenbridge:
-      base-url: http://localhost:8080
-      connect-timeout: 2s
-      request-timeout: 30s
+```yaml
+qwenbridge:
+  base-url: http://localhost:8080
+  connect-timeout: 2s
+  request-timeout: 30s
+```
 
 ## Auto-configured beans
 
 The starter creates these beans automatically:
 
-- QwenBridgeClientConfig
-- QwenBridgeClient
-- QwenBridgeStreamingClient
+- `QwenBridgeClientConfig`
+- `QwenBridgeClient`
+- `QwenBridgeStreamingClient`
 
-All beans use ConditionalOnMissingBean, so applications can override them by defining their own beans.
+All beans use `ConditionalOnMissingBean`, so applications can override them by defining their own beans.
 
 ## Search Analyze usage
 
-    @RestController
-    class SearchController {
+```java
+@RestController
+class SearchController {
 
-        private final QwenBridgeClient client;
+    private final QwenBridgeClient client;
 
-        SearchController(QwenBridgeClient client) {
-            this.client = client;
-        }
-
-        @GetMapping("/search")
-        SearchAnalyzeResponse search(@RequestParam String query) {
-            return client.analyze(SearchAnalyzeRequest.of(query));
-        }
+    SearchController(QwenBridgeClient client) {
+        this.client = client;
     }
+
+    @GetMapping("/search")
+    SearchAnalyzeResponse search(@RequestParam String query) {
+        return client.analyze(SearchAnalyzeRequest.of(query));
+    }
+}
+```
 
 ## Streaming usage
 
-    @Service
-    class StreamingService {
+```java
+@Service
+class StreamingService {
 
-        private final QwenBridgeStreamingClient streamingClient;
+    private final QwenBridgeStreamingClient streamingClient;
 
-        StreamingService(QwenBridgeStreamingClient streamingClient) {
-            this.streamingClient = streamingClient;
-        }
-
-        void stream(String requestId) {
-            streamingClient.streamTyped(requestId, event -> {
-                System.out.println(event.eventName());
-            }).join();
-        }
+    StreamingService(QwenBridgeStreamingClient streamingClient) {
+        this.streamingClient = streamingClient;
     }
+
+    void stream(String requestId) {
+        streamingClient.streamTyped(requestId, event -> {
+            System.out.println(event.eventName());
+        }).join();
+    }
+}
+```
 
 ## Actuator health
 
-When Spring Boot Actuator is present, the starter exposes a configuration-only HealthIndicator.
+When Spring Boot Actuator is present, the starter exposes a configuration-only health indicator.
 
 The indicator reports:
 
-- UP when qwenbridge.base-url is configured
-- DOWN when qwenbridge.base-url is blank
+- `UP` when `qwenbridge.base-url` is configured
+- `DOWN` when `qwenbridge.base-url` is blank
 
-The health check does not call the remote QwenBridge server. This avoids making /actuator/health dependent on network latency or remote availability.
-
-Example:
-
-    GET /actuator/health
-
-Expected detail:
-
-    qwenBridgeHealthIndicator:
-      status: UP
-      details:
-        baseUrl: http://localhost:8080
-        mode: configuration-only
+The health check does not call the remote QwenBridge server. This keeps `/actuator/health` independent from remote network latency and remote availability.
 
 ## Example application
 
 A sample Spring Boot application is available at:
 
-    examples/spring-boot-starter-example
+```text
+examples/spring-boot-starter-example
+```
 
-Run it with:
+Example guide:
 
-    mvn -pl examples/spring-boot-starter-example spring-boot:run
-
-Useful endpoints:
-
-    GET http://localhost:8081/example/beans
-    GET http://localhost:8081/example/analyze\?query\=iphone
-    GET http://localhost:8081/actuator/health
+```text
+docs/examples/spring-boot-starter-example.md
+```
