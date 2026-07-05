@@ -1,29 +1,64 @@
-# V8 Abuse Protection Policy
+# Abuse Protection
 
-QwenBridge applies runtime abuse limits before API requests enter the pipeline.
+QwenBridge includes abuse-protection controls to reduce accidental overload, scripted abuse, and unsafe AI-facing input patterns.
 
-## Limits
+## Protection areas
 
-- Per-IP fixed-window rate limit.
-- Per-API-key fixed-window rate limit through `X-API-Key`.
-- Request body size limit.
-- Concurrent SSE stream limit.
-- AI request quota for AI-heavy endpoints.
-- Redis-backed distributed limiting when Redis is available.
-- In-memory fallback when Redis is unavailable, unless fail-open is configured.
+QwenBridge protects the public API through:
 
-## Response contract
+- request-size limits
+- fixed-window rate limiting
+- optional Redis-backed distributed rate limiting
+- input normalization
+- threat detection
+- threat correlation
+- safe API error contracts
+- controlled SSE session lifecycle
 
-Rejected requests return HTTP `429 Too Many Requests` with `ApiError.code = RATE_LIMITED`.
+## Rate limiting
 
-Response headers:
+The rate limiter returns a decision before expensive pipeline work is executed.
 
-- `Retry-After`
-- `X-RateLimit-Limit`
-- `X-RateLimit-Remaining`
-- `X-RateLimit-Reset`
-- `X-RateLimit-Policy`
+Rate-limit decisions should include:
 
-## Configuration
+- allowed or rejected state
+- configured limit
+- remaining allowance where available
+- retry-after information where available
 
-All knobs are under `qwenbridge.abuse` in `application.yml`.
+For production, Redis-backed rate limiting is preferred when multiple application instances serve traffic.
+
+## Input normalization
+
+Normalization runs before downstream analysis. It reduces ambiguity caused by encoding tricks, control characters, Unicode normalization issues, HTML entities, URL encoding, and repeated whitespace.
+
+## Threat detection
+
+Threat detectors are modular and rule-based. Current detector categories include:
+
+- SQL injection
+- NoSQL injection
+- LDAP injection
+- command injection
+- path traversal
+- server-side request forgery
+- template injection
+- cross-site scripting
+- prompt injection
+- jailbreak attempts
+- secret leakage
+- Unicode obfuscation
+
+## Correlation
+
+Single low-severity findings may not be enough to block a request. Correlation rules combine multiple findings into a higher-level risk profile and final threat decision.
+
+## Operational guidance
+
+For public deployments:
+
+- keep request limits explicit
+- keep rate-limit behavior documented
+- monitor rejected requests
+- do not log secrets or raw sensitive payloads
+- validate production configuration before serving traffic

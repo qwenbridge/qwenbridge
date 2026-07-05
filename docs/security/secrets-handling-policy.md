@@ -1,21 +1,45 @@
-# V8 Secrets Handling Policy
+# Secrets Handling Policy
 
-Secrets must never be committed to the repository, test resources, Docker images, logs, release artifacts, screenshots, or documentation examples.
+Secrets must never be committed to the repository.
 
-## Approved storage
+## Never commit
 
-- GitHub Actions secrets for CI/CD credentials.
-- Runtime environment variables for deployment secrets.
-- Local `.env` files ignored by Git.
+Do not commit:
 
-## Required controls
+- `.env`
+- API keys
+- access tokens
+- passwords
+- private endpoints
+- private keys
+- signing keys
+- Maven Central credentials
+- npm tokens
+- cloud credentials
+- production configuration files
 
-- GitHub secret scanning enabled on the repository.
-- Push protection enabled when available.
-- CodeQL workflow enabled.
-- Dependency and container scanning enabled in CI.
-- Any leaked secret must be revoked, rotated, and documented in release evidence.
+## Local development
 
-## Disclosure workflow
+Use `.env.example` for safe placeholders only. Real local values must stay in untracked local files or local shell environment variables.
 
-Security reports must follow `SECURITY.md`. Every release must verify that the disclosure workflow is still accurate.
+## CI and publishing
+
+Use the repository or organization secret store for:
+
+- Maven Central credentials
+- GPG signing keys
+- npm tokens
+- NVD API keys
+- deployment credentials
+
+## Accidental exposure
+
+If a secret is committed:
+
+1. rotate the secret immediately
+2. remove it from the current tree
+3. audit whether history rewrite is required
+4. review logs and access records
+5. document the remediation privately
+
+Deleting the file in a later commit is not enough if the secret remains in Git history.
