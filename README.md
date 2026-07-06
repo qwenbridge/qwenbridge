@@ -1,4 +1,8 @@
-# QwenBridge
+<p align="center">
+  <img src="docs/images/Qwen_logo.jpg" alt="QwenBridge" width="560" />
+</p>
+
+<h1 align="center">QwenBridge</h1>
 
 <p align="center">
   <strong>AI-native search decision engine and developer platform.</strong>
@@ -16,19 +20,57 @@
   <a href="#contributing">Contributing</a>
 </p>
 
+<p align="center">
+  <a href="https://openjdk.org/">
+    <img src="https://img.shields.io/badge/Java-21%2B-ED8B00?logo=openjdk&logoColor=white" alt="Java 21+" />
+  </a>
+  <a href="https://spring.io/projects/spring-boot">
+    <img src="https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?logo=springboot&logoColor=white" alt="Spring Boot" />
+  </a>
+  <a href="https://maven.apache.org/">
+    <img src="https://img.shields.io/badge/Maven-3.x-C71A36?logo=apachemaven&logoColor=white" alt="Maven" />
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-Apache--2.0-D22128?logo=apache&logoColor=white" alt="Apache License 2.0" />
+  </a>
+  <a href="https://www.docker.com/">
+    <img src="https://img.shields.io/badge/Docker-supported-2496ED?logo=docker&logoColor=white" alt="Docker" />
+  </a>
+  <a href="https://opensearch.org/">
+    <img src="https://img.shields.io/badge/OpenSearch-supported-005EB8?logo=opensearch&logoColor=white" alt="OpenSearch" />
+  </a>
+  <a href="https://redis.io/">
+    <img src="https://img.shields.io/badge/Redis-supported-DC382D?logo=redis&logoColor=white" alt="Redis" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="qwenbridge-typescript-sdk/">
+    <img src="https://img.shields.io/badge/TypeScript-SDK-3178C6?logo=typescript&logoColor=white" alt="TypeScript SDK" />
+  </a>
+  <a href="../../actions">
+    <img src="https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white" alt="GitHub Actions" />
+  </a>
+  <a href="docs/development/code-quality.md">
+    <img src="https://img.shields.io/badge/Quality-Spotless%20%2B%20SpotBugs-4B32C3" alt="Spotless and SpotBugs" />
+  </a>
+</p>
+
+---
+
 > **Current public release track:** V9 — Developer Platform
 
-QwenBridge accepts a user query, analyzes it through an AI-first pipeline, produces an execution plan, runs search operations through pluggable providers, and exposes results through REST APIs, Server-Sent Events (SSE), a Java SDK, a Spring Boot Starter, and a TypeScript SDK.
+QwenBridge accepts a user query, analyzes it through an AI-first pipeline, produces a safe execution plan, runs retrieval through pluggable providers, and exposes results through REST APIs, Server-Sent Events (SSE), a Java SDK, a Spring Boot Starter, and a TypeScript SDK.
 
 ## What QwenBridge does
 
 | Area | Capabilities |
-|---|---|
-|  **Understanding** | Input normalization, language detection, intent detection, query rewrite, semantic analysis, AI decisioning |
-|  **Safety** | Policy evaluation, threat detection, abuse protection, secret-leakage checks, request isolation |
-|  **Retrieval** | Keyword, vector, hybrid search, ranking, reranking, facets, provider abstraction |
-|  **Developer experience** | REST API, typed SSE events, Java SDK, Spring Boot Starter, TypeScript SDK |
-|  **Operations** | Redis cache support, health/readiness, metrics, tracing, structured logging, Docker deployment |
+| --- | --- |
+| **Understanding** | Input normalization, language detection, intent detection, query rewrite, semantic analysis, AI decisioning |
+| **Safety** | Policy evaluation, threat detection, abuse protection, secret-leakage checks, request isolation |
+| **Retrieval** | Keyword, vector, hybrid search, ranking, reranking, facets, provider abstraction |
+| **Developer experience** | REST API, typed SSE events, Java SDK, Spring Boot Starter, TypeScript SDK |
+| **Operations** | Redis cache support, health/readiness, metrics, tracing, structured logging, Docker deployment |
 
 ##  Quick start
 
@@ -191,9 +233,22 @@ Please read [SECURITY.md](SECURITY.md) before reporting a vulnerability.
 
 **Never commit** secrets, tokens, passwords, private endpoints, generated build output, dependency directories, or local environment files.
 
-##  Contributing
+## Contributing
 
-Contributions are welcome through focused issues and pull requests. Please follow the repository’s [Contributing Guide](CONTRIBUTING.md), architecture rules, test requirements, and pull-request policy.
+Contributions are welcome when they are focused, production-ready, and aligned with the QwenBridge architecture.
+
+Every pull request must:
+
+- target a clearly scoped problem or approved issue;
+- preserve module boundaries and architecture rules;
+- include appropriate unit and integration test coverage;
+- pass the required CI checks, including build and test verification;
+- avoid unrelated refactoring, generated files, secrets, and local environment changes;
+- follow the repository formatting, static-analysis, security, and documentation standards.
+
+Pull requests that do not meet these requirements may be closed without review.
+
+Before opening a pull request, read the [Contributing Guide](CONTRIBUTING.md) and the [Branching and Pull Request Policy](docs/development/branching-and-pr-policy.md).
 
 ##  License
 
