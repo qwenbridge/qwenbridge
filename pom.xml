@@ -17,7 +17,7 @@
 
   <name>QwenBridge Parent</name>
   <description>QwenBridge developer platform and SDK ecosystem</description>
-  <url>https://github.com/Mahad-Banai/qwenbridge</url>
+  <url>https://github.com/qwenbridge/qwenbridge</url>
 
   <licenses>
     <license>
@@ -36,9 +36,9 @@
   </developers>
 
   <scm>
-    <connection>scm:git:https://github.com/Mahad-Banai/qwenbridge.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/Mahad-Banai/qwenbridge.git</developerConnection>
-    <url>https://github.com/Mahad-Banai/qwenbridge</url>
+    <connection>scm:git:https://github.com/qwenbridge/qwenbridge.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/qwenbridge/qwenbridge.git</developerConnection>
+    <url>https://github.com/qwenbridge/qwenbridge</url>
     <tag>HEAD</tag>
   </scm>
 
