@@ -195,6 +195,87 @@ describe("QwenBridgeClient", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+    it("rejects invalid multilingual metadata", async () => {
+        const client = new QwenBridgeClient({
+            baseUrl: "http://localhost:8080",
+            fetch: vi.fn() as unknown as typeof fetch
+        });
+
+        await expect(
+            client.analyze({
+                query: "table",
+                declaredLanguage: "english"
+            })
+        ).rejects.toThrow(
+            "declaredLanguage must be a two-letter language code"
+        );
+
+        await expect(
+            client.analyze({
+                query: "table",
+                locale: "en_US"
+            })
+        ).rejects.toThrow(
+            "locale must be a supported BCP 47 language tag"
+        );
+
+        await expect(
+            client.analyze({
+                query: "table",
+                declaredLanguage: "   "
+            })
+        ).rejects.toThrow(
+            "declaredLanguage must be a two-letter language code"
+        );
+
+        await expect(
+            client.analyze({
+                query: "table",
+                locale: "   "
+            })
+        ).rejects.toThrow(
+            "locale must be a supported BCP 47 language tag"
+        );
+    });
+
+    it("sends multilingual request metadata", async () => {
+        const fetchMock = vi.fn(async (_input, init) => {
+            expect(JSON.parse(String(init?.body))).toEqual({
+                requestId: "req-multilingual",
+                query: "میز",
+                declaredLanguage: "fa",
+                locale: "fa-IR"
+            });
+
+            return new Response(
+                JSON.stringify({
+                    requestId: "req-multilingual",
+                    originalQuery: "میز"
+                }),
+                {
+                    status: 200,
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+        });
+
+        const client = new QwenBridgeClient({
+            baseUrl: "http://localhost:8080",
+            fetch: fetchMock as typeof fetch
+        });
+
+        await client.analyze({
+            requestId: "req-multilingual",
+            query: "میز",
+            declaredLanguage: "fa",
+            locale: "fa-IR"
+        });
+
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
   it("rejects blank query before HTTP call", async () => {
     const fetchMock = vi.fn<typeof fetch>();
 

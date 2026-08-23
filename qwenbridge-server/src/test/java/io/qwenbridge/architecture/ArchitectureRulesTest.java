@@ -30,6 +30,20 @@ class ArchitectureRulesTest {
           .resideOutsideOfPackage("..api..");
 
   @ArchTest
+  static final ArchRule multilingual_input_model_should_remain_infrastructure_independent =
+      classes()
+          .that()
+          .resideInAPackage("io.qwenbridge.input.model..")
+          .should()
+          .onlyDependOnClassesThat()
+          .resideOutsideOfPackages(
+              "io.qwenbridge.api..",
+              "io.qwenbridge.language..",
+              "io.qwenbridge.ai..",
+              "io.qwenbridge..provider..",
+              "io.qwenbridge.execution.provider..");
+
+  @ArchTest
   static final ArchRule layering_should_remain_explicit =
       layeredArchitecture()
           .consideringOnlyDependenciesInLayers()

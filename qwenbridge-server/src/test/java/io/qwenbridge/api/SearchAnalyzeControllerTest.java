@@ -289,6 +289,66 @@ class SearchAnalyzeControllerTest {
         .andExpect(header().exists("X-Request-ID"));
   }
 
+  @Test
+  void shouldRejectInvalidDeclaredLanguage() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/search/analyze")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "query": "table",
+                      "declaredLanguage": "english"
+                    }
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  @Test
+  void shouldRejectInvalidLocale() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/search/analyze")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "query": "table",
+                      "locale": "sv_SE"
+                    }
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+  }
+
+  @Test
+  void shouldAcceptMultilingualInputMetadataFromApi() throws Exception {
+    when(aiService.chat(org.mockito.ArgumentMatchers.any(ChatRequest.class)))
+        .thenReturn(new ChatResponse(analysisJson("fa", "میز", "table")));
+    when(searchAnalysisService.analyze("میز")).thenReturn(searchAnalysis("fa", "table"));
+    when(openSearchClient.search(anyString(), anyMap())).thenReturn(emptyOpenSearchResponse());
+
+    mockMvc
+        .perform(
+            post("/api/v1/search/analyze")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "requestId": "client-request-1",
+                      "query": "میز",
+                      "declaredLanguage": "fa",
+                      "locale": "fa-IR"
+                    }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.requestId").value("client-request-1"))
+        .andExpect(jsonPath("$.originalQuery").value("میز"))
+        .andExpect(jsonPath("$.language").value("fa"));
+  }
+
   @ParameterizedTest
   @MethodSource("safeAnalyzeCases")
   void shouldAnalyzeSafeQueries(

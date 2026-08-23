@@ -397,6 +397,72 @@ class QwenBridgeClientTest {
     }
   }
 
+  @Test
+  void shouldCreateMultilingualSearchAnalyzeRequest() {
+    SearchAnalyzeRequest request = SearchAnalyzeRequest.multilingual("req-1", "میز", "fa", "fa-IR");
+
+    assertEquals("req-1", request.requestId());
+    assertEquals("میز", request.query());
+    assertEquals("fa", request.declaredLanguage());
+    assertEquals("fa-IR", request.locale());
+  }
+
+  @Test
+  void shouldRejectInvalidMultilingualMetadata() {
+    IllegalArgumentException blankLanguageException =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> SearchAnalyzeRequest.multilingual("table", "   ", null));
+
+    assertEquals(
+        "declaredLanguage must be a two-letter language code", blankLanguageException.getMessage());
+
+    IllegalArgumentException blankLocaleException =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> SearchAnalyzeRequest.multilingual("table", "en", "   "));
+
+    assertEquals(
+        "locale must be a supported BCP 47 language tag", blankLocaleException.getMessage());
+  }
+
+  @Test
+  void shouldSerializeMultilingualRequestMetadata() throws Exception {
+    AtomicReference<String> requestBody = new AtomicReference<>();
+
+    server = HttpServer.create(new InetSocketAddress(0), 0);
+    server.createContext(
+        "/api/v1/search/analyze",
+        exchange -> {
+          requestBody.set(
+              new String(
+                  exchange.getRequestBody().readAllBytes(),
+                  java.nio.charset.StandardCharsets.UTF_8));
+
+          byte[] response =
+              """
+              {
+                "requestId": "req-multilingual",
+                "originalQuery": "میز"
+              }
+              """
+                  .getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+          exchange.getResponseHeaders().add("Content-Type", "application/json");
+          exchange.sendResponseHeaders(200, response.length);
+          exchange.getResponseBody().write(response);
+          exchange.close();
+        });
+
+    server.start();
+
+    client().analyze(SearchAnalyzeRequest.multilingual("req-multilingual", "میز", "fa", "fa-IR"));
+
+    assertTrue(requestBody.get().contains("\"query\":\"میز\""));
+    assertTrue(requestBody.get().contains("\"declaredLanguage\":\"fa\""));
+    assertTrue(requestBody.get().contains("\"locale\":\"fa-IR\""));
+  }
+
   private QwenBridgeClient client() {
     return new QwenBridgeClient(
         new QwenBridgeClientConfig(
