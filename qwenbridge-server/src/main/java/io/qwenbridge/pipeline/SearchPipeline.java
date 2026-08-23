@@ -3,6 +3,8 @@ package io.qwenbridge.pipeline;
 import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTrace;
 import io.qwenbridge.decision.DecisionType;
 import io.qwenbridge.execution.provider.model.SearchResponse;
+import io.qwenbridge.input.model.InputSource;
+import io.qwenbridge.input.model.MultilingualInput;
 import io.qwenbridge.model.AIAnalysisCacheResponse;
 import io.qwenbridge.model.ExecutionPlanResponse;
 import io.qwenbridge.model.ExecutionResultResponse;
@@ -15,6 +17,7 @@ import io.qwenbridge.pipeline.result.*;
 import io.qwenbridge.threat.ThreatResult;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +28,9 @@ public class SearchPipeline {
   private final PipelineEngine pipelineEngine;
 
   public SearchAnalyzeResponse analyze(SearchAnalyzeRequest request) {
-    ExecutionContext context = new ExecutionContext(request.requestId(), request.query());
+
+    MultilingualInput input = toMultilingualInput(request);
+    ExecutionContext context = new ExecutionContext(request.requestId(), input);
 
     pipelineEngine.execute(context);
 
@@ -67,6 +72,14 @@ public class SearchPipeline {
         .cache(toCacheResponse(cacheTrace))
         .pipelineTrace(context.trace())
         .build();
+  }
+
+  MultilingualInput toMultilingualInput(SearchAnalyzeRequest request) {
+    return MultilingualInput.of(
+        request.query(),
+        request.declaredLanguage(),
+        parseLocale(request.locale()),
+        InputSource.API);
   }
 
   private AIAnalysisCacheResponse toCacheResponse(AIAnalysisCacheTrace trace) {
@@ -164,5 +177,13 @@ public class SearchPipeline {
       return 1.0;
     }
     return confidence.value();
+  }
+
+  private Locale parseLocale(String locale) {
+    if (locale == null || locale.isBlank()) {
+      return null;
+    }
+
+    return Locale.forLanguageTag(locale.trim());
   }
 }

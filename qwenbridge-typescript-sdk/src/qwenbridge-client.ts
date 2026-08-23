@@ -95,6 +95,25 @@ export class QwenBridgeClient {
     if (!request.query || !request.query.trim()) {
       throw new TypeError("query must not be blank");
     }
+
+    if (
+        request.declaredLanguage !== undefined &&
+        !/^[A-Za-z]{2}$/.test(request.declaredLanguage)
+    ) {
+      throw new TypeError(
+          "declaredLanguage must be a two-letter language code"
+      );
+    }
+
+    if (
+        request.locale !== undefined &&
+        !/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(request.locale)
+    ) {
+      throw new TypeError(
+          "locale must be a supported BCP 47 language tag"
+      );
+    }
+
   }
 
   private async readJson<T>(response: Response): Promise<T> {

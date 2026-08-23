@@ -76,7 +76,9 @@ public class SearchAnalyzeController {
       @Valid @RequestBody SearchAnalyzeRequest request) {
     String requestId = resolveRequestId(headerRequestId, request.requestId());
 
-    SearchAnalyzeRequest effectiveRequest = new SearchAnalyzeRequest(requestId, request.query());
+    SearchAnalyzeRequest effectiveRequest =
+        new SearchAnalyzeRequest(
+            requestId, request.query(), request.declaredLanguage(), request.locale());
 
     return searchPipeline.analyze(effectiveRequest);
   }

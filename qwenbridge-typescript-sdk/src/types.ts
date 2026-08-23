@@ -9,6 +9,8 @@ export interface QwenBridgeClientOptions {
 export interface SearchAnalyzeRequest {
   requestId?: string;
   query: string;
+  declaredLanguage?: string;
+  locale?: string;
 }
 
 export interface SearchAnalyzeResponse {

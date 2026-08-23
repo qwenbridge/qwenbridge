@@ -2,6 +2,7 @@ package io.qwenbridge.pipeline;
 
 import io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTrace;
 import io.qwenbridge.decision.DecisionType;
+import io.qwenbridge.input.model.MultilingualInput;
 import io.qwenbridge.pipeline.context.ContextKey;
 import io.qwenbridge.pipeline.result.*;
 import io.qwenbridge.threat.ThreatResult;
@@ -24,6 +25,11 @@ public class ExecutionContext {
 
   public ExecutionContext(String requestId, String originalQuery) {
     this.request = RequestContext.of(requestId, originalQuery);
+    initializeDefaults();
+  }
+
+  public ExecutionContext(String requestId, MultilingualInput input) {
+    this.request = RequestContext.of(requestId, input);
     initializeDefaults();
   }
 
