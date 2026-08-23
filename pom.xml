@@ -56,15 +56,15 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-    <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
+    <maven-enforcer-plugin.version>3.6.3</maven-enforcer-plugin.version>
     <spotless-maven-plugin.version>2.44.4</spotless-maven-plugin.version>
-    <spotbugs-maven-plugin.version>4.9.3.0</spotbugs-maven-plugin.version>
+    <spotbugs-maven-plugin.version>4.10.4.0</spotbugs-maven-plugin.version>
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
 
-    <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
-    <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
-    <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
+    <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
+    <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
+    <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
     <central-publishing-maven-plugin.version>0.11.0</central-publishing-maven-plugin.version>
 
     <netty.version>4.1.136.Final</netty.version>
