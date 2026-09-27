@@ -9,10 +9,10 @@ import io.qwenbridge.execution.provider.opensearch.dto.OpenSearchSearchRequest;
 import io.qwenbridge.execution.provider.opensearch.mapper.OpenSearchResponseMapper;
 import io.qwenbridge.execution.provider.opensearch.query.OpenSearchQueryFactory;
 import io.qwenbridge.execution.provider.support.AbstractSearchProvider;
+import jakarta.inject.Singleton;
 import java.util.Map;
-import org.springframework.stereotype.Component;
 
-@Component
+@Singleton
 public class OpenSearchProvider extends AbstractSearchProvider {
 
   private final OpenSearchProperties properties;

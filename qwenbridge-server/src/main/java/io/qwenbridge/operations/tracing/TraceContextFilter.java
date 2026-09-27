@@ -1,38 +1,45 @@
 package io.qwenbridge.operations.tracing;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import jakarta.annotation.Priority;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.ContainerResponseContext;
+import jakarta.ws.rs.container.ContainerResponseFilter;
+import jakarta.ws.rs.ext.Provider;
 import java.security.SecureRandom;
 import java.util.HexFormat;
 import org.slf4j.MDC;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 
-@Component
-public class TraceContextFilter extends OncePerRequestFilter {
+@Provider
+@Priority(3)
+public class TraceContextFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
   public static final String TRACE_ID_HEADER = "X-Trace-Id";
   public static final String TRACEPARENT_HEADER = "traceparent";
   public static final String MDC_TRACE_ID = "traceId";
 
+  private static final String TRACE_CONTEXT_PROPERTY = "qwenbridge.traceContext";
   private static final SecureRandom RANDOM = new SecureRandom();
 
   @Override
-  protected void doFilterInternal(
-      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-      throws ServletException, IOException {
-    TraceContext traceContext = resolve(request.getHeader(TRACEPARENT_HEADER));
+  public void filter(ContainerRequestContext requestContext) {
+    TraceContext traceContext = resolve(requestContext.getHeaderString(TRACEPARENT_HEADER));
+
     MDC.put(MDC_TRACE_ID, traceContext.traceId());
-    response.setHeader(TRACE_ID_HEADER, traceContext.traceId());
-    response.setHeader(TRACEPARENT_HEADER, traceContext.traceparent());
-    try {
-      filterChain.doFilter(request, response);
-    } finally {
-      MDC.remove(MDC_TRACE_ID);
+    requestContext.setProperty(TRACE_CONTEXT_PROPERTY, traceContext);
+  }
+
+  @Override
+  public void filter(
+      ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
+    Object stored = requestContext.getProperty(TRACE_CONTEXT_PROPERTY);
+
+    if (stored instanceof TraceContext traceContext) {
+      responseContext.getHeaders().putSingle(TRACE_ID_HEADER, traceContext.traceId());
+      responseContext.getHeaders().putSingle(TRACEPARENT_HEADER, traceContext.traceparent());
     }
+
+    MDC.remove(MDC_TRACE_ID);
   }
 
   private TraceContext resolve(String header) {

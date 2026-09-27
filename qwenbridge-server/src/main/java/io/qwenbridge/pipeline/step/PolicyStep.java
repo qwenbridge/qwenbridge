@@ -6,9 +6,9 @@ import io.qwenbridge.pipeline.result.PolicyResult;
 import io.qwenbridge.pipeline.result.RewriteResult;
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class PolicyStep implements PipelineStep<PolicyResult> {
 
   @Override

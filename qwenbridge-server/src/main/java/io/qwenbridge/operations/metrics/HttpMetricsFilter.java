@@ -1,16 +1,18 @@
 package io.qwenbridge.operations.metrics;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import jakarta.annotation.Priority;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.ContainerResponseContext;
+import jakarta.ws.rs.container.ContainerResponseFilter;
+import jakarta.ws.rs.ext.Provider;
 import java.time.Duration;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 
-@Component
-public class HttpMetricsFilter extends OncePerRequestFilter {
+@Provider
+@Priority(1)
+public class HttpMetricsFilter implements ContainerRequestFilter, ContainerResponseFilter {
+
+  private static final String START_TIME_PROPERTY = "qwenbridge.metrics.startNanos";
 
   private final OperationsMetrics metrics;
 
@@ -19,19 +21,23 @@ public class HttpMetricsFilter extends OncePerRequestFilter {
   }
 
   @Override
-  protected void doFilterInternal(
-      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-      throws ServletException, IOException {
-    long started = System.nanoTime();
-    try {
-      filterChain.doFilter(request, response);
-    } finally {
-      metrics.recordHttpRequest(
-          request.getMethod(),
-          pathTemplate(request.getRequestURI()),
-          response.getStatus(),
-          Duration.ofNanos(System.nanoTime() - started));
+  public void filter(ContainerRequestContext requestContext) {
+    requestContext.setProperty(START_TIME_PROPERTY, System.nanoTime());
+  }
+
+  @Override
+  public void filter(
+      ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
+    Object started = requestContext.getProperty(START_TIME_PROPERTY);
+    if (!(started instanceof Long startNanos)) {
+      return;
     }
+
+    metrics.recordHttpRequest(
+        requestContext.getMethod(),
+        pathTemplate("/" + requestContext.getUriInfo().getPath()),
+        responseContext.getStatus(),
+        Duration.ofNanos(System.nanoTime() - startNanos));
   }
 
   private String pathTemplate(String path) {

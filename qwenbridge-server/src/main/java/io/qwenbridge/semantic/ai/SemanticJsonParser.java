@@ -3,9 +3,9 @@ package io.qwenbridge.semantic.ai;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qwenbridge.semantic.SemanticAnalysis;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 @RequiredArgsConstructor
 public class SemanticJsonParser {
 

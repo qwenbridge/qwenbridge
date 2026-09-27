@@ -3,9 +3,9 @@ package io.qwenbridge.execution;
 import io.qwenbridge.decision.SearchDecision;
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class ExecutionPlanFactory {
 
   public ExecutionPlan from(SearchDecision decision) {

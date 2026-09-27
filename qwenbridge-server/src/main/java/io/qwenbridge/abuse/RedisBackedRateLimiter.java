@@ -1,32 +1,35 @@
 package io.qwenbridge.abuse;
 
+import io.quarkus.redis.datasource.RedisDataSource;
+import io.quarkus.redis.datasource.value.ValueCommands;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Component;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-@Component
-@Primary
-@ConditionalOnBean(StringRedisTemplate.class)
+@jakarta.enterprise.context.ApplicationScoped
 @Slf4j
 public class RedisBackedRateLimiter implements RateLimiter {
 
-  private final StringRedisTemplate redis;
+  private final RedisDataSource redis;
+  private final ValueCommands<String, String> values;
   private final InMemoryFixedWindowRateLimiter fallback;
   private final AbuseProtectionProperties properties;
+  private final boolean redisEnabled;
   private final Clock clock;
 
   public RedisBackedRateLimiter(
-      StringRedisTemplate redis,
+      RedisDataSource redis,
       InMemoryFixedWindowRateLimiter fallback,
-      AbuseProtectionProperties properties) {
+      AbuseProtectionProperties properties,
+      @ConfigProperty(name = "qwenbridge.abuse-protection.redis-enabled", defaultValue = "true")
+          boolean redisEnabled) {
     this.redis = redis;
+    this.values = redis.value(String.class);
     this.fallback = fallback;
     this.properties = properties;
+    this.redisEnabled = redisEnabled;
     this.clock = Clock.systemUTC();
   }
 
@@ -38,18 +41,22 @@ public class RedisBackedRateLimiter implements RateLimiter {
     long expiresAt = windowStart + windowMs;
     String key = "qwenbridge:rate-limit:" + policy + ':' + subject + ':' + windowStart;
 
+    if (!redisEnabled) {
+      return fallback.consume(policy, subject, limit, cost);
+    }
+
     try {
-      Long value = redis.opsForValue().increment(key, cost);
-      if (value != null && value == cost) {
-        redis.expire(key, windowMs, TimeUnit.MILLISECONDS);
+      long value = values.incrby(key, cost);
+      if (value == cost) {
+        redis.key().expire(key, Duration.ofMillis(windowMs));
       }
 
-      if (value != null && value > limit) {
+      if (value > limit) {
         return RateLimitDecision.rejected(policy, limit, Instant.ofEpochMilli(expiresAt));
       }
 
       return RateLimitDecision.allowed(
-          policy, limit, limit - (value == null ? cost : value), Instant.ofEpochMilli(expiresAt));
+          policy, limit, limit - value, Instant.ofEpochMilli(expiresAt));
     } catch (RuntimeException ex) {
       log.warn(
           "Redis rate limiter unavailable; using {} fallback",

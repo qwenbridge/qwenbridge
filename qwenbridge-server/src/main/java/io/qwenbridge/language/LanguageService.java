@@ -5,9 +5,9 @@ import com.github.pemistahl.lingua.api.LanguageDetector;
 import com.github.pemistahl.lingua.api.LanguageDetectorBuilder;
 import java.util.Locale;
 import java.util.regex.Pattern;
-import org.springframework.stereotype.Service;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Service
+@ApplicationScoped
 public class LanguageService {
 
   private static final String UNKNOWN = "unknown";

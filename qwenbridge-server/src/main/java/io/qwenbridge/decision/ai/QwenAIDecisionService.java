@@ -5,9 +5,9 @@ import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.decision.SearchDecision;
 import io.qwenbridge.pipeline.ExecutionContext;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Service
+@ApplicationScoped
 @RequiredArgsConstructor
 public class QwenAIDecisionService implements AIDecisionService {
 

@@ -1,8 +1,8 @@
 package io.qwenbridge.analysis.prompt;
 
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class SearchAnalysisPromptBuilder {
 
   public String build(String query) {

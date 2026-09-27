@@ -6,13 +6,16 @@ QwenBridge configuration is environment-aware and must be explicit for productio
 
 Configuration can be supplied through:
 
-- `application.yml`
+- `application.yaml`
+- Quarkus configuration profiles (`%local`, `%docker`, `%test`, `%prod`)
 - environment variables
 - container environment
 - deployment platform configuration
 - local uncommitted overrides during development
 
 Do not commit secrets or environment-specific private values.
+
+Any configuration key can be overridden at runtime through its environment variable form (for example, `quarkus.http.port` becomes `QUARKUS_HTTP_PORT`), and profile-specific values are selected through the active Quarkus profile.
 
 ## Core configuration areas
 

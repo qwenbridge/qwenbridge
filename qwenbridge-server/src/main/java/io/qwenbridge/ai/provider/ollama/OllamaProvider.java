@@ -14,11 +14,11 @@ import io.qwenbridge.ai.provider.ollama.dto.OllamaEmbeddingRequest;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaEmbeddingResponse;
 import io.qwenbridge.ai.provider.support.AbstractAIProvider;
 import io.qwenbridge.ai.value.ProviderId;
+import jakarta.inject.Singleton;
 import java.util.List;
-import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
-@Component
+@Singleton
 public class OllamaProvider extends AbstractAIProvider {
 
   private static final ProviderId PROVIDER_ID = new ProviderId("ollama");

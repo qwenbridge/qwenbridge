@@ -3,9 +3,9 @@ package io.qwenbridge.ranking.policy;
 import io.qwenbridge.execution.provider.model.SearchHit;
 import io.qwenbridge.ranking.model.RankingScore;
 import java.util.Map;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class DefaultRankingPolicy implements RankingPolicy {
 
   private static final double LEXICAL_WEIGHT = 0.45;

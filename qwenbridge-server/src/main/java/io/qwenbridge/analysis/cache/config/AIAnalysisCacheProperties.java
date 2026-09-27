@@ -1,9 +1,7 @@
 package io.qwenbridge.analysis.cache.config;
 
 import java.time.Duration;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "qwenbridge.analysis.cache")
 public class AIAnalysisCacheProperties {
 
   private boolean enabled = true;

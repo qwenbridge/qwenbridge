@@ -1,9 +1,10 @@
 package io.qwenbridge.api;
 
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.analysis.service.SearchAnalysisService;
@@ -12,31 +13,23 @@ import io.qwenbridge.operations.health.DependencyHealth;
 import io.qwenbridge.operations.health.OperationalHealthService;
 import io.qwenbridge.operations.health.OperationalStatus;
 import io.qwenbridge.operations.health.ReadinessHealthResponse;
-import io.qwenbridge.testsupport.TestMockConfiguration;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Import(TestMockConfiguration.class)
+@QuarkusTest
 class ApiHealthControllerTest {
 
-  @Autowired private MockMvc mockMvc;
+  @InjectMock AIService aiService;
 
-  @Autowired private AIService aiService;
+  @InjectMock OpenSearchClient openSearchClient;
 
-  @Autowired private OpenSearchClient openSearchClient;
+  @InjectMock SearchAnalysisService searchAnalysisService;
 
-  @Autowired private SearchAnalysisService searchAnalysisService;
-
-  @Autowired private OperationalHealthService operationalHealthService;
+  @InjectMock OperationalHealthService operationalHealthService;
 
   @BeforeEach
   void resetMocks() {
@@ -44,27 +37,26 @@ class ApiHealthControllerTest {
   }
 
   @Test
-  void shouldReturnPublicHealthStatus() throws Exception {
-    mockMvc
-        .perform(get("/api/v1/health"))
-        .andExpect(status().isOk())
-        .andExpect(header().exists("X-Request-ID"))
-        .andExpect(header().string("X-QwenBridge-Version", "0.1.0-SNAPSHOT"))
-        .andExpect(jsonPath("$.status").value("UP"))
-        .andExpect(jsonPath("$.service").value("qwenbridge"))
-        .andExpect(jsonPath("$.apiVersion").value("v1"));
+  void shouldReturnPublicHealthStatus() {
+    given()
+        .when()
+        .get("/api/v1/health")
+        .then()
+        .statusCode(200)
+        .header("X-Request-ID", notNullValue())
+        .header("X-QwenBridge-Version", "0.1.0-SNAPSHOT")
+        .body("status", equalTo("UP"))
+        .body("service", equalTo("qwenbridge"))
+        .body("apiVersion", equalTo("v1"));
   }
 
   @Test
-  void shouldReturnLivenessStatus() throws Exception {
-    mockMvc
-        .perform(get("/api/v1/health/live"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.status").value("UP"));
+  void shouldReturnLivenessStatus() {
+    given().when().get("/api/v1/health/live").then().statusCode(200).body("status", equalTo("UP"));
   }
 
   @Test
-  void shouldReturnReadinessStatusWhenDependenciesAreDegraded() throws Exception {
+  void shouldReturnReadinessStatusWhenDependenciesAreDegraded() {
     when(operationalHealthService.readiness())
         .thenReturn(
             ReadinessHealthResponse.builder()
@@ -75,16 +67,18 @@ class ApiHealthControllerTest {
                 .dependencies(List.of(DependencyHealth.degraded("ollama", "unavailable", 4)))
                 .build());
 
-    mockMvc
-        .perform(get("/api/v1/health/ready"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.status").value("DEGRADED"))
-        .andExpect(jsonPath("$.dependencies[0].name").value("ollama"))
-        .andExpect(jsonPath("$.dependencies[0].reason").value("unavailable"));
+    given()
+        .when()
+        .get("/api/v1/health/ready")
+        .then()
+        .statusCode(200)
+        .body("status", equalTo("DEGRADED"))
+        .body("dependencies[0].name", equalTo("ollama"))
+        .body("dependencies[0].reason", equalTo("unavailable"));
   }
 
   @Test
-  void shouldReturnServiceUnavailableWhenReadinessIsDown() throws Exception {
+  void shouldReturnServiceUnavailableWhenReadinessIsDown() {
     when(operationalHealthService.readiness())
         .thenReturn(
             ReadinessHealthResponse.builder()
@@ -95,10 +89,12 @@ class ApiHealthControllerTest {
                 .dependencies(List.of(DependencyHealth.down("redis", "unavailable", 2)))
                 .build());
 
-    mockMvc
-        .perform(get("/api/v1/health/ready"))
-        .andExpect(status().isServiceUnavailable())
-        .andExpect(jsonPath("$.status").value("DOWN"))
-        .andExpect(jsonPath("$.dependencies[0].name").value("redis"));
+    given()
+        .when()
+        .get("/api/v1/health/ready")
+        .then()
+        .statusCode(503)
+        .body("status", equalTo("DOWN"))
+        .body("dependencies[0].name", equalTo("redis"));
   }
 }

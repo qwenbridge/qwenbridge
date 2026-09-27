@@ -11,16 +11,21 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 
-@RestController
-@RequiredArgsConstructor
-@RequestMapping("/api/v1/ai")
+@Path("/api/v1/ai")
 @Tag(name = "AI", description = "AI provider bridge APIs")
 public class AIChatController {
 
   private final AIService aiService;
+
+  public AIChatController(AIService aiService) {
+    this.aiService = aiService;
+  }
 
   @Operation(
       summary = "Chat with the configured AI provider",
@@ -76,8 +81,11 @@ public class AIChatController {
           @Content(
               mediaType = "application/json",
               schema = @Schema(implementation = ApiError.class)))
-  @PostMapping("/chat")
-  public AIChatResponse chat(@Valid @RequestBody AIChatRequest request) {
+  @POST
+  @Path("/chat")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public AIChatResponse chat(@Valid AIChatRequest request) {
     ChatResponse response = aiService.chat(new ChatRequest(request.prompt()));
     return new AIChatResponse(response.content());
   }

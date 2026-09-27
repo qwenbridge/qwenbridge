@@ -8,10 +8,10 @@ import io.qwenbridge.ai.contract.StreamingChatChunk;
 import io.qwenbridge.ai.contract.StreamingChatRequest;
 import io.qwenbridge.ai.provider.spi.AIProviderResolver;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import jakarta.enterprise.context.ApplicationScoped;
 import reactor.core.publisher.Flux;
 
-@Service
+@ApplicationScoped
 @RequiredArgsConstructor
 public class AIService {
 

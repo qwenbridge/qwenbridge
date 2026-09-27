@@ -8,9 +8,9 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Service
+@ApplicationScoped
 @RequiredArgsConstructor
 public class SearchResultRanker {
 

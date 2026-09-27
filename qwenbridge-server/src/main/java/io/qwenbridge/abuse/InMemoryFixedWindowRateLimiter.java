@@ -5,17 +5,19 @@ import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import io.quarkus.arc.DefaultBean;
+import jakarta.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
+@DefaultBean
 public class InMemoryFixedWindowRateLimiter implements RateLimiter {
 
   private final AbuseProtectionProperties properties;
   private final Clock clock;
   private final ConcurrentMap<String, WindowCounter> counters = new ConcurrentHashMap<>();
 
-  @Autowired
+  @Inject
   public InMemoryFixedWindowRateLimiter(AbuseProtectionProperties properties) {
     this(properties, Clock.systemUTC());
   }

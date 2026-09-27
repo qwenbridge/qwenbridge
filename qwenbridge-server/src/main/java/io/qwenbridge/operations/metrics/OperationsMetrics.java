@@ -5,9 +5,9 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class OperationsMetrics {
 
   public static final String PREFIX = "qwenbridge";

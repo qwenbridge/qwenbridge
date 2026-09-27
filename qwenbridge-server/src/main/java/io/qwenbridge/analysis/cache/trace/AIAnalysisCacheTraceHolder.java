@@ -1,8 +1,8 @@
 package io.qwenbridge.analysis.cache.trace;
 
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class AIAnalysisCacheTraceHolder {
 
   private static final ThreadLocal<AIAnalysisCacheTrace> CURRENT = new ThreadLocal<>();

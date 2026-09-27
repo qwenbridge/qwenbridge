@@ -2,53 +2,38 @@ package io.qwenbridge.ai.provider.ollama.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import io.qwenbridge.ai.exception.AIException;
 import io.qwenbridge.ai.provider.ollama.config.OllamaProperties;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaChatRequest;
+import io.qwenbridge.ai.provider.ollama.dto.OllamaChatResponse;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaStreamingChatResponse;
 import io.qwenbridge.operations.metrics.OperationsMetrics;
+import io.smallrye.mutiny.Multi;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
-import org.springframework.core.io.buffer.DefaultDataBufferFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.ExchangeFunction;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
 
 class OllamaClientStreamingTest {
 
+  private final OllamaApiClient api = mock(OllamaApiClient.class);
+
   @Test
   void shouldReadStreamingChatChunksInOrder() {
-    OllamaClient client =
-        client(
-            webClient(
-                request ->
-                    reactor.core.publisher.Mono.just(
-                        ClientResponse.create(HttpStatus.OK)
-                            .header("Content-Type", "application/x-ndjson")
-                            .body(
-                                Flux.concat(
-                                    json(
-                                        """
-{"model":"qwen2.5","message":{"role":"assistant","content":"hel"},"done":false}
-"""),
-                                    json(
-                                        """
-{"model":"qwen2.5","message":{"role":"assistant","content":"lo"},"done":false}
-"""),
-                                    json(
-                                        """
-{"model":"qwen2.5","message":{"role":"assistant","content":""},"done":true}
-""")))
-                            .build())),
-            properties(0, Duration.ofSeconds(2)));
+    when(api.streamChat(any()))
+        .thenReturn(
+            Multi.createFrom()
+                .items(chunk("hel", false), chunk("lo", false), chunk("", true)));
+
+    OllamaClient client = client(properties(0));
 
     List<OllamaStreamingChatResponse> responses =
         client.streamChat(streamingChatRequest()).collectList().block();
@@ -61,10 +46,10 @@ class OllamaClientStreamingTest {
 
   @Test
   void shouldFailStreamingChatWhenProviderReturnsError() {
-    OllamaClient client =
-        client(
-            webClient(request -> MonoResponse.error(HttpStatus.BAD_GATEWAY, "provider failed")),
-            properties(0, Duration.ofSeconds(2)));
+    WebApplicationException error = httpError(502, "provider failed");
+    when(api.streamChat(any())).thenReturn(Multi.createFrom().failure(error));
+
+    OllamaClient client = client(properties(0));
 
     assertThatThrownBy(() -> client.streamChat(streamingChatRequest()).collectList().block())
         .isInstanceOf(AIException.class)
@@ -73,44 +58,39 @@ class OllamaClientStreamingTest {
 
   @Test
   void shouldNotRetryStreamingChatAfterFailure() {
-    AtomicInteger attempts = new AtomicInteger();
+    WebApplicationException error = httpError(503, "temporary failure");
+    when(api.streamChat(any())).thenReturn(Multi.createFrom().failure(error));
 
-    OllamaClient client =
-        client(
-            webClient(
-                request -> {
-                  attempts.incrementAndGet();
-                  return MonoResponse.error(HttpStatus.SERVICE_UNAVAILABLE, "temporary failure");
-                }),
-            properties(3, Duration.ofSeconds(2)));
+    OllamaClient client = client(properties(3));
 
     assertThatThrownBy(() -> client.streamChat(streamingChatRequest()).collectList().block())
         .isInstanceOf(AIException.class);
 
-    assertThat(attempts).hasValue(1);
+    verify(api, times(1)).streamChat(any());
   }
 
-  private WebClient webClient(ExchangeFunction exchangeFunction) {
-    return WebClient.builder()
-        .baseUrl("http://localhost:11434")
-        .exchangeFunction(exchangeFunction)
-        .build();
+  private OllamaStreamingChatResponse chunk(String content, boolean done) {
+    return new OllamaStreamingChatResponse(
+        "qwen2.5", new OllamaChatResponse.Message("assistant", content), done);
   }
 
-  private Flux<org.springframework.core.io.buffer.DataBuffer> json(String value) {
-    return Flux.just(
-        DefaultDataBufferFactory.sharedInstance.wrap(value.getBytes(StandardCharsets.UTF_8)));
+  private WebApplicationException httpError(int status, String body) {
+    Response response = mock(Response.class);
+    when(response.getStatus()).thenReturn(status);
+    when(response.hasEntity()).thenReturn(true);
+    when(response.readEntity(String.class)).thenReturn(body);
+    return new WebApplicationException("http " + status, response);
   }
 
-  private OllamaProperties properties(int retryCount, Duration readTimeout) {
+  private OllamaProperties properties(int retryCount) {
     return new OllamaProperties(
-        URI.create("http://localhost:11434"),
+        URI.create("http://localhost:0"),
         "qwen2.5",
         "bge-m3",
         Duration.ofSeconds(1),
-        readTimeout,
+        Duration.ofSeconds(2),
         retryCount,
-        false);
+        true);
   }
 
   private OllamaChatRequest streamingChatRequest() {
@@ -118,13 +98,7 @@ class OllamaClientStreamingTest {
         "qwen2.5", List.of(new OllamaChatRequest.Message("user", "hello")), true);
   }
 
-  private static final class MonoResponse {
-    static reactor.core.publisher.Mono<ClientResponse> error(HttpStatus status, String body) {
-      return reactor.core.publisher.Mono.just(ClientResponse.create(status).body(body).build());
-    }
-  }
-
-  private OllamaClient client(WebClient webClient, OllamaProperties properties) {
-    return new OllamaClient(webClient, properties, mock(OperationsMetrics.class));
+  private OllamaClient client(OllamaProperties properties) {
+    return new OllamaClient(api, properties, mock(OperationsMetrics.class));
   }
 }

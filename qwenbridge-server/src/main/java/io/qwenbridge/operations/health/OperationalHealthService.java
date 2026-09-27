@@ -1,20 +1,24 @@
 package io.qwenbridge.operations.health;
 
+import io.quarkus.arc.All;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-@Service
+@ApplicationScoped
 public class OperationalHealthService {
 
   private final List<DependencyHealthChecker> checkers;
   private final String applicationName;
 
+  @Inject
   public OperationalHealthService(
-      List<DependencyHealthChecker> checkers,
-      @Value("${spring.application.name:qwenbridge}") String applicationName) {
+      @All List<DependencyHealthChecker> checkers,
+      @ConfigProperty(name = "quarkus.application.name", defaultValue = "qwenbridge")
+          String applicationName) {
     this.checkers = checkers;
     this.applicationName = applicationName;
   }

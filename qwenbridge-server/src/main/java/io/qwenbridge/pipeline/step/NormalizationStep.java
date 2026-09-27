@@ -5,9 +5,9 @@ import io.qwenbridge.normalization.model.NormalizedInput;
 import io.qwenbridge.normalization.service.InputNormalizer;
 import io.qwenbridge.pipeline.ExecutionContext;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 @RequiredArgsConstructor
 public class NormalizationStep implements PipelineStep<NormalizedInput> {
 

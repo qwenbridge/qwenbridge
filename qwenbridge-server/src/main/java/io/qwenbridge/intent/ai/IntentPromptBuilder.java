@@ -1,8 +1,8 @@
 package io.qwenbridge.intent.ai;
 
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class IntentPromptBuilder {
 
   public String build(String query) {

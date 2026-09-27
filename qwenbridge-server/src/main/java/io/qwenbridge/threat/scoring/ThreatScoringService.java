@@ -3,9 +3,9 @@ package io.qwenbridge.threat.scoring;
 import io.qwenbridge.threat.model.ThreatFinding;
 import java.util.Comparator;
 import java.util.List;
-import org.springframework.stereotype.Service;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Service
+@ApplicationScoped
 public class ThreatScoringService {
 
   public double score(List<ThreatFinding> findings) {

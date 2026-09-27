@@ -8,134 +8,130 @@ import io.qwenbridge.ai.provider.ollama.dto.OllamaEmbeddingRequest;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaEmbeddingResponse;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaStreamingChatResponse;
 import io.qwenbridge.operations.metrics.OperationsMetrics;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import java.time.Duration;
+import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
+import reactor.adapter.JdkFlowAdapter;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
 
-@Component
+@ApplicationScoped
 @Slf4j
 public class OllamaClient {
 
-  private final WebClient webClient;
+  private final OllamaApiClient api;
   private final OllamaProperties properties;
   private final OperationsMetrics metrics;
 
+  @Inject
   public OllamaClient(
-      @Qualifier("ollamaWebClient") WebClient webClient,
-      OllamaProperties properties,
-      OperationsMetrics metrics) {
-    this.webClient = webClient;
+      @RestClient OllamaApiClient api, OllamaProperties properties, OperationsMetrics metrics) {
+    this.api = api;
     this.properties = properties;
     this.metrics = metrics;
   }
 
   public OllamaChatResponse chat(OllamaChatRequest request) {
     log.debug("Sending Ollama chat request. model={}", request.model());
-
     return execute(
-        "chat",
-        webClient
-            .post()
-            .uri("/api/chat")
-            .bodyValue(request)
-            .retrieve()
-            .onStatus(
-                status -> status.is4xxClientError() || status.is5xxServerError(),
-                OllamaExceptionHandler::mapError)
-            .bodyToMono(OllamaChatResponse.class),
-        "Ollama chat response was empty");
+        "chat", () -> invoke(() -> api.chat(request)), "Ollama chat response was empty");
   }
 
   public Flux<OllamaStreamingChatResponse> streamChat(OllamaChatRequest request) {
     log.debug("Sending Ollama streaming chat request. model={}", request.model());
-
     long started = System.nanoTime();
 
-    Flux<OllamaStreamingChatResponse> pipeline =
-        webClient
-            .post()
-            .uri("/api/chat")
-            .bodyValue(request)
-            .retrieve()
-            .onStatus(
-                status -> status.is4xxClientError() || status.is5xxServerError(),
-                OllamaExceptionHandler::mapError)
-            .bodyToFlux(OllamaStreamingChatResponse.class)
-            .timeout(properties.readTimeout())
-            .doOnComplete(() -> recordProvider("stream", "success", started))
-            .doOnError(throwable -> recordProvider("stream", "failure", started))
-            .onErrorMap(
-                throwable ->
-                    throwable instanceof AIException
-                        ? throwable
-                        : new AIException("Ollama streaming chat request failed", throwable));
-
-    return pipeline;
+    return Flux.defer(() -> JdkFlowAdapter.flowPublisherToFlux(api.streamChat(request)))
+        .timeout(properties.readTimeout())
+        .doOnComplete(() -> recordProvider("stream", "success", started))
+        .doOnError(throwable -> recordProvider("stream", "failure", started))
+        .onErrorMap(this::mapStreamingError);
   }
 
   public OllamaEmbeddingResponse embed(OllamaEmbeddingRequest request) {
     log.debug("Sending Ollama embedding request. model={}", request.model());
-
     return execute(
         "embedding",
-        webClient
-            .post()
-            .uri("/api/embed")
-            .bodyValue(request)
-            .retrieve()
-            .onStatus(
-                status -> status.is4xxClientError() || status.is5xxServerError(),
-                OllamaExceptionHandler::mapError)
-            .bodyToMono(OllamaEmbeddingResponse.class),
+        () -> invoke(() -> api.embed(request)),
         "Ollama embedding response was empty");
   }
 
-  private <T> T execute(String operation, Mono<T> response, String emptyResponseMessage) {
-    try {
-      Mono<T> pipeline = response;
+  private <T> T execute(String operation, Supplier<T> call, String emptyResponseMessage) {
+    int maxRetries = Math.max(0, properties.retryCount());
+    long started = System.nanoTime();
+    RuntimeException last = null;
 
-      if (properties.retryCount() > 0) {
-        pipeline = pipeline.retryWhen(retrySpec(operation));
+    for (int attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        T result = call.get();
+        if (result == null) {
+          throw new AIException(emptyResponseMessage);
+        }
+        recordProvider(operation, "success", started);
+        return result;
+      } catch (RuntimeException exception) {
+        last = exception;
+        if (attempt >= maxRetries || !isRetryable(exception)) {
+          recordProvider(operation, "failure", started);
+          throw normalize(operation, exception);
+        }
+        log.warn(
+            "Retrying Ollama {} request. attempt={} maxAttempts={} reason={}",
+            operation,
+            attempt + 1,
+            maxRetries,
+            exception.getMessage());
       }
+    }
 
-      long started = System.nanoTime();
-      T result =
-          pipeline
-              .blockOptional(properties.readTimeout())
-              .orElseThrow(() -> new AIException(emptyResponseMessage));
-      recordProvider(operation, "success", started);
-      return result;
-    } catch (AIException exception) {
-      recordProvider(operation, "failure", System.nanoTime());
-      throw exception;
-    } catch (RuntimeException exception) {
-      recordProvider(operation, "failure", System.nanoTime());
-      throw new AIException("Ollama %s request failed".formatted(operation), exception);
+    recordProvider(operation, "failure", started);
+    throw new AIException(
+        "Ollama %s request failed after %d retry attempt(s)".formatted(operation, maxRetries), last);
+  }
+
+  private AIException normalize(String operation, RuntimeException exception) {
+    if (exception instanceof AIException aiException) {
+      return aiException;
+    }
+    return new AIException("Ollama %s request failed".formatted(operation), exception);
+  }
+
+  /**
+   * Invokes a REST Client call and translates transport failures into {@link AIException}, keeping
+   * the historical {@code "Ollama request failed"} error contract.
+   */
+  private <T> T invoke(Supplier<T> call) {
+    try {
+      return call.get();
+    } catch (WebApplicationException exception) {
+      throw new AIException(describeHttpFailure(exception));
+    } catch (ProcessingException exception) {
+      throw new AIException("Ollama request failed", exception);
     }
   }
 
-  private Retry retrySpec(String operation) {
-    return Retry.max(properties.retryCount())
-        .filter(this::isRetryable)
-        .doBeforeRetry(
-            signal ->
-                log.warn(
-                    "Retrying Ollama {} request. attempt={} maxAttempts={} reason={}",
-                    operation,
-                    signal.totalRetries() + 1,
-                    properties.retryCount(),
-                    signal.failure().getMessage()))
-        .onRetryExhaustedThrow(
-            (spec, signal) ->
-                new AIException(
-                    "Ollama %s request failed after %d retry attempt(s)"
-                        .formatted(operation, properties.retryCount()),
-                    signal.failure()));
+  private Throwable mapStreamingError(Throwable throwable) {
+    if (throwable instanceof AIException aiException) {
+      return aiException;
+    }
+    if (throwable instanceof WebApplicationException webApplicationException) {
+      return new AIException(describeHttpFailure(webApplicationException));
+    }
+    return new AIException("Ollama streaming chat request failed", throwable);
+  }
+
+  private String describeHttpFailure(WebApplicationException exception) {
+    try (Response response = exception.getResponse()) {
+      String body =
+          response != null && response.hasEntity() ? response.readEntity(String.class) : "";
+      int status = response != null ? response.getStatus() : -1;
+      return "Ollama request failed. status=%s body=%s".formatted(status, body);
+    }
   }
 
   private boolean isRetryable(Throwable throwable) {

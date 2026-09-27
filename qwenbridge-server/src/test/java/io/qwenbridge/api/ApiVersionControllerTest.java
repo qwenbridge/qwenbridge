@@ -1,37 +1,26 @@
 package io.qwenbridge.api;
 
-import static org.mockito.ArgumentMatchers.any;
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import io.qwenbridge.ai.contract.ChatRequest;
-import io.qwenbridge.ai.contract.ChatResponse;
 import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.analysis.service.SearchAnalysisService;
 import io.qwenbridge.execution.provider.opensearch.client.OpenSearchClient;
-import io.qwenbridge.testsupport.TestMockConfiguration;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Import(TestMockConfiguration.class)
+@QuarkusTest
 class ApiVersionControllerTest {
 
-  @Autowired private MockMvc mockMvc;
+  @InjectMock AIService aiService;
 
-  @Autowired private AIService aiService;
+  @InjectMock OpenSearchClient openSearchClient;
 
-  @Autowired private OpenSearchClient openSearchClient;
-
-  @Autowired private SearchAnalysisService searchAnalysisService;
+  @InjectMock SearchAnalysisService searchAnalysisService;
 
   @BeforeEach
   void resetMocks() {
@@ -39,17 +28,17 @@ class ApiVersionControllerTest {
   }
 
   @Test
-  void shouldReturnVersionInformation() throws Exception {
-    when(aiService.chat(any(ChatRequest.class))).thenReturn(new ChatResponse("ok"));
-
-    mockMvc
-        .perform(get("/api/v1/version"))
-        .andExpect(status().isOk())
-        .andExpect(header().exists("X-Request-ID"))
-        .andExpect(header().string("X-QwenBridge-Version", "0.1.0-SNAPSHOT"))
-        .andExpect(jsonPath("$.name").value("qwenbridge"))
-        .andExpect(jsonPath("$.version").value("0.1.0-SNAPSHOT"))
-        .andExpect(jsonPath("$.apiVersion").value("v1"))
-        .andExpect(jsonPath("$.javaVersion").exists());
+  void shouldReturnVersionInformation() {
+    given()
+        .when()
+        .get("/api/v1/version")
+        .then()
+        .statusCode(200)
+        .header("X-Request-ID", notNullValue())
+        .header("X-QwenBridge-Version", "0.1.0-SNAPSHOT")
+        .body("name", equalTo("qwenbridge"))
+        .body("version", equalTo("0.1.0-SNAPSHOT"))
+        .body("apiVersion", equalTo("v1"))
+        .body("javaVersion", notNullValue());
   }
 }

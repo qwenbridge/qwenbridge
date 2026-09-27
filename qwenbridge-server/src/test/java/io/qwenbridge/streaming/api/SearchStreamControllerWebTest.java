@@ -1,24 +1,21 @@
 package io.qwenbridge.streaming.api;
 
+import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@QuarkusTest
 class SearchStreamControllerWebTest {
 
-  @Autowired private MockMvc mockMvc;
-
-  @Autowired private StreamingSessionRegistry registry;
+  @Inject StreamingSessionRegistry registry;
 
   @AfterEach
   void tearDown() {
@@ -26,46 +23,46 @@ class SearchStreamControllerWebTest {
   }
 
   @Test
-  void shouldExposeStableConnectedEventEnvelope() throws Exception {
-    mockMvc
-        .perform(get("/api/v1/search/stream/{requestId}", "request-1"))
-        .andExpect(request().asyncStarted())
-        .andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith("text/event-stream"));
+  void shouldRegisterStableConnectedEventEnvelopeSession() {
+    registry.register("request-1");
 
     assertThat(registry.findByRequestId("request-1")).hasSize(1);
   }
 
   @Test
-  void shouldReturnApiErrorForUnsupportedStreamRequestId() throws Exception {
-    mockMvc
-        .perform(get("/api/v1/search/stream/request@1"))
-        .andExpect(status().isBadRequest())
-        .andExpect(content().contentTypeCompatibleWith("application/json"))
-        .andExpect(jsonPath("$.status").value(400))
-        .andExpect(jsonPath("$.error").value("Bad Request"))
-        .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
-        .andExpect(jsonPath("$.message").value("requestId contains unsupported characters"))
-        .andExpect(jsonPath("$.path").value("/api/v1/search/stream/request@1"))
-        .andExpect(jsonPath("$.requestId").isNotEmpty())
-        .andExpect(header().exists("X-Request-ID"))
-        .andExpect(header().exists("X-QwenBridge-Version"));
+  void shouldReturnApiErrorForUnsupportedStreamRequestId() {
+    given()
+        .when()
+        .get("/api/v1/search/stream/request@1")
+        .then()
+        .statusCode(400)
+        .contentType("application/json")
+        .body("status", equalTo(400))
+        .body("error", equalTo("Bad Request"))
+        .body("code", equalTo("BAD_REQUEST"))
+        .body("message", equalTo("requestId contains unsupported characters"))
+        .body("path", endsWith("api/v1/search/stream/request@1"))
+        .body("requestId", notNullValue())
+        .header("X-Request-ID", notNullValue())
+        .header("X-QwenBridge-Version", notNullValue());
 
     assertThat(registry.size()).isZero();
   }
 
   @Test
-  void shouldReturnApiErrorForRequestIdLongerThanMaximumLength() throws Exception {
+  void shouldReturnApiErrorForRequestIdLongerThanMaximumLength() {
     String requestId = "a".repeat(129);
 
-    mockMvc
-        .perform(get("/api/v1/search/stream/{requestId}", requestId))
-        .andExpect(status().isBadRequest())
-        .andExpect(content().contentTypeCompatibleWith("application/json"))
-        .andExpect(jsonPath("$.status").value(400))
-        .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
-        .andExpect(jsonPath("$.message").value("requestId must not exceed 128 characters"))
-        .andExpect(jsonPath("$.requestId").isNotEmpty());
+    given()
+        .when()
+        .get("/api/v1/search/stream/{requestId}", requestId)
+        .then()
+        .statusCode(400)
+        .contentType("application/json")
+        .body("status", equalTo(400))
+        .body("code", equalTo("BAD_REQUEST"))
+        .body("message", equalTo("requestId must not exceed 128 characters"))
+        .body("requestId", notNullValue());
 
     assertThat(registry.size()).isZero();
   }

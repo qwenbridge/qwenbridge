@@ -6,9 +6,9 @@ import io.qwenbridge.streaming.event.AITokenStreamingPayload;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 @RequiredArgsConstructor
 public class AIStreamingEventPublisher {
 

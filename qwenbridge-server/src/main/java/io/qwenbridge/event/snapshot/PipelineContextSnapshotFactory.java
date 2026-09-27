@@ -5,9 +5,9 @@ import io.qwenbridge.pipeline.result.DecisionResult;
 import io.qwenbridge.pipeline.result.IntentResult;
 import io.qwenbridge.pipeline.result.LanguageResult;
 import io.qwenbridge.threat.ThreatResult;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class PipelineContextSnapshotFactory {
 
   public PipelineContextSnapshot create(ExecutionContext context) {

@@ -2,9 +2,7 @@ package io.qwenbridge.ai.provider.ollama.config;
 
 import java.net.URI;
 import java.time.Duration;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "qwenbridge.ai.ollama")
 public record OllamaProperties(
     URI baseUrl,
     String chatModel,

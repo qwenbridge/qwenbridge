@@ -4,9 +4,9 @@ import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.event.model.PipelineStage;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.result.IntentResult;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class IntentStep implements PipelineStep<IntentResult> {
 
   @Override

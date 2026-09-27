@@ -1,15 +1,12 @@
 package io.qwenbridge.streaming.integration;
 
+import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.qwenbridge.ai.contract.ChatRequest;
 import io.qwenbridge.ai.contract.ChatResponse;
@@ -21,37 +18,31 @@ import io.qwenbridge.decision.SearchMode;
 import io.qwenbridge.execution.provider.opensearch.client.OpenSearchClient;
 import io.qwenbridge.intent.IntentType;
 import io.qwenbridge.streaming.ai.AIStreamingEventPublisher;
+import io.qwenbridge.streaming.session.SessionSink;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
-import io.qwenbridge.testsupport.TestMockConfiguration;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.http.ContentType;
+import jakarta.inject.Inject;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Import(TestMockConfiguration.class)
+@QuarkusTest
 class SearchStreamingPipelineIntegrationTest {
 
-  @Autowired private MockMvc mockMvc;
+  @Inject StreamingSessionRegistry registry;
 
-  @Autowired private StreamingSessionRegistry registry;
+  @Inject AIStreamingEventPublisher aiStreamingEventPublisher;
 
-  @Autowired private AIStreamingEventPublisher aiStreamingEventPublisher;
+  @InjectMock AIService aiService;
 
-  @Autowired private AIService aiService;
+  @InjectMock OpenSearchClient openSearchClient;
 
-  @Autowired private OpenSearchClient openSearchClient;
-
-  @Autowired private SearchAnalysisService searchAnalysisService;
+  @InjectMock SearchAnalysisService searchAnalysisService;
 
   @BeforeEach
   void resetMocks() {
@@ -64,42 +55,38 @@ class SearchStreamingPipelineIntegrationTest {
   }
 
   @Test
-  void shouldCompleteOnlyStreamSessionsForMatchingPipelineRequest() throws Exception {
+  void shouldCompleteOnlyStreamSessionsForMatchingPipelineRequest() {
     String requestId = "stream-request-1";
     String unrelatedRequestId = "stream-request-2";
 
-    openStream(requestId);
-    openStream(unrelatedRequestId);
+    registry.register(requestId);
+    registry.register(unrelatedRequestId);
 
     assertThat(registry.findByRequestId(requestId)).hasSize(1);
     assertThat(registry.findByRequestId(unrelatedRequestId)).hasSize(1);
 
     stubSuccessfulPipeline();
 
-    mockMvc
-        .perform(
-            post("/api/v1/search/analyze")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "requestId": "%s",
-                      "query": "table"
-                    }
-                    """
-                        .formatted(requestId)))
-        .andExpect(status().isOk());
+    postAnalyze(
+            """
+            {
+              "requestId": "%s",
+              "query": "table"
+            }
+            """
+                .formatted(requestId))
+        .statusCode(200);
 
     assertThat(registry.findByRequestId(requestId)).isEmpty();
-
     assertThat(registry.findByRequestId(unrelatedRequestId)).hasSize(1);
   }
 
   @Test
-  void shouldPublishAiEventsBeforeTerminalPipelineCompletedEvent() throws Exception {
+  void shouldPublishAiEventsBeforeTerminalPipelineCompletedEvent() {
     String requestId = "stream-order-1";
-
-    MvcResult stream = openStreamResult(requestId);
+    RecordingSink sink = new RecordingSink();
+    registry.register(requestId, sink);
+    sink.send(null, "stream.connected", null);
 
     when(searchAnalysisService.analyze("table", requestId))
         .thenAnswer(
@@ -112,57 +99,45 @@ class SearchStreamingPipelineIntegrationTest {
 
     when(openSearchClient.search(anyString(), anyMap())).thenReturn(emptyOpenSearchResponse());
 
-    mockMvc
-        .perform(
-            post("/api/v1/search/analyze")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "requestId": "%s",
-                      "query": "table"
-                    }
-                    """
-                        .formatted(requestId)))
-        .andExpect(status().isOk());
+    postAnalyze(
+            """
+            {
+              "requestId": "%s",
+              "query": "table"
+            }
+            """
+                .formatted(requestId))
+        .statusCode(200);
 
-    String streamBody = stream.getResponse().getContentAsString();
+    assertThat(sink.events())
+        .contains(
+            "stream.connected",
+            "pipeline.started",
+            "ai.token",
+            "ai.completed",
+            "pipeline.completed");
 
-    assertThat(streamBody).contains("event:stream.connected");
-    assertThat(streamBody).contains("event:pipeline.started");
-    assertThat(streamBody).contains("event:ai.token");
-    assertThat(streamBody).contains("event:ai.completed");
-    assertThat(streamBody).contains("event:pipeline.completed");
-
-    assertThat(streamBody.indexOf("event:pipeline.started"))
-        .isLessThan(streamBody.indexOf("event:ai.token"));
-
-    assertThat(streamBody.indexOf("event:ai.token"))
-        .isLessThan(streamBody.indexOf("event:ai.completed"));
-
-    assertThat(streamBody.indexOf("event:ai.completed"))
-        .isLessThan(streamBody.indexOf("event:pipeline.completed"));
+    assertThat(sink.events().indexOf("pipeline.started")).isLessThan(sink.events().indexOf("ai.token"));
+    assertThat(sink.events().indexOf("ai.token")).isLessThan(sink.events().indexOf("ai.completed"));
+    assertThat(sink.events().indexOf("ai.completed"))
+        .isLessThan(sink.events().indexOf("pipeline.completed"));
 
     assertThat(registry.findByRequestId(requestId)).isEmpty();
   }
 
-  private void openStream(String requestId) throws Exception {
-    openStreamResult(requestId);
-  }
-
-  private MvcResult openStreamResult(String requestId) throws Exception {
-    return mockMvc
-        .perform(get("/api/v1/search/stream/{requestId}", requestId))
-        .andExpect(request().asyncStarted())
-        .andExpect(status().isOk())
-        .andReturn();
+  private io.restassured.response.ValidatableResponse postAnalyze(String body) {
+    return given()
+        .contentType(ContentType.JSON)
+        .body(body)
+        .when()
+        .post("/api/v1/search/analyze")
+        .then();
   }
 
   private void stubSuccessfulPipeline() {
     when(aiService.chat(any(ChatRequest.class))).thenReturn(new ChatResponse(analysisJson()));
-
     when(searchAnalysisService.analyze("table")).thenReturn(searchAnalysis());
-
+    when(searchAnalysisService.analyze(anyString(), anyString())).thenReturn(searchAnalysis());
     when(openSearchClient.search(anyString(), anyMap())).thenReturn(emptyOpenSearchResponse());
   }
 
@@ -226,5 +201,29 @@ class SearchStreamingPipelineIntegrationTest {
         Map.of(
             "total", Map.of("value", 0),
             "hits", List.of()));
+  }
+
+  private static final class RecordingSink implements SessionSink {
+    private final List<String> events = new ArrayList<>();
+    private boolean closed;
+
+    @Override
+    public void send(String eventId, String eventName, Object payload) {
+      events.add(eventName);
+    }
+
+    @Override
+    public void close() {
+      closed = true;
+    }
+
+    @Override
+    public boolean isClosed() {
+      return closed;
+    }
+
+    List<String> events() {
+      return events;
+    }
   }
 }

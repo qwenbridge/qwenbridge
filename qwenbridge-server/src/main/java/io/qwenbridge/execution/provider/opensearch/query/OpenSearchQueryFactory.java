@@ -6,9 +6,9 @@ import io.qwenbridge.execution.provider.opensearch.dto.OpenSearchSearchRequest;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 @RequiredArgsConstructor
 public class OpenSearchQueryFactory {
 

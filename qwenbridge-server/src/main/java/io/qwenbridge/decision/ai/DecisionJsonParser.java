@@ -3,9 +3,9 @@ package io.qwenbridge.decision.ai;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qwenbridge.decision.SearchDecision;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 @RequiredArgsConstructor
 public class DecisionJsonParser {
 

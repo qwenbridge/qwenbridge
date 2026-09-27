@@ -21,9 +21,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Service
+@ApplicationScoped
 @RequiredArgsConstructor
 public class QwenSearchAnalysisService implements SearchAnalysisService {
 

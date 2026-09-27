@@ -6,10 +6,10 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import jakarta.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Service
+@ApplicationScoped
 public class DefaultRerankingService implements RerankingService {
 
   private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(2);
@@ -17,7 +17,7 @@ public class DefaultRerankingService implements RerankingService {
   private final Reranker reranker;
   private final Duration timeout;
 
-  @Autowired
+  @Inject
   public DefaultRerankingService(Reranker reranker) {
     this(reranker, DEFAULT_TIMEOUT);
   }

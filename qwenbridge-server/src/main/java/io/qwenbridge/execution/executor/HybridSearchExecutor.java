@@ -3,9 +3,9 @@ package io.qwenbridge.execution.executor;
 import io.qwenbridge.execution.ExecutionOperation;
 import io.qwenbridge.execution.ExecutionStep;
 import java.util.List;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class HybridSearchExecutor implements ExecutionOperationExecutor {
 
   @Override

@@ -12,16 +12,27 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.HeaderParam;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import io.qwenbridge.api.filter.RequestIdFilter;
 
-@RestController
-@RequiredArgsConstructor
-@RequestMapping("/api/v1/search")
+@Path("/api/v1/search")
 @Tag(name = "Search", description = "AI-native search analysis APIs")
 public class SearchAnalyzeController {
 
   private final SearchPipeline searchPipeline;
+
+  @Context ContainerRequestContext requestContext;
+
+  public SearchAnalyzeController(SearchPipeline searchPipeline) {
+    this.searchPipeline = searchPipeline;
+  }
 
   @Operation(
       summary = "Analyze a search query",
@@ -70,10 +81,13 @@ public class SearchAnalyzeController {
           @Content(
               mediaType = "application/json",
               schema = @Schema(implementation = ApiError.class)))
-  @PostMapping("/analyze")
+  @POST
+  @Path("/analyze")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
   public SearchAnalyzeResponse analyze(
-      @RequestHeader(value = ApiHeaders.REQUEST_ID, required = false) String headerRequestId,
-      @Valid @RequestBody SearchAnalyzeRequest request) {
+      @HeaderParam(ApiHeaders.REQUEST_ID) String headerRequestId,
+      @Valid SearchAnalyzeRequest request) {
     String requestId = resolveRequestId(headerRequestId, request.requestId());
 
     SearchAnalyzeRequest effectiveRequest =
@@ -84,6 +98,14 @@ public class SearchAnalyzeController {
   }
 
   private String resolveRequestId(String headerRequestId, String bodyRequestId) {
+    boolean generatedHeader =
+        requestContext != null
+            && Boolean.TRUE.equals(requestContext.getProperty(RequestIdFilter.GENERATED_REQUEST_ID));
+
+    if (generatedHeader && bodyRequestId != null && !bodyRequestId.isBlank()) {
+      return bodyRequestId.trim();
+    }
+
     if (headerRequestId != null && !headerRequestId.isBlank()) {
       return headerRequestId.trim();
     }

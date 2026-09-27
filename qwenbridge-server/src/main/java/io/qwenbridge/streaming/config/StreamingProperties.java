@@ -1,9 +1,7 @@
 package io.qwenbridge.streaming.config;
 
 import java.time.Duration;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "qwenbridge.streaming")
 public record StreamingProperties(
     long sessionTimeoutMs,
     Duration maxAiStreamDuration,

@@ -4,16 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.qwenbridge.ai.provider.spi.AIProvider;
 import io.qwenbridge.ai.provider.spi.AIProviderResolver;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@QuarkusTest
 class AIServiceTest {
 
-  @Autowired private AIService aiService;
+  @Inject AIService aiService;
 
-  @Autowired private AIProviderResolver providerResolver;
+  @Inject AIProviderResolver providerResolver;
 
   @Test
   void shouldLoadAIService() {

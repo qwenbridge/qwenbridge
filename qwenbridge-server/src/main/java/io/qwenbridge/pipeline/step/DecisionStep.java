@@ -13,9 +13,9 @@ import io.qwenbridge.pipeline.result.DecisionResult;
 import io.qwenbridge.pipeline.result.ExecutionPlanResult;
 import io.qwenbridge.pipeline.result.ExecutionResultResult;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 @RequiredArgsConstructor
 public class DecisionStep implements PipelineStep<DecisionResult> {
 

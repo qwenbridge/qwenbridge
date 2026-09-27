@@ -6,28 +6,28 @@ import io.qwenbridge.analysis.cache.CacheKey;
 import io.qwenbridge.analysis.cache.config.AIAnalysisCacheProperties;
 import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.operations.metrics.OperationsMetrics;
+import io.quarkus.redis.datasource.RedisDataSource;
+import io.quarkus.redis.datasource.value.SetArgs;
+import io.quarkus.redis.datasource.value.ValueCommands;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Optional;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Component;
 
-@Component
-@ConditionalOnExpression(
-    "'${qwenbridge.analysis.cache.enabled:true}' == 'true' &&"
-        + " '${qwenbridge.analysis.cache.type:redis}' == 'redis'")
+@ApplicationScoped
 public class RedisAIAnalysisCache implements AIAnalysisCache {
 
-  private final StringRedisTemplate redisTemplate;
+  private final RedisDataSource redis;
+  private final ValueCommands<String, String> values;
   private final ObjectMapper objectMapper;
   private final AIAnalysisCacheProperties properties;
   private final OperationsMetrics metrics;
 
   public RedisAIAnalysisCache(
-      StringRedisTemplate redisTemplate,
+      RedisDataSource redis,
       ObjectMapper objectMapper,
       AIAnalysisCacheProperties properties,
       OperationsMetrics metrics) {
-    this.redisTemplate = redisTemplate;
+    this.redis = redis;
+    this.values = redis.value(String.class);
     this.objectMapper = objectMapper;
     this.properties = properties;
     this.metrics = metrics;
@@ -40,7 +40,7 @@ public class RedisAIAnalysisCache implements AIAnalysisCache {
     }
 
     try {
-      String payload = redisTemplate.opsForValue().get(redisKey(key));
+      String payload = values.get(redisKey(key));
 
       if (payload == null || payload.isBlank()) {
         record("miss");
@@ -63,7 +63,7 @@ public class RedisAIAnalysisCache implements AIAnalysisCache {
 
     try {
       String payload = objectMapper.writeValueAsString(value);
-      redisTemplate.opsForValue().set(redisKey(key), payload, properties.ttl());
+      values.set(redisKey(key), payload, new SetArgs().px(properties.ttl()));
       record("put");
     } catch (Exception ignored) {
       record("fallback");
@@ -78,7 +78,7 @@ public class RedisAIAnalysisCache implements AIAnalysisCache {
     }
 
     try {
-      redisTemplate.delete(redisKey(key));
+      redis.key().del(redisKey(key));
       record("evict");
     } catch (Exception ignored) {
       record("fallback");

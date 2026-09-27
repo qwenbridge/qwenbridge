@@ -9,15 +9,15 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-@RestController
-@RequestMapping("/api/v1/health")
+@Path("/api/v1/health")
+@Produces(MediaType.APPLICATION_JSON)
 @Tag(name = "Health", description = "Public QwenBridge health APIs")
 public class ApiHealthController {
 
@@ -25,7 +25,8 @@ public class ApiHealthController {
   private final OperationalHealthService operationalHealthService;
 
   public ApiHealthController(
-      @Value("${spring.application.name:qwenbridge}") String applicationName,
+      @ConfigProperty(name = "quarkus.application.name", defaultValue = "qwenbridge")
+          String applicationName,
       OperationalHealthService operationalHealthService) {
     this.applicationName = applicationName;
     this.operationalHealthService = operationalHealthService;
@@ -48,12 +49,13 @@ public class ApiHealthController {
           @Content(
               mediaType = "application/json",
               schema = @Schema(implementation = ApiError.class)))
-  @GetMapping
+  @GET
   public ApiHealthResponse health() {
     return liveness();
   }
 
-  @GetMapping("/live")
+  @GET
+  @Path("/live")
   public ApiHealthResponse liveness() {
     return ApiHealthResponse.builder()
         .status("UP")
@@ -62,15 +64,16 @@ public class ApiHealthController {
         .build();
   }
 
-  @GetMapping("/ready")
-  public ResponseEntity<ReadinessHealthResponse> readiness() {
+  @GET
+  @Path("/ready")
+  public Response readiness() {
     ReadinessHealthResponse response = operationalHealthService.readiness();
 
-    HttpStatus httpStatus =
+    Response.Status httpStatus =
         response.status() == OperationalStatus.DOWN
-            ? HttpStatus.SERVICE_UNAVAILABLE
-            : HttpStatus.OK;
+            ? Response.Status.SERVICE_UNAVAILABLE
+            : Response.Status.OK;
 
-    return ResponseEntity.status(httpStatus).body(response);
+    return Response.status(httpStatus).entity(response).build();
   }
 }

@@ -1,32 +1,22 @@
 package io.qwenbridge.operations.health;
 
-import io.qwenbridge.execution.provider.opensearch.OpenSearchProperties;
 import io.qwenbridge.execution.provider.opensearch.client.OpenSearchClient;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class OpenSearchDependencyHealthChecker implements DependencyHealthChecker {
 
   private final OpenSearchClient client;
-  private final OpenSearchProperties properties;
 
-  public OpenSearchDependencyHealthChecker(
-      OpenSearchClient client, OpenSearchProperties properties) {
+  public OpenSearchDependencyHealthChecker(OpenSearchClient client) {
     this.client = client;
-    this.properties = properties;
   }
 
   @Override
   public DependencyHealth check() {
     long started = System.nanoTime();
     try {
-      client
-          .webClient()
-          .get()
-          .uri("/")
-          .retrieve()
-          .toBodilessEntity()
-          .block(properties.connectTimeout().plus(properties.readTimeout()));
+      client.ping();
       return DependencyHealth.up("opensearch", durationMs(started));
     } catch (Exception ex) {
       return DependencyHealth.degraded("opensearch", "unavailable", durationMs(started));

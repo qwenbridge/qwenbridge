@@ -2,9 +2,9 @@ package io.qwenbridge.streaming.event;
 
 import io.qwenbridge.event.model.PipelineEventType;
 import io.qwenbridge.event.model.PipelineStage;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class PipelineEventTerminalPolicy {
 
   public boolean isTerminal(PipelineStage stage, PipelineEventType type) {

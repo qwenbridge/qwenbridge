@@ -2,22 +2,28 @@ package io.qwenbridge.threat.rule;
 
 import io.qwenbridge.threat.model.ThreatSeverity;
 import io.qwenbridge.threat.model.ThreatType;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import org.springframework.beans.factory.config.YamlMapFactoryBean;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
+import org.yaml.snakeyaml.Yaml;
 
-@Component
+@ApplicationScoped
 public class ThreatRuleLoader {
 
   @SuppressWarnings("unchecked")
   public List<ThreatPatternRule> load(String resourcePath, ThreatType type) {
-    YamlMapFactoryBean yaml = new YamlMapFactoryBean();
-    yaml.setResources(new ClassPathResource(resourcePath));
+    Map<String, Object> root;
+    try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath)) {
+      if (in == null) {
+        return List.of();
+      }
+      root = new Yaml().load(in);
+    } catch (java.io.IOException ex) {
+      return List.of();
+    }
 
-    Map<String, Object> root = yaml.getObject();
     if (root == null || !root.containsKey("rules")) {
       return List.of();
     }

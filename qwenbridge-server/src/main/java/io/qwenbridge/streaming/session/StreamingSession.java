@@ -3,7 +3,6 @@ package io.qwenbridge.streaming.session;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public final class StreamingSession {
 
@@ -11,16 +10,16 @@ public final class StreamingSession {
   private final String requestId;
   private final Instant createdAt;
   private final AtomicReference<Instant> lastSeen;
-  private final SseEmitter emitter;
+  private final SessionSink sink;
   private final AtomicBoolean closed;
 
-  public StreamingSession(String sessionId, String requestId, SseEmitter emitter) {
+  public StreamingSession(String sessionId, String requestId, SessionSink sink) {
     this(
         sessionId,
         requestId,
         Instant.now(),
         new AtomicReference<>(Instant.now()),
-        emitter,
+        sink,
         new AtomicBoolean(false));
   }
 
@@ -29,13 +28,13 @@ public final class StreamingSession {
       String requestId,
       Instant createdAt,
       AtomicReference<Instant> lastSeen,
-      SseEmitter emitter,
+      SessionSink sink,
       AtomicBoolean closed) {
     this.sessionId = sessionId;
     this.requestId = requestId;
     this.createdAt = createdAt;
     this.lastSeen = lastSeen;
-    this.emitter = emitter;
+    this.sink = sink;
     this.closed = closed;
   }
 
@@ -55,8 +54,8 @@ public final class StreamingSession {
     return lastSeen.get();
   }
 
-  public SseEmitter emitter() {
-    return emitter;
+  public SessionSink sink() {
+    return sink;
   }
 
   public boolean closed() {

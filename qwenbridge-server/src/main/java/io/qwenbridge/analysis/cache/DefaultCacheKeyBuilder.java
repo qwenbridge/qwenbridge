@@ -3,9 +3,9 @@ package io.qwenbridge.analysis.cache;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HexFormat;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class DefaultCacheKeyBuilder implements CacheKeyBuilder {
 
   @Override

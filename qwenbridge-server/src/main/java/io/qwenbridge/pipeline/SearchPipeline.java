@@ -19,9 +19,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Service
+@ApplicationScoped
 @RequiredArgsConstructor
 public class SearchPipeline {
 

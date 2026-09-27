@@ -4,40 +4,50 @@ import io.qwenbridge.streaming.api.validation.StreamRequestIdValidator;
 import io.qwenbridge.streaming.event.ConnectedStreamingPayload;
 import io.qwenbridge.streaming.session.StreamingSession;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
-import java.io.IOException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.sse.Sse;
+import jakarta.ws.rs.sse.SseEventSink;
 
-@RestController
-@RequiredArgsConstructor
-@RequestMapping("/api/v1/search")
+@Path("/api/v1/search")
 public class SearchStreamController {
 
   private final StreamingSessionRegistry registry;
   private final StreamRequestIdValidator requestIdValidator;
 
-  @GetMapping(value = "/stream/{requestId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-  public SseEmitter stream(@PathVariable String requestId) {
+  public SearchStreamController(
+      StreamingSessionRegistry registry, StreamRequestIdValidator requestIdValidator) {
+    this.registry = registry;
+    this.requestIdValidator = requestIdValidator;
+  }
+
+  @GET
+  @Path("/stream/{requestId}")
+  @Produces(MediaType.SERVER_SENT_EVENTS)
+  public void stream(
+      @PathParam("requestId") String requestId,
+      @Context SseEventSink eventSink,
+      @Context Sse sse) {
     requestIdValidator.validate(requestId);
 
-    StreamingSession session = registry.register(requestId);
+    StreamingSession session = registry.register(requestId, eventSink, sse);
 
     try {
       session
-          .emitter()
+          .sink()
           .send(
-              SseEmitter.event()
-                  .name("stream.connected")
-                  .data(new ConnectedStreamingPayload(requestId, session.sessionId())));
-    } catch (IOException | IllegalStateException ex) {
+              null,
+              "stream.connected",
+              new ConnectedStreamingPayload(requestId, session.sessionId()));
+    } catch (RuntimeException ex) {
       registry.remove(session.sessionId());
 
       throw new IllegalStateException(
           "Unable to establish SSE stream for requestId: " + requestId, ex);
     }
-
-    return session.emitter();
   }
 }

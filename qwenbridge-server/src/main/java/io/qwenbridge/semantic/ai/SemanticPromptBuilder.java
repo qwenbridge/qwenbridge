@@ -1,8 +1,8 @@
 package io.qwenbridge.semantic.ai;
 
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class SemanticPromptBuilder {
 
   public String build(String query) {

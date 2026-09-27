@@ -6,9 +6,9 @@ import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.result.ConfidenceResult;
 import io.qwenbridge.pipeline.result.RewriteResult;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 @RequiredArgsConstructor
 public class ConfidenceStep implements PipelineStep<ConfidenceResult> {
 

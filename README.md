@@ -15,17 +15,17 @@
 <p align="center">
   <a href="#quick-start">Quick start</a> ·
   <a href="#architecture">Architecture</a> ·
-  <a href="#sdks-and-starters">SDKs</a> ·
+  <a href="#sdks">SDKs</a> ·
   <a href="#documentation">Documentation</a> ·
   <a href="#contributing">Contributing</a>
 </p>
 
 <p align="center">
   <a href="https://openjdk.org/">
-    <img src="https://img.shields.io/badge/Java-21%2B-ED8B00?logo=openjdk&logoColor=white" alt="Java 21+" />
+    <img src="https://img.shields.io/badge/Java-25%2B-ED8B00?logo=openjdk&logoColor=white" alt="Java 25+" />
   </a>
-  <a href="https://spring.io/projects/spring-boot">
-    <img src="https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?logo=springboot&logoColor=white" alt="Spring Boot" />
+  <a href="https://quarkus.io/">
+    <img src="https://img.shields.io/badge/Quarkus-3.x-4695EB?logo=quarkus&logoColor=white" alt="Quarkus" />
   </a>
   <a href="https://maven.apache.org/">
     <img src="https://img.shields.io/badge/Maven-3.x-C71A36?logo=apachemaven&logoColor=white" alt="Maven" />
@@ -60,7 +60,7 @@
 
 > **Current public release track:** V9 — Developer Platform
 
-QwenBridge accepts a user query, analyzes it through an AI-first pipeline, produces a safe execution plan, runs retrieval through pluggable providers, and exposes results through REST APIs, Server-Sent Events (SSE), a Java SDK, a Spring Boot Starter, and a TypeScript SDK.
+QwenBridge accepts a user query, analyzes it through an AI-first pipeline, produces a safe execution plan, runs retrieval through pluggable providers, and exposes results through REST APIs, Server-Sent Events (SSE), a Java SDK, and a TypeScript SDK.
 
 ## What QwenBridge does
 
@@ -69,7 +69,7 @@ QwenBridge accepts a user query, analyzes it through an AI-first pipeline, produ
 | **Understanding** | Input normalization, language detection, intent detection, query rewrite, semantic analysis, AI decisioning |
 | **Safety** | Policy evaluation, threat detection, abuse protection, secret-leakage checks, request isolation |
 | **Retrieval** | Keyword, vector, hybrid search, ranking, reranking, facets, provider abstraction |
-| **Developer experience** | REST API, typed SSE events, Java SDK, Spring Boot Starter, TypeScript SDK |
+| **Developer experience** | REST API, typed SSE events, Java SDK, TypeScript SDK |
 | **Operations** | Redis cache support, health/readiness, metrics, tracing, structured logging, Docker deployment |
 
 ##  Quick start
@@ -83,7 +83,7 @@ docker compose up -d
 ### 2. Run the server
 
 ```bash
-mvn -pl qwenbridge-server spring-boot:run
+mvn -pl qwenbridge-server quarkus:dev
 ```
 
 ### 3. Verify the API
@@ -118,9 +118,8 @@ QwenBridge separates **AI providers**, **search providers**, **pipeline steps**,
 ##  Main modules
 
 ```text
-qwenbridge-server               Spring Boot runtime and public API
+qwenbridge-server               Quarkus runtime and public API
 qwenbridge-java-sdk             Java client SDK
-qwenbridge-spring-boot-starter  Spring Boot auto-configuration
 qwenbridge-typescript-sdk       TypeScript client SDK
 examples                        Runnable consumer examples
 docs                            Architecture, API, operations, release docs
@@ -135,7 +134,7 @@ The default local stack is provider-oriented:
 - **BGE embeddings** through Ollama for vector retrieval
 - **OpenSearch** for keyword, vector, and hybrid retrieval
 - **Redis** for cache and rate-limiting support
-- **Spring Boot** for the server runtime
+- **Quarkus** for the server runtime
 
 Provider boundaries are documented in [AI Stack](docs/architecture/ai-stack.md) and [Provider Reliability](docs/architecture/provider-reliability.md).
 
@@ -156,12 +155,11 @@ The streaming interface uses a stable public SSE envelope with typed payloads, i
 - [REST API reference](docs/api/rest-api.md)
 - [SSE event contract](docs/api/sse.md)
 
-##  SDKs and starters
+##  SDKs
 
 | Package | Purpose | Documentation |
 |---|---|---|
 |  Java SDK | Synchronous, asynchronous, and typed streaming clients | [README](qwenbridge-java-sdk/README.md) · [Example](docs/examples/java-sdk-example.md) |
-|  Spring Boot Starter | Auto-configured Java SDK client and health integration | [README](qwenbridge-spring-boot-starter/README.md) · [Example](docs/examples/spring-boot-starter-example.md) |
 |  TypeScript SDK | ESM client with retries and typed streaming | [README](qwenbridge-typescript-sdk/README.md) · [Example](docs/examples/typescript-sdk-example.md) |
 
 ##  Quality and verification

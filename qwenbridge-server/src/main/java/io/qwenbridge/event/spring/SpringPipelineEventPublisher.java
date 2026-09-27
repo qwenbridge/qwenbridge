@@ -2,20 +2,22 @@ package io.qwenbridge.event.spring;
 
 import io.qwenbridge.event.model.PipelineEvent;
 import io.qwenbridge.event.spi.PipelineEventPublisher;
-import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
 
-@Component
-@Primary
-@RequiredArgsConstructor
+@ApplicationScoped
 public class SpringPipelineEventPublisher implements PipelineEventPublisher {
 
-  private final ApplicationEventPublisher applicationEventPublisher;
+  private final Event<PipelineEvent<?>> events;
+
+  @Inject
+  public SpringPipelineEventPublisher(Event<PipelineEvent<?>> events) {
+    this.events = events;
+  }
 
   @Override
   public void publish(PipelineEvent<?> event) {
-    applicationEventPublisher.publishEvent(event);
+    events.fire(event);
   }
 }

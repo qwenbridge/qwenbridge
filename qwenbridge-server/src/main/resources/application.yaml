@@ -1,0 +1,169 @@
+# QwenBridge - Quarkus configuration
+quarkus:
+  banner:
+    enabled: false
+  application:
+    name: qwenbridge
+  shutdown:
+    timeout: 30
+  http:
+    port: 8080
+    limits:
+      max-header-size: 16K
+    # CORS
+    cors:
+      enabled: true
+      origins: "/.*/"
+      methods: "GET,POST,OPTIONS"
+  # Health & metrics
+  smallrye-health:
+    root-path: /q/health
+  micrometer:
+    export:
+      prometheus:
+        path: /q/metrics
+        enabled: true
+  # OpenAPI / Swagger UI
+  smallrye-openapi:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger
+    always-include: true
+  # Redis
+  redis:
+    hosts: redis://localhost:6379
+  # Outbound REST clients (MicroProfile Rest Client)
+  rest-client:
+    ollama:
+      url: ${qwenbridge.ai.ollama.base-url:test}
+      connect-timeout: 5000
+      read-timeout: 60000
+    opensearch:
+      url: ${qwenbridge.search.opensearch.base-url:test}
+      connect-timeout: 5000
+      read-timeout: 30000
+
+mp:
+  openapi:
+    extensions:
+      smallrye:
+        info:
+          title: QwenBridge API
+          version: 0.1.0-SNAPSHOT
+          description: AI-native search and provider bridge APIs
+
+# ---------------------------------------------------------------------------
+# QwenBridge application properties
+# ---------------------------------------------------------------------------
+qwenbridge:
+  version: 0.1.0-SNAPSHOT
+  streaming:
+    session-timeout-ms: 300000
+    max-concurrent-streams: 25
+    max-streams-per-client: 2
+    heartbeat-interval: 15s
+    outbound-buffer-size: 256
+    max-ai-stream-duration: 30s
+    max-ai-token-count: 1000
+    max-ai-event-count: 1100
+  security:
+    cors:
+      allowed-origin-patterns: "*"
+    trusted-proxy:
+      forwarded-headers-enabled: false
+  abuse:
+    enabled: true
+    request-size-limit-bytes: 65536
+    per-ip-limit: 60
+    per-api-key-limit: 600
+    ai-request-quota: 120
+    token-quota: 100000
+    concurrent-stream-limit: 25
+    window: 1m
+    redis-timeout: 1s
+    fail-open-when-redis-unavailable: false
+  ai:
+    provider: ollama
+    ollama:
+      base-url: http://localhost:11434
+      chat-model: qwen2.5
+      embedding-model: bge-m3
+      connect-timeout: 5s
+      read-timeout: 60s
+      retry-count: 1
+      streaming-enabled: false
+  search:
+    opensearch:
+      default-size: 10
+      base-url: http://localhost:9200
+      index: qwenbridge-products
+      connect-timeout: 5s
+      read-timeout: 30s
+  analysis:
+    cache:
+      enabled: true
+      type: redis
+      key-prefix: "qwenbridge:analysis"
+      provider: ollama
+      model: qwen2.5
+      version: v4
+      analysis-timeout: 10s
+      ttl: 10m
+      redis:
+        host: localhost
+        port: 6379
+        connect-timeout: 2s
+        command-timeout: 2s
+
+# ---------------------------------------------------------------------------
+# Profiles
+# ---------------------------------------------------------------------------
+"%local":
+  qwenbridge:
+    ai:
+      ollama:
+        streaming-enabled: true
+
+"%docker":
+  quarkus:
+    redis:
+      hosts: "redis://${QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST:redis}:6379"
+  qwenbridge:
+    ai:
+      ollama:
+        base-url: "${QWENBRIDGE_AI_OLLAMA_BASE_URL:http://ollama:11434}"
+    search:
+      opensearch:
+        base-url: "${QWENBRIDGE_SEARCH_OPENSEARCH_BASE_URL:http://opensearch:9200}"
+    analysis:
+      cache:
+        redis:
+          host: "${QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST:redis}"
+
+"%test":
+  qwenbridge:
+    abuse:
+      enabled: false
+    analysis:
+      cache:
+        enabled: false
+
+"%prod":
+  quarkus:
+    redis:
+      hosts: "redis://${QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST:localhost}:${QWENBRIDGE_ANALYSIS_CACHE_REDIS_PORT:6379}"
+  qwenbridge:
+    security:
+      cors:
+        allowed-origin-patterns: "${QWENBRIDGE_CORS_ALLOWED_ORIGINS:*}"
+    ai:
+      ollama:
+        base-url: "${QWENBRIDGE_AI_OLLAMA_BASE_URL:http://localhost:11434}"
+    search:
+      opensearch:
+        base-url: "${QWENBRIDGE_SEARCH_OPENSEARCH_BASE_URL:http://localhost:9200}"
+    analysis:
+      cache:
+        redis:
+          host: "${QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST:localhost}"
+          port: "${QWENBRIDGE_ANALYSIS_CACHE_REDIS_PORT:6379}"

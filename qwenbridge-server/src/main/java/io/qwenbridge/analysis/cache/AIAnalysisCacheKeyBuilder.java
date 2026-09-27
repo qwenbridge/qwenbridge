@@ -2,9 +2,9 @@ package io.qwenbridge.analysis.cache;
 
 import io.qwenbridge.analysis.cache.config.AIAnalysisCacheProperties;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 @RequiredArgsConstructor
 public class AIAnalysisCacheKeyBuilder {
 

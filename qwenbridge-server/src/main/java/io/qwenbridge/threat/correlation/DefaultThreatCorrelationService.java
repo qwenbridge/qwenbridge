@@ -6,9 +6,9 @@ import io.qwenbridge.threat.correlation.rule.ThreatCorrelationRuleLoader;
 import io.qwenbridge.threat.model.ThreatFinding;
 import java.util.Comparator;
 import java.util.List;
-import org.springframework.stereotype.Service;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Service
+@ApplicationScoped
 public class DefaultThreatCorrelationService implements ThreatCorrelationService {
 
   private final List<ThreatCorrelationRule> rules;

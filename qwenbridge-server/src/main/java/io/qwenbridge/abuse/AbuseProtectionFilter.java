@@ -1,74 +1,82 @@
 package io.qwenbridge.abuse;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qwenbridge.api.header.ApiHeaders;
 import io.qwenbridge.exception.ApiError;
 import io.qwenbridge.exception.ErrorCode;
 import io.qwenbridge.operations.metrics.OperationsMetrics;
 import io.qwenbridge.operations.tracing.TraceContextFilter;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import io.vertx.ext.web.RoutingContext;
+import jakarta.annotation.Priority;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.ContainerResponseContext;
+import jakarta.ws.rs.container.ContainerResponseFilter;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.Provider;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.HexFormat;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 
-@Component
-@RequiredArgsConstructor
-@EnableConfigurationProperties(AbuseProtectionProperties.class)
-@ConditionalOnProperty(
-    prefix = "qwenbridge.abuse",
-    name = "enabled",
-    havingValue = "true",
-    matchIfMissing = true)
-public class AbuseProtectionFilter extends OncePerRequestFilter {
+@Provider
+@Priority(4)
+public class AbuseProtectionFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
   public static final String API_KEY_HEADER = "X-API-Key";
   public static final String RATE_LIMIT_POLICY_HEADER = "X-RateLimit-Policy";
 
+  private static final String DECISION_PROPERTY = "qwenbridge.rateLimitDecision";
   private static final SecureRandom RANDOM = new SecureRandom();
 
   private final AbuseProtectionProperties properties;
   private final RateLimiter rateLimiter;
   private final StreamingSessionRegistry streamingSessionRegistry;
-  private final ObjectMapper objectMapper;
   private final OperationsMetrics metrics;
 
-  @Override
-  protected boolean shouldNotFilter(HttpServletRequest request) {
-    return !request.getRequestURI().startsWith("/api/");
+  @Context RoutingContext routingContext;
+
+  public AbuseProtectionFilter(
+      AbuseProtectionProperties properties,
+      RateLimiter rateLimiter,
+      StreamingSessionRegistry streamingSessionRegistry,
+      OperationsMetrics metrics) {
+    this.properties = properties;
+    this.rateLimiter = rateLimiter;
+    this.streamingSessionRegistry = streamingSessionRegistry;
+    this.metrics = metrics;
   }
 
   @Override
-  protected void doFilterInternal(
-      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-      throws ServletException, IOException {
-    RateLimitDecision decision = evaluate(request);
-    applyHeaders(response, decision);
+  public void filter(ContainerRequestContext requestContext) {
+    if (!properties.enabled() || !path(requestContext).startsWith("/api/")) {
+      return;
+    }
+
+    RateLimitDecision decision = evaluate(requestContext);
+    requestContext.setProperty(DECISION_PROPERTY, decision);
 
     metrics.incrementRateLimit(decision.policy(), decision.allowed() ? "allowed" : "rejected");
 
     if (!decision.allowed()) {
-      writeRateLimitedResponse(request, response, decision);
-      return;
+      requestContext.abortWith(rateLimitedResponse(requestContext, decision));
     }
-
-    filterChain.doFilter(request, response);
   }
 
-  private RateLimitDecision evaluate(HttpServletRequest request) {
-    if (request.getContentLengthLong() > properties.requestSizeLimitBytes()) {
+  @Override
+  public void filter(
+      ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
+    Object stored = requestContext.getProperty(DECISION_PROPERTY);
+    if (stored instanceof RateLimitDecision decision) {
+      applyHeaders(responseContext, decision);
+    }
+  }
+
+  private RateLimitDecision evaluate(ContainerRequestContext request) {
+    if (request.getLength() > properties.requestSizeLimitBytes()) {
       return RateLimitDecision.rejected(
           "request-size",
           properties.requestSizeLimitBytes(),
@@ -83,7 +91,7 @@ public class AbuseProtectionFilter extends OncePerRequestFilter {
           Instant.now().plus(properties.window()));
     }
 
-    String apiKey = request.getHeader(API_KEY_HEADER);
+    String apiKey = request.getHeaderString(API_KEY_HEADER);
     if (apiKey != null && !apiKey.isBlank()) {
       RateLimitDecision apiKeyDecision =
           rateLimiter.consume("api-key", fingerprint(apiKey), properties.perApiKeyLimit(), 1);
@@ -109,77 +117,90 @@ public class AbuseProtectionFilter extends OncePerRequestFilter {
     return ipDecision;
   }
 
-  private boolean isAiRequest(HttpServletRequest request) {
-    String uri = request.getRequestURI();
+  private String path(ContainerRequestContext request) {
+    return "/" + request.getUriInfo().getPath();
+  }
+
+  private boolean isAiRequest(ContainerRequestContext request) {
+    String uri = path(request);
     return uri.contains("/search/analyze")
         || uri.contains("/ai/")
         || uri.contains("/search/stream/");
   }
 
-  private boolean isStreamRequest(HttpServletRequest request) {
-    return request.getRequestURI().contains("/stream/");
+  private boolean isStreamRequest(ContainerRequestContext request) {
+    return path(request).contains("/stream/");
   }
 
-  private String clientIp(HttpServletRequest request) {
-    String forwarded = request.getHeader("X-Forwarded-For");
+  private String clientIp(ContainerRequestContext request) {
+    String forwarded = request.getHeaderString("X-Forwarded-For");
     if (forwarded != null && !forwarded.isBlank()) {
       return forwarded.split(",")[0].trim();
     }
-    return request.getRemoteAddr();
+    if (routingContext != null
+        && routingContext.request() != null
+        && routingContext.request().remoteAddress() != null) {
+      return routingContext.request().remoteAddress().hostAddress();
+    }
+    return "unknown";
   }
 
   private String fingerprint(String value) {
     return Integer.toHexString(value.trim().hashCode());
   }
 
-  private void applyHeaders(HttpServletResponse response, RateLimitDecision decision) {
-    response.setHeader(
-        HttpHeaders.RETRY_AFTER,
-        String.valueOf(
-            Math.max(1, decision.resetAt().getEpochSecond() - Instant.now().getEpochSecond())));
-    response.setHeader("X-RateLimit-Limit", String.valueOf(decision.limit()));
-    response.setHeader("X-RateLimit-Remaining", String.valueOf(decision.remaining()));
-    response.setHeader("X-RateLimit-Reset", String.valueOf(decision.resetAt().getEpochSecond()));
-    response.setHeader(RATE_LIMIT_POLICY_HEADER, decision.policy());
+  private void applyHeaders(ContainerResponseContext response, RateLimitDecision decision) {
+    response
+        .getHeaders()
+        .putSingle(
+            HttpHeaders.RETRY_AFTER,
+            String.valueOf(
+                Math.max(
+                    1, decision.resetAt().getEpochSecond() - Instant.now().getEpochSecond())));
+    response.getHeaders().putSingle("X-RateLimit-Limit", String.valueOf(decision.limit()));
+    response.getHeaders().putSingle("X-RateLimit-Remaining", String.valueOf(decision.remaining()));
+    response
+        .getHeaders()
+        .putSingle("X-RateLimit-Reset", String.valueOf(decision.resetAt().getEpochSecond()));
+    response.getHeaders().putSingle(RATE_LIMIT_POLICY_HEADER, decision.policy());
   }
 
-  private void writeRateLimitedResponse(
-      HttpServletRequest request, HttpServletResponse response, RateLimitDecision decision)
-      throws IOException {
+  private Response rateLimitedResponse(
+      ContainerRequestContext request, RateLimitDecision decision) {
     String requestId = resolveRequestId(request);
     String traceId = resolveTraceId(request);
     String traceparent = resolveTraceparent(request, traceId);
 
-    response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-    response.setContentType("application/json");
-    response.setCharacterEncoding("UTF-8");
-
-    response.setHeader(ApiHeaders.REQUEST_ID, requestId);
-    response.setHeader(ApiHeaders.QWENBRIDGE_VERSION, "0.1.0-SNAPSHOT");
-    response.setHeader(TraceContextFilter.TRACE_ID_HEADER, traceId);
-    response.setHeader(TraceContextFilter.TRACEPARENT_HEADER, traceparent);
-
     ApiError body =
         ApiError.builder()
             .timestamp(Instant.now())
-            .status(HttpStatus.TOO_MANY_REQUESTS.value())
-            .error(HttpStatus.TOO_MANY_REQUESTS.getReasonPhrase())
+            .status(Response.Status.TOO_MANY_REQUESTS.getStatusCode())
+            .error(Response.Status.TOO_MANY_REQUESTS.getReasonPhrase())
             .code(ErrorCode.RATE_LIMITED.name())
             .message("Request rejected by QwenBridge abuse protection policy: " + decision.policy())
-            .path(request.getRequestURI())
+            .path(path(request))
             .requestId(requestId)
             .build();
 
-    objectMapper.writeValue(response.getWriter(), body);
+    Response.ResponseBuilder builder =
+        Response.status(Response.Status.TOO_MANY_REQUESTS)
+            .type(MediaType.APPLICATION_JSON)
+            .entity(body)
+            .header(ApiHeaders.REQUEST_ID, requestId)
+            .header(ApiHeaders.QWENBRIDGE_VERSION, "0.1.0-SNAPSHOT")
+            .header(TraceContextFilter.TRACE_ID_HEADER, traceId)
+            .header(TraceContextFilter.TRACEPARENT_HEADER, traceparent);
+
+    return builder.build();
   }
 
-  private String resolveRequestId(HttpServletRequest request) {
-    Object attribute = request.getAttribute(ApiHeaders.REQUEST_ID);
+  private String resolveRequestId(ContainerRequestContext request) {
+    Object attribute = request.getProperty(ApiHeaders.REQUEST_ID);
     if (attribute instanceof String value && !value.isBlank()) {
       return value.trim();
     }
 
-    String headerValue = request.getHeader(ApiHeaders.REQUEST_ID);
+    String headerValue = request.getHeaderString(ApiHeaders.REQUEST_ID);
     if (headerValue != null && !headerValue.isBlank()) {
       return headerValue.trim();
     }
@@ -187,8 +208,8 @@ public class AbuseProtectionFilter extends OncePerRequestFilter {
     return UUID.randomUUID().toString();
   }
 
-  private String resolveTraceId(HttpServletRequest request) {
-    String traceparent = request.getHeader(TraceContextFilter.TRACEPARENT_HEADER);
+  private String resolveTraceId(ContainerRequestContext request) {
+    String traceparent = request.getHeaderString(TraceContextFilter.TRACEPARENT_HEADER);
     if (traceparent != null
         && traceparent.matches("^[0-9a-f]{2}-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$")) {
       return traceparent.substring(3, 35);
@@ -197,8 +218,8 @@ public class AbuseProtectionFilter extends OncePerRequestFilter {
     return randomHex(16);
   }
 
-  private String resolveTraceparent(HttpServletRequest request, String traceId) {
-    String traceparent = request.getHeader(TraceContextFilter.TRACEPARENT_HEADER);
+  private String resolveTraceparent(ContainerRequestContext request, String traceId) {
+    String traceparent = request.getHeaderString(TraceContextFilter.TRACEPARENT_HEADER);
     if (traceparent != null
         && traceparent.matches("^[0-9a-f]{2}-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$")) {
       return traceparent;

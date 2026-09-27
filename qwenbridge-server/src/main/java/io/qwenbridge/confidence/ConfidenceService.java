@@ -1,9 +1,9 @@
 package io.qwenbridge.confidence;
 
 import java.util.List;
-import org.springframework.stereotype.Service;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Service
+@ApplicationScoped
 public class ConfidenceService {
   public double calculate(String query, List<String> rewrites) {
     return rewrites.size() > 1 ? 0.94 : 0.80;

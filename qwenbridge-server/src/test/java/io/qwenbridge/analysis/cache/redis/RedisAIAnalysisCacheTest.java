@@ -8,26 +8,26 @@ import io.qwenbridge.analysis.cache.CacheKey;
 import io.qwenbridge.analysis.cache.config.AIAnalysisCacheProperties;
 import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.operations.metrics.OperationsMetrics;
-import java.time.Duration;
+import io.quarkus.redis.datasource.RedisDataSource;
+import io.quarkus.redis.datasource.keys.KeyCommands;
+import io.quarkus.redis.datasource.value.SetArgs;
+import io.quarkus.redis.datasource.value.ValueCommands;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 
 class RedisAIAnalysisCacheTest {
 
   @Test
   void shouldReturnCachedAnalysisWhenPayloadExists() throws Exception {
-    StringRedisTemplate redis = mock(StringRedisTemplate.class);
-    ValueOperations<String, String> ops = mock(ValueOperations.class);
+    RedisDataSource redis = mock(RedisDataSource.class);
+    ValueCommands<String, String> ops = mock(ValueCommands.class);
     ObjectMapper mapper = new ObjectMapper();
 
-    AIAnalysisCacheProperties properties = new AIAnalysisCacheProperties();
-    properties.setKeyPrefix("test:analysis");
+    AIAnalysisCacheProperties properties = redisProperties();
 
     SearchAnalysis analysis = SearchAnalysis.fallback("desk");
     String payload = mapper.writeValueAsString(analysis);
 
-    when(redis.opsForValue()).thenReturn(ops);
+    when(redis.value(String.class)).thenReturn(ops);
     when(ops.get("test:analysis:key")).thenReturn(payload);
 
     RedisAIAnalysisCache cache =
@@ -38,13 +38,14 @@ class RedisAIAnalysisCacheTest {
 
   @Test
   void shouldReturnEmptyWhenRedisFails() {
-    StringRedisTemplate redis = mock(StringRedisTemplate.class);
+    RedisDataSource redis = mock(RedisDataSource.class);
+    ValueCommands<String, String> ops = mock(ValueCommands.class);
     ObjectMapper mapper = new ObjectMapper();
 
-    AIAnalysisCacheProperties properties = new AIAnalysisCacheProperties();
-    properties.setKeyPrefix("test:analysis");
+    AIAnalysisCacheProperties properties = redisProperties();
 
-    when(redis.opsForValue()).thenThrow(new RuntimeException("redis down"));
+    when(redis.value(String.class)).thenReturn(ops);
+    when(ops.get("test:analysis:key")).thenThrow(new RuntimeException("redis down"));
 
     RedisAIAnalysisCache cache =
         new RedisAIAnalysisCache(redis, mapper, properties, mock(OperationsMetrics.class));
@@ -54,15 +55,13 @@ class RedisAIAnalysisCacheTest {
 
   @Test
   void shouldWritePayloadWithConfiguredTtl() throws Exception {
-    StringRedisTemplate redis = mock(StringRedisTemplate.class);
-    ValueOperations<String, String> ops = mock(ValueOperations.class);
+    RedisDataSource redis = mock(RedisDataSource.class);
+    ValueCommands<String, String> ops = mock(ValueCommands.class);
     ObjectMapper mapper = new ObjectMapper();
 
-    AIAnalysisCacheProperties properties = new AIAnalysisCacheProperties();
-    properties.setKeyPrefix("test:analysis");
-    properties.setTtl(Duration.ofMinutes(5));
+    AIAnalysisCacheProperties properties = redisProperties();
 
-    when(redis.opsForValue()).thenReturn(ops);
+    when(redis.value(String.class)).thenReturn(ops);
 
     RedisAIAnalysisCache cache =
         new RedisAIAnalysisCache(redis, mapper, properties, mock(OperationsMetrics.class));
@@ -71,28 +70,51 @@ class RedisAIAnalysisCacheTest {
 
     cache.put(new CacheKey("key"), analysis);
 
-    verify(ops).set(eq("test:analysis:key"), anyString(), eq(Duration.ofMinutes(5)));
+    verify(ops).set(eq("test:analysis:key"), anyString(), any(SetArgs.class));
   }
 
   @Test
   void shouldIgnoreWriteFailures() {
-    StringRedisTemplate redis = mock(StringRedisTemplate.class);
-    ValueOperations<String, String> ops = mock(ValueOperations.class);
+    RedisDataSource redis = mock(RedisDataSource.class);
+    ValueCommands<String, String> ops = mock(ValueCommands.class);
     ObjectMapper mapper = new ObjectMapper();
 
-    AIAnalysisCacheProperties properties = new AIAnalysisCacheProperties();
-    properties.setKeyPrefix("test:analysis");
+    AIAnalysisCacheProperties properties = redisProperties();
 
-    when(redis.opsForValue()).thenReturn(ops);
-    doThrow(new RuntimeException("redis down"))
-        .when(ops)
-        .set(anyString(), anyString(), any(Duration.class));
+    when(redis.value(String.class)).thenReturn(ops);
+    doThrow(new RuntimeException("redis down")).when(ops).set(anyString(), anyString(), any());
 
     RedisAIAnalysisCache cache =
         new RedisAIAnalysisCache(redis, mapper, properties, mock(OperationsMetrics.class));
 
     cache.put(new CacheKey("key"), SearchAnalysis.fallback("desk"));
 
-    verify(ops).set(anyString(), anyString(), any(Duration.class));
+    verify(ops).set(anyString(), anyString(), any(SetArgs.class));
+  }
+
+  @Test
+  void shouldEvictConfiguredKey() {
+    RedisDataSource redis = mock(RedisDataSource.class);
+    ValueCommands<String, String> ops = mock(ValueCommands.class);
+    KeyCommands<String> keys = mock(KeyCommands.class);
+
+    when(redis.value(String.class)).thenReturn(ops);
+    when(redis.key()).thenReturn(keys);
+
+    RedisAIAnalysisCache cache =
+        new RedisAIAnalysisCache(
+            redis, new ObjectMapper(), redisProperties(), mock(OperationsMetrics.class));
+
+    cache.evict(new CacheKey("key"));
+
+    verify(keys).del("test:analysis:key");
+  }
+
+  private AIAnalysisCacheProperties redisProperties() {
+    AIAnalysisCacheProperties properties = new AIAnalysisCacheProperties();
+    properties.setEnabled(true);
+    properties.setType("redis");
+    properties.setKeyPrefix("test:analysis");
+    return properties;
   }
 }

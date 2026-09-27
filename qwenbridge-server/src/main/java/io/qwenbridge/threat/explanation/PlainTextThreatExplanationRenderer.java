@@ -1,8 +1,8 @@
 package io.qwenbridge.threat.explanation;
 
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class PlainTextThreatExplanationRenderer implements ThreatExplanationRenderer {
 
   @Override

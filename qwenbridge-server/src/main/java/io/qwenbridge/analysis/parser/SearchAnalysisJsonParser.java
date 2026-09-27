@@ -9,9 +9,9 @@ import io.qwenbridge.intent.IntentType;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 @RequiredArgsConstructor
 public class SearchAnalysisJsonParser {
 

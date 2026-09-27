@@ -8,9 +8,9 @@ import io.qwenbridge.execution.provider.support.AbstractSearchProvider;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class InMemorySearchProvider extends AbstractSearchProvider {
 
   private final List<Map<String, Object>> documents =

@@ -13,13 +13,14 @@ import io.qwenbridge.execution.provider.spi.SearchProviderResolver;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.ranking.service.SearchResultRanker;
 import io.qwenbridge.reranking.service.RerankingService;
+import io.quarkus.arc.All;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import jakarta.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class DefaultExecutionEngine implements ExecutionEngine {
 
   private final Map<ExecutionOperation, ExecutionOperationExecutor> executors;
@@ -28,9 +29,9 @@ public class DefaultExecutionEngine implements ExecutionEngine {
   private final SearchResultRanker searchResultRanker;
   private final RerankingService rerankingService;
 
-  @Autowired
+  @Inject
   public DefaultExecutionEngine(
-      List<ExecutionOperationExecutor> executors,
+      @All List<ExecutionOperationExecutor> executors,
       SearchProviderResolver searchProviderResolver,
       AIService aiService,
       SearchResultRanker searchResultRanker,

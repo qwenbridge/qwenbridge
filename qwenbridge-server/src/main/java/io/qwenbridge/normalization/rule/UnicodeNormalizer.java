@@ -1,9 +1,9 @@
 package io.qwenbridge.normalization.rule;
 
 import java.text.Normalizer;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class UnicodeNormalizer implements InputNormalizationRule {
 
   @Override

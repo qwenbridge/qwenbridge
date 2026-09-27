@@ -4,9 +4,8 @@
 
 | Module | Responsibility |
 | --- | --- |
-| `qwenbridge-server` | Spring Boot server, pipeline, providers, APIs, SSE, operations |
+| `qwenbridge-server` | Quarkus server, pipeline, providers, APIs, SSE, operations |
 | `qwenbridge-java-sdk` | Java API and typed streaming client |
-| `qwenbridge-spring-boot-starter` | Spring Boot auto-configuration for the Java SDK |
 | `qwenbridge-typescript-sdk` | TypeScript API and typed streaming client |
 | `examples` | Runnable consumer examples |
 | `docs` | Architecture, API, operations, release, and contributor documentation |

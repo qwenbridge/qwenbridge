@@ -21,7 +21,7 @@ jobs:
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
           cache: maven
       - run: mvn -B -Punit-tests test
 
@@ -33,7 +33,7 @@ jobs:
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
           cache: maven
       - run: mvn -B -Pintegration-tests test
 
@@ -45,7 +45,7 @@ jobs:
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
           cache: maven
       - run: mvn -B -pl qwenbridge-server -Dtest=ArchitectureRulesTest test
 
@@ -57,7 +57,7 @@ jobs:
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
           cache: maven
       - run: mvn -B -DskipTests package
       - name: Verify API compatibility tests
@@ -73,7 +73,7 @@ jobs:
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
           cache: maven
 
       - name: Restore Dependency-Check data
@@ -136,7 +136,7 @@ jobs:
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
           cache: maven
       - run: mvn -B -pl qwenbridge-server -Dtest=DefaultBenchmarkEvaluationRunnerTest test
 

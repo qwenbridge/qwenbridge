@@ -6,13 +6,14 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-@RestController
-@RequestMapping("/api/v1/version")
+@Path("/api/v1/version")
+@Produces(MediaType.APPLICATION_JSON)
 @Tag(name = "Metadata", description = "QwenBridge metadata APIs")
 public class ApiVersionController {
 
@@ -20,8 +21,10 @@ public class ApiVersionController {
   private final String applicationVersion;
 
   public ApiVersionController(
-      @Value("${spring.application.name:qwenbridge}") String applicationName,
-      @Value("${qwenbridge.version:0.1.0-SNAPSHOT}") String applicationVersion) {
+      @ConfigProperty(name = "quarkus.application.name", defaultValue = "qwenbridge")
+          String applicationName,
+      @ConfigProperty(name = "qwenbridge.version", defaultValue = "0.1.0-SNAPSHOT")
+          String applicationVersion) {
     this.applicationName = applicationName;
     this.applicationVersion = applicationVersion;
   }
@@ -43,7 +46,7 @@ public class ApiVersionController {
           @Content(
               mediaType = "application/json",
               schema = @Schema(implementation = ApiError.class)))
-  @GetMapping
+  @GET
   public ApiVersionResponse version() {
     return ApiVersionResponse.builder()
         .name(applicationName)

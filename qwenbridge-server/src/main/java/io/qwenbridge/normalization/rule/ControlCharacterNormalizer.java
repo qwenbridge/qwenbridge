@@ -1,8 +1,8 @@
 package io.qwenbridge.normalization.rule;
 
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class ControlCharacterNormalizer implements InputNormalizationRule {
 
   @Override

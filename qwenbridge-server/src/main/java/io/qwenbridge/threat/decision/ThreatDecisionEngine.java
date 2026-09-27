@@ -1,9 +1,9 @@
 package io.qwenbridge.threat.decision;
 
 import io.qwenbridge.threat.model.ThreatDecision;
-import org.springframework.stereotype.Service;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Service
+@ApplicationScoped
 public class ThreatDecisionEngine {
 
   public ThreatDecision decide(double score) {

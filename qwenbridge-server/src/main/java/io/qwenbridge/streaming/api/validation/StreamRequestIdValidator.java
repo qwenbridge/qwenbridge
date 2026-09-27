@@ -1,9 +1,9 @@
 package io.qwenbridge.streaming.api.validation;
 
 import java.util.regex.Pattern;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class StreamRequestIdValidator {
 
   private static final int MAX_LENGTH = 128;

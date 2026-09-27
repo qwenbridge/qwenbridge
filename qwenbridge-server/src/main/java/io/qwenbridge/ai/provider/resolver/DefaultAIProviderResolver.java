@@ -7,9 +7,9 @@ import io.qwenbridge.ai.provider.spi.AIProviderRegistry;
 import io.qwenbridge.ai.provider.spi.AIProviderResolver;
 import io.qwenbridge.ai.value.ProviderId;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 @RequiredArgsConstructor
 public class DefaultAIProviderResolver implements AIProviderResolver {
 

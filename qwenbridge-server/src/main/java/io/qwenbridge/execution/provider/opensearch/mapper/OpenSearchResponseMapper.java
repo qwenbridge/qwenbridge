@@ -5,9 +5,9 @@ import io.qwenbridge.execution.provider.model.SearchResponse;
 import io.qwenbridge.execution.provider.model.SearchResultSet;
 import java.util.List;
 import java.util.Map;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class OpenSearchResponseMapper {
 
   @SuppressWarnings("unchecked")

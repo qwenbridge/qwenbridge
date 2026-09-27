@@ -4,9 +4,9 @@ import io.qwenbridge.ai.contract.ChatRequest;
 import io.qwenbridge.ai.contract.ChatResponse;
 import io.qwenbridge.ai.service.AIService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Service
+@ApplicationScoped
 @RequiredArgsConstructor
 public class QwenAIRewriteService implements AIRewriteService {
 

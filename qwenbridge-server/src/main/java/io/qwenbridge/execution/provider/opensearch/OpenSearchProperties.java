@@ -1,9 +1,7 @@
 package io.qwenbridge.execution.provider.opensearch;
 
 import java.time.Duration;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "qwenbridge.search.opensearch")
 public record OpenSearchProperties(
     String baseUrl, String index, int defaultSize, Duration connectTimeout, Duration readTimeout) {
   public OpenSearchProperties {

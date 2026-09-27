@@ -7,7 +7,6 @@ This guide documents the release process for QwenBridge Java artifacts.
 QwenBridge publishes these Maven artifacts:
 
 - `io.qwenbridge:qwenbridge-java-sdk`
-- `io.qwenbridge:qwenbridge-spring-boot-starter`
 
 The server module is an application and is not intended to be published as a reusable Maven library.
 

@@ -7,9 +7,9 @@ import io.qwenbridge.threat.ThreatResult;
 import io.qwenbridge.threat.ThreatService;
 import io.qwenbridge.threat.model.ThreatAnalysis;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 @RequiredArgsConstructor
 public class ThreatStep implements PipelineStep<ThreatResult> {
 

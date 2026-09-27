@@ -11,9 +11,9 @@ import java.io.Reader;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.springframework.stereotype.Service;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Service
+@ApplicationScoped
 public class DefaultBenchmarkEvaluationRunner implements BenchmarkEvaluationRunner {
 
   private final BenchmarkDatasetLoader datasetLoader;

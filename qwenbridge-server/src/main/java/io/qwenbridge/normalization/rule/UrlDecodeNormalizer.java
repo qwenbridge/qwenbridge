@@ -2,9 +2,9 @@ package io.qwenbridge.normalization.rule;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class UrlDecodeNormalizer implements InputNormalizationRule {
 
   private static final int MAX_DECODE_DEPTH = 3;

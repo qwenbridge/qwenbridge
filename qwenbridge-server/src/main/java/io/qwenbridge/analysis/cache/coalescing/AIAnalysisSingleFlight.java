@@ -6,9 +6,9 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class AIAnalysisSingleFlight {
 
   private final ConcurrentHashMap<CacheKey, CompletableFuture<SearchAnalysis>> inFlight =

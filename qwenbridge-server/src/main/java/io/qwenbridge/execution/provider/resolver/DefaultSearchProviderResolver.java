@@ -7,9 +7,9 @@ import io.qwenbridge.execution.provider.spi.SearchProviderResolver;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.context.ContextKeys;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 @RequiredArgsConstructor
 public class DefaultSearchProviderResolver implements SearchProviderResolver {
 

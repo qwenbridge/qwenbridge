@@ -14,9 +14,9 @@ import io.qwenbridge.threat.scoring.ThreatScoringService;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Service
+@ApplicationScoped
 @RequiredArgsConstructor
 public class ThreatService {
 

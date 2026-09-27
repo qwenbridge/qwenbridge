@@ -20,7 +20,6 @@ Run SDK tests:
 
 ```bash
 mvn -pl qwenbridge-java-sdk test
-mvn -pl qwenbridge-spring-boot-starter test
 ```
 
 ## TypeScript SDK tests

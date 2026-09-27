@@ -12,9 +12,9 @@ examples/typescript-sdk-example
 
 ```bash
 cd examples/typescript-sdk-example
-npm ci
-npm run sync-analyze
-npm run typed-stream
+npm install
+npm run sync
+npm run stream
 ```
 
 The package is linked to the local SDK during repository development. For public consumption, replace the local dependency with the published `@qwenbridge/sdk` package version.
