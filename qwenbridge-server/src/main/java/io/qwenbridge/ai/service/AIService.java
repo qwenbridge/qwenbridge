@@ -9,7 +9,7 @@ import io.qwenbridge.ai.contract.StreamingChatRequest;
 import io.qwenbridge.ai.provider.spi.AIProviderResolver;
 import lombok.RequiredArgsConstructor;
 import jakarta.enterprise.context.ApplicationScoped;
-import reactor.core.publisher.Flux;
+import io.smallrye.mutiny.Multi;
 
 @ApplicationScoped
 @RequiredArgsConstructor
@@ -21,7 +21,7 @@ public class AIService {
     return providerResolver.resolveDefault().chat(request);
   }
 
-  public Flux<StreamingChatChunk> streamChat(StreamingChatRequest request) {
+  public Multi<StreamingChatChunk> streamChat(StreamingChatRequest request) {
     return providerResolver.resolveDefault().streamChat(request);
   }
 

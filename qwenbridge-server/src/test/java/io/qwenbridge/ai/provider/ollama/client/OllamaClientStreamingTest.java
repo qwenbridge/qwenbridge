@@ -15,13 +15,16 @@ import io.qwenbridge.ai.provider.ollama.dto.OllamaChatResponse;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaStreamingChatResponse;
 import io.qwenbridge.operations.metrics.OperationsMetrics;
 import io.smallrye.mutiny.Multi;
+import io.qwenbridge.testsupport.MutinyUnitTestExtension;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(MutinyUnitTestExtension.class)
 class OllamaClientStreamingTest {
 
   private final OllamaApiClient api = mock(OllamaApiClient.class);
@@ -36,7 +39,7 @@ class OllamaClientStreamingTest {
     OllamaClient client = client(properties(0));
 
     List<OllamaStreamingChatResponse> responses =
-        client.streamChat(streamingChatRequest()).collectList().block();
+        client.streamChat(streamingChatRequest()).collect().asList().await().indefinitely();
 
     assertThat(responses).hasSize(3);
     assertThat(responses.get(0).content()).isEqualTo("hel");
@@ -51,7 +54,9 @@ class OllamaClientStreamingTest {
 
     OllamaClient client = client(properties(0));
 
-    assertThatThrownBy(() -> client.streamChat(streamingChatRequest()).collectList().block())
+    assertThatThrownBy(
+            () ->
+                client.streamChat(streamingChatRequest()).collect().asList().await().indefinitely())
         .isInstanceOf(AIException.class)
         .hasMessageContaining("Ollama request failed");
   }
@@ -63,7 +68,9 @@ class OllamaClientStreamingTest {
 
     OllamaClient client = client(properties(3));
 
-    assertThatThrownBy(() -> client.streamChat(streamingChatRequest()).collectList().block())
+    assertThatThrownBy(
+            () ->
+                client.streamChat(streamingChatRequest()).collect().asList().await().indefinitely())
         .isInstanceOf(AIException.class);
 
     verify(api, times(1)).streamChat(any());

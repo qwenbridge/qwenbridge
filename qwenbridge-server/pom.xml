@@ -17,7 +17,6 @@
   <properties>
     <maven.deploy.skip>true</maven.deploy.skip>
     <lombok.version>1.18.48</lombok.version>
-    <reactor.version>3.8.7</reactor.version>
     <lingua.version>1.2.2</lingua.version>
     <archunit.version>1.5.0</archunit.version>
     <assertj.version>3.27.6</assertj.version>
@@ -35,11 +34,6 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-config-yaml</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-rest</artifactId>
     </dependency>
 
     <dependency>
@@ -74,6 +68,11 @@
 
     <dependency>
       <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-context-propagation</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.quarkus</groupId>
       <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
     </dependency>
 
@@ -85,12 +84,6 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-vertx</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>io.projectreactor</groupId>
-      <artifactId>reactor-core</artifactId>
-      <version>${reactor.version}</version>
     </dependency>
 
     <dependency>

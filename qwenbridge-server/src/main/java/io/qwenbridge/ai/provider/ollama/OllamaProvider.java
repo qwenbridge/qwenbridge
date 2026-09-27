@@ -14,9 +14,10 @@ import io.qwenbridge.ai.provider.ollama.dto.OllamaEmbeddingRequest;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaEmbeddingResponse;
 import io.qwenbridge.ai.provider.support.AbstractAIProvider;
 import io.qwenbridge.ai.value.ProviderId;
+import io.smallrye.mutiny.Multi;
 import jakarta.inject.Singleton;
 import java.util.List;
-import reactor.core.publisher.Flux;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Singleton
 public class OllamaProvider extends AbstractAIProvider {
@@ -46,17 +47,30 @@ public class OllamaProvider extends AbstractAIProvider {
   }
 
   @Override
-  public Flux<StreamingChatChunk> streamChat(StreamingChatRequest request) {
+  public Multi<StreamingChatChunk> streamChat(StreamingChatRequest request) {
     OllamaChatRequest ollamaRequest =
         new OllamaChatRequest(
             properties.chatModel(),
             List.of(new OllamaChatRequest.Message("user", request.prompt())),
             true);
 
+    // Inclusive take-until: emit chunks up to and including the terminal done chunk, then stop.
+    AtomicBoolean doneEmitted = new AtomicBoolean(false);
+
     return client
         .streamChat(ollamaRequest)
         .map(response -> new StreamingChatChunk(response.content(), response.done()))
-        .takeUntil(StreamingChatChunk::done);
+        .select()
+        .first(
+            chunk -> {
+              if (doneEmitted.get()) {
+                return false;
+              }
+              if (chunk.done()) {
+                doneEmitted.set(true);
+              }
+              return true;
+            });
   }
 
   @Override

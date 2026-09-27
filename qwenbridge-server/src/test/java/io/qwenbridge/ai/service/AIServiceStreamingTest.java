@@ -8,10 +8,13 @@ import io.qwenbridge.ai.contract.StreamingChatChunk;
 import io.qwenbridge.ai.contract.StreamingChatRequest;
 import io.qwenbridge.ai.provider.spi.AIProvider;
 import io.qwenbridge.ai.provider.spi.AIProviderResolver;
+import io.qwenbridge.testsupport.MutinyUnitTestExtension;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Flux;
+import org.junit.jupiter.api.extension.ExtendWith;
+import io.smallrye.mutiny.Multi;
 
+@ExtendWith(MutinyUnitTestExtension.class)
 class AIServiceStreamingTest {
 
   private final AIProviderResolver providerResolver = mock(AIProviderResolver.class);
@@ -28,9 +31,10 @@ class AIServiceStreamingTest {
 
     when(providerResolver.resolveDefault()).thenReturn(provider);
     when(provider.streamChat(any(StreamingChatRequest.class)))
-        .thenReturn(Flux.fromIterable(chunks));
+        .thenReturn(Multi.createFrom().iterable(chunks));
 
-    List<StreamingChatChunk> result = aiService.streamChat(request).collectList().block();
+    List<StreamingChatChunk> result =
+        aiService.streamChat(request).collect().asList().await().indefinitely();
 
     assertThat(result).containsExactlyElementsOf(chunks);
 

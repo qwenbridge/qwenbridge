@@ -17,8 +17,7 @@ import java.time.Duration;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
-import reactor.adapter.JdkFlowAdapter;
-import reactor.core.publisher.Flux;
+import io.smallrye.mutiny.Multi;
 
 @ApplicationScoped
 @Slf4j
@@ -42,15 +41,21 @@ public class OllamaClient {
         "chat", () -> invoke(() -> api.chat(request)), "Ollama chat response was empty");
   }
 
-  public Flux<OllamaStreamingChatResponse> streamChat(OllamaChatRequest request) {
+  public Multi<OllamaStreamingChatResponse> streamChat(OllamaChatRequest request) {
     log.debug("Sending Ollama streaming chat request. model={}", request.model());
     long started = System.nanoTime();
 
-    return Flux.defer(() -> JdkFlowAdapter.flowPublisherToFlux(api.streamChat(request)))
-        .timeout(properties.readTimeout())
-        .doOnComplete(() -> recordProvider("stream", "success", started))
-        .doOnError(throwable -> recordProvider("stream", "failure", started))
-        .onErrorMap(this::mapStreamingError);
+    return Multi.createFrom()
+        .deferred(() -> api.streamChat(request))
+        .ifNoItem()
+        .after(properties.readTimeout())
+        .fail()
+        .onCompletion()
+        .invoke(() -> recordProvider("stream", "success", started))
+        .onFailure()
+        .invoke(throwable -> recordProvider("stream", "failure", started))
+        .onFailure()
+        .transform(this::mapStreamingError);
   }
 
   public OllamaEmbeddingResponse embed(OllamaEmbeddingRequest request) {

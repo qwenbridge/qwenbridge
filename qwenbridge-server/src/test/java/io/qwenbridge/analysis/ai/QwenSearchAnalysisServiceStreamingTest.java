@@ -20,11 +20,14 @@ import io.qwenbridge.analysis.prompt.SearchAnalysisPromptBuilder;
 import io.qwenbridge.streaming.ai.AIStreamingEventPublisher;
 import io.qwenbridge.streaming.config.StreamingProperties;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
+import io.qwenbridge.testsupport.MutinyUnitTestExtension;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
-import reactor.core.publisher.Flux;
+import io.smallrye.mutiny.Multi;
 
+@ExtendWith(MutinyUnitTestExtension.class)
 class QwenSearchAnalysisServiceStreamingTest {
 
   private final AIService aiService = mock(AIService.class);
@@ -67,10 +70,11 @@ class QwenSearchAnalysisServiceStreamingTest {
 
     when(aiService.streamChat(any(StreamingChatRequest.class)))
         .thenReturn(
-            Flux.just(
-                new StreamingChatChunk("{\"intent\":", false),
-                new StreamingChatChunk("\"SEARCH\"}", false),
-                new StreamingChatChunk("", true)));
+            Multi.createFrom()
+                .items(
+                    new StreamingChatChunk("{\"intent\":", false),
+                    new StreamingChatChunk("\"SEARCH\"}", false),
+                    new StreamingChatChunk("", true)));
 
     when(parser.parse("{\"intent\":\"SEARCH\"}", "desk")).thenReturn(analysis);
 
@@ -103,7 +107,7 @@ class QwenSearchAnalysisServiceStreamingTest {
     when(promptBuilder.build("desk")).thenReturn("prompt");
 
     when(aiService.streamChat(any(StreamingChatRequest.class)))
-        .thenReturn(Flux.error(new RuntimeException("ollama unavailable")));
+        .thenReturn(Multi.createFrom().failure(new RuntimeException("ollama unavailable")));
 
     SearchAnalysis result = service.analyze("desk", "request-1");
 
@@ -156,10 +160,11 @@ class QwenSearchAnalysisServiceStreamingTest {
 
     when(aiService.streamChat(any(StreamingChatRequest.class)))
         .thenReturn(
-            Flux.just(
-                new StreamingChatChunk("first", false),
-                new StreamingChatChunk("second", false),
-                new StreamingChatChunk("third", false)));
+            Multi.createFrom()
+                .items(
+                    new StreamingChatChunk("first", false),
+                    new StreamingChatChunk("second", false),
+                    new StreamingChatChunk("third", false)));
 
     SearchAnalysis result = service.analyze("desk", "request-1");
 
@@ -195,8 +200,10 @@ class QwenSearchAnalysisServiceStreamingTest {
 
     when(aiService.streamChat(any(StreamingChatRequest.class)))
         .thenReturn(
-            Flux.just(
-                new StreamingChatChunk("first", false), new StreamingChatChunk("second", false)));
+            Multi.createFrom()
+                .items(
+                    new StreamingChatChunk("first", false),
+                    new StreamingChatChunk("second", false)));
 
     SearchAnalysis result = limitedService.analyze("desk", "request-1");
 

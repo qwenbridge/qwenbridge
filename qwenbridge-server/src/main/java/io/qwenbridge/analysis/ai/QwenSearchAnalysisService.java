@@ -124,9 +124,13 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
     try {
       aiService
           .streamChat(new StreamingChatRequest(prompt))
-          .timeout(streamingProperties.maxAiStreamDuration())
-          .takeWhile(chunk -> !streamingSessionRegistry.isRequestCancelled(requestId))
-          .doOnNext(
+          .ifNoItem()
+          .after(streamingProperties.maxAiStreamDuration())
+          .fail()
+          .select()
+          .first(chunk -> !streamingSessionRegistry.isRequestCancelled(requestId))
+          .onItem()
+          .invoke(
               chunk -> {
                 if (!streamingSessionRegistry.isRequestCancelled(requestId)
                     && chunk.content() != null
@@ -142,7 +146,10 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
                   streamingEventPublisher.token(requestId, index, chunk.content());
                 }
               })
-          .blockLast(cacheProperties.analysisTimeout());
+          .collect()
+          .last()
+          .await()
+          .atMost(cacheProperties.analysisTimeout());
 
       if (streamingSessionRegistry.isRequestCancelled(requestId)) {
         return SearchAnalysis.fallback(query);
