@@ -93,7 +93,7 @@ jobs:
           -DfailBuildOnCVSS=11
           -Dformat=HTML
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: always()
         with:
           name: dependency-check-report
@@ -121,7 +121,7 @@ jobs:
           ignorefile: .trivyignore
 
       - name: Upload Trivy report
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: always()
         with:
           name: trivy-container-scan-report
@@ -150,7 +150,7 @@ jobs:
         run: docker build -f qwenbridge-server/Dockerfile -t qwenbridge:ci .
       - name: Verify image metadata
         run: docker image inspect qwenbridge:ci >/tmp/qwenbridge-image.json
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: docker-release-evidence
           path: /tmp/qwenbridge-image.json
