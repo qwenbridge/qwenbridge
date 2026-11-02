@@ -93,9 +93,11 @@ docker_pull_build_up() {
   fi
 
   if [[ "${APP_IMAGE_PREBUILT}" == "true" ]]; then
-    # Fails when the image is missing; it is never pulled or silently rebuilt.
+    # The other services' images are still pulled when missing. The application image is never
+    # rebuilt here: if it is missing, Compose looks for it in a registry, where it does not exist,
+    # and the step fails.
     info "APP_IMAGE_PREBUILT=true, starting the application image built before this run."
-    compose up -d --no-build --pull never --force-recreate --remove-orphans || return 1
+    compose up -d --no-build --force-recreate --remove-orphans || return 1
   else
     if [[ "${NO_CACHE_BUILD}" == "true" ]]; then
       compose build --no-cache || return 1
