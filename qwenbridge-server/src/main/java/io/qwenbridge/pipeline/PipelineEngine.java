@@ -1,21 +1,20 @@
 package io.qwenbridge.pipeline;
 
+import io.quarkus.arc.All;
 import io.qwenbridge.event.model.PipelineEventMetadata;
 import io.qwenbridge.event.model.PipelineEvents;
 import io.qwenbridge.event.snapshot.PipelineContextSnapshotFactory;
 import io.qwenbridge.event.spi.PipelineEventPublisher;
 import io.qwenbridge.pipeline.result.PipelineTraceItem;
 import io.qwenbridge.pipeline.step.PipelineStep;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-@Component
-@RequiredArgsConstructor
+@ApplicationScoped
 public class PipelineEngine {
 
   private final List<PipelineStep<?>> steps;
@@ -23,6 +22,15 @@ public class PipelineEngine {
   private final PipelineEventPublisher publisher;
 
   private final PipelineContextSnapshotFactory snapshotFactory;
+
+  public PipelineEngine(
+      @All List<PipelineStep<?>> steps,
+      PipelineEventPublisher publisher,
+      PipelineContextSnapshotFactory snapshotFactory) {
+    this.steps = List.copyOf(steps);
+    this.publisher = publisher;
+    this.snapshotFactory = snapshotFactory;
+  }
 
   public void execute(ExecutionContext context) {
 

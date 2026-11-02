@@ -4,12 +4,12 @@ import io.qwenbridge.threat.correlation.rule.ThreatCorrelationCondition;
 import io.qwenbridge.threat.correlation.rule.ThreatCorrelationRule;
 import io.qwenbridge.threat.model.ThreatFinding;
 import io.qwenbridge.threat.model.ThreatType;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.springframework.stereotype.Component;
 
-@Component
+@ApplicationScoped
 public class DefaultThreatCorrelationEvaluator implements ThreatCorrelationEvaluator {
 
   @Override

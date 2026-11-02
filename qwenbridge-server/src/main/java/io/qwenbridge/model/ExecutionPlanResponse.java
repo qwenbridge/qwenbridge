@@ -12,6 +12,10 @@ public record ExecutionPlanResponse(
     SearchBackend backend,
     List<ExecutionStepResponse> steps,
     String reason) {
+  public ExecutionPlanResponse {
+    steps = steps == null ? List.of() : List.copyOf(steps);
+  }
+
   public static ExecutionPlanResponse unavailable() {
     return ExecutionPlanResponse.builder()
         .available(false)

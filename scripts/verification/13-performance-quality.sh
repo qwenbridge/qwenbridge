@@ -6,6 +6,9 @@ v9_quality_performance_scripts_validation() {
     && [[ -f "scripts/performance/k6-language-quality-test.js" ]] \
     && [[ -f "scripts/performance/k6-retrieval-quality-test.js" ]] \
     && [[ -f "scripts/performance/k6-resilience-test.js" ]] \
+    && [[ -f "scripts/performance/k6-commerce-quality-test.js" ]] \
+    && [[ -f "scripts/performance/k6-commerce-throughput-test.js" ]] \
+    && grep -q "commerce_constraints" scripts/performance/commerce-workload.js \
     && grep -q "security_inputs" scripts/performance/k6-security-input-test.js \
     && grep -q "language_quality" scripts/performance/k6-language-quality-test.js \
     && grep -q "retrieval_quality" scripts/performance/k6-retrieval-quality-test.js \

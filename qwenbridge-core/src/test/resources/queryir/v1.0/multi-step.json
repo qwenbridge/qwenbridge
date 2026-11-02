@@ -1,0 +1,159 @@
+{
+  "irVersion": "1.0",
+  "originalText": "Find a laptop and a wireless mouse, both suitable for travel",
+  "language": "en",
+  "intents": [
+    {
+      "id": "i1",
+      "type": "search",
+      "confidence": {
+        "kind": "HEURISTIC"
+      },
+      "span": {
+        "start": 0,
+        "end": 4,
+        "text": "Find"
+      }
+    }
+  ],
+  "constraints": [
+    {
+      "id": "c1",
+      "field": "category",
+      "operator": "EQ",
+      "value": {
+        "type": "text",
+        "value": "laptop"
+      },
+      "strength": "HARD",
+      "provenance": "USER_TEXT",
+      "reason": "requested item",
+      "span": {
+        "start": 7,
+        "end": 13,
+        "text": "laptop"
+      },
+      "confidence": {
+        "kind": "DETERMINISTIC"
+      },
+      "scope": "s1"
+    },
+    {
+      "id": "c2",
+      "field": "category",
+      "operator": "EQ",
+      "value": {
+        "type": "text",
+        "value": "mouse"
+      },
+      "strength": "HARD",
+      "provenance": "USER_TEXT",
+      "reason": "requested item",
+      "span": {
+        "start": 29,
+        "end": 34,
+        "text": "mouse"
+      },
+      "confidence": {
+        "kind": "DETERMINISTIC"
+      },
+      "scope": "s2"
+    },
+    {
+      "id": "c3",
+      "field": "connectivity",
+      "operator": "EQ",
+      "value": {
+        "type": "text",
+        "value": "wireless"
+      },
+      "strength": "HARD",
+      "provenance": "USER_TEXT",
+      "reason": "explicit attribute of the second item",
+      "span": {
+        "start": 20,
+        "end": 28,
+        "text": "wireless"
+      },
+      "confidence": {
+        "kind": "DETERMINISTIC"
+      },
+      "scope": "s2"
+    },
+    {
+      "id": "c4",
+      "field": "price",
+      "operator": "BETWEEN",
+      "value": {
+        "type": "range",
+        "min": {
+          "type": "money",
+          "amount": 10.5,
+          "currency": "EUR"
+        },
+        "max": {
+          "type": "money",
+          "amount": 2000,
+          "currency": "EUR"
+        },
+        "minInclusive": true,
+        "maxInclusive": false
+      },
+      "strength": "SOFT",
+      "provenance": "CONTEXT",
+      "reason": "budget carried from conversation context",
+      "confidence": {
+        "kind": "DETERMINISTIC"
+      }
+    }
+  ],
+  "semanticSignals": [
+    {
+      "id": "g1",
+      "concept": "travel_friendly",
+      "polarity": "POSITIVE",
+      "target": "product",
+      "span": {
+        "start": 41,
+        "end": 60,
+        "text": "suitable for travel"
+      },
+      "confidence": {
+        "kind": "MODEL_DECISION"
+      }
+    }
+  ],
+  "subqueries": [
+    {
+      "id": "s1",
+      "objective": "laptop suitable for travel",
+      "intentIds": [
+        "i1"
+      ],
+      "constraintIds": [
+        "c1"
+      ],
+      "inheritsParentConstraints": true
+    },
+    {
+      "id": "s2",
+      "objective": "wireless mouse suitable for travel",
+      "intentIds": [
+        "i1"
+      ],
+      "constraintIds": [
+        "c2",
+        "c3"
+      ],
+      "inheritsParentConstraints": true
+    }
+  ],
+  "retrievalHints": {
+    "modes": [
+      "LEXICAL",
+      "SEMANTIC",
+      "STRUCTURED"
+    ],
+    "crossLanguage": false
+  }
+}

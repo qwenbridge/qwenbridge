@@ -7,13 +7,13 @@ import io.qwenbridge.evaluation.model.EvaluationQuery;
 import io.qwenbridge.evaluation.model.EvaluationResult;
 import io.qwenbridge.evaluation.policy.EvaluationThresholdPolicy;
 import io.qwenbridge.evaluation.service.RetrievalEvaluationService;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.io.Reader;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.springframework.stereotype.Service;
 
-@Service
+@ApplicationScoped
 public class DefaultBenchmarkEvaluationRunner implements BenchmarkEvaluationRunner {
 
   private final BenchmarkDatasetLoader datasetLoader;

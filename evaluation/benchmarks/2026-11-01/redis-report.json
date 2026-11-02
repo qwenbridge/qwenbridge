@@ -1,0 +1,245 @@
+{
+  "run_id": "bench-redis-20261101-213417",
+  "app_settings": {
+    "APP_PORT": "8080",
+    "OPENSEARCH_INDEX": "qwenbridge-verify-batch30a-master-20261101-185217",
+    "QWENBRIDGE_ANALYSIS_CACHE_KEY_PREFIX": "qwenbridge:performance:batch30a-master-20261101-185217",
+    "QWENBRIDGE_AI_OLLAMA_BASE_URL": "http://qwenbridge-ollama:11434",
+    "QWENBRIDGE_ABUSE_PER_IP_LIMIT": "100000000",
+    "QWENBRIDGE_ABUSE_AI_REQUEST_QUOTA": "100000000"
+  },
+  "profile": "full",
+  "base_url": "http://localhost:8080",
+  "started": "2026-11-01T21:34:20+0100",
+  "environment": {
+    "host_cpu": "Apple M4 Pro",
+    "host_memory": "51539607552",
+    "os": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "docker": "28.5.1",
+    "docker_cpus": "8",
+    "docker_memory_bytes": "24899309568",
+    "app_container_limits": "1073741824|0|quarkus-qwenbridge-app",
+    "app_java": "Picked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=55 -XX:InitialRAMPercentage=25 -XX:+ExitOnOutOfMemoryError\nopenjdk version \"25.0.5\" 2026-10-20 LTS\nOpenJDK Runtime Environment Temurin-25.0.5+8 (build 25.0.5+8-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.5+8 (build 25.0.5+8-LTS, mixed mode, sharing)",
+    "app_java_opts": "-XX:MaxRAMPercentage=55 -XX:InitialRAMPercentage=25 -XX:+ExitOnOutOfMemoryError",
+    "quarkus": "3.40.1"
+  },
+  "phases": [
+    {
+      "name": "redis-on-fill",
+      "description": "v1 analyze, the 20 queries once (cache fill)",
+      "offered_load": {
+        "vus": 1
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 79.2,
+      "requests": 20,
+      "achieved_rps": 0.2631492142752607,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 3999.241,
+        "p(95)": 4380.091549999999,
+        "p(99)": 4508.32711,
+        "max": 4540.386,
+        "avg": 3799.735449999999
+      },
+      "outcomes": {
+        "ok": 20
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {},
+      "resources": {
+        "samples": 22,
+        "process_cpu_avg": 0.007305093270987172,
+        "process_cpu_max": 0.03571428571428571,
+        "heap_used_max_bytes": 141458600.0,
+        "heap_used_growth_bytes": 83961944.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 7.0,
+        "gc_pause_seconds": 0.112,
+        "threads_max": 25.0,
+        "inflight_max": null,
+        "container_cpu_percent_avg": 9.090909090909092,
+        "container_memory_max_bytes": 385771110.4
+      },
+      "redis": {
+        "total_commands_processed": 99,
+        "keyspace_hits": 0,
+        "keyspace_misses": 20,
+        "commands_per_request": 4.95
+      }
+    },
+    {
+      "name": "redis-on",
+      "description": "v1 analyze, 20 distinct queries at 1 VU, Redis cache on and warm",
+      "offered_load": {
+        "vus": 1
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 1.6,
+      "requests": 20,
+      "achieved_rps": 90.14247017411017,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 10.1415,
+        "p(95)": 15.569649999999996,
+        "p(99)": 18.710729999999998,
+        "max": 19.496,
+        "avg": 10.8993
+      },
+      "outcomes": {
+        "ok": 20
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {},
+      "resources": {
+        "samples": 1,
+        "process_cpu_avg": 0.05128205128205128,
+        "process_cpu_max": 0.05128205128205128,
+        "heap_used_max_bytes": 125733280.0,
+        "heap_used_growth_bytes": null,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": null,
+        "gc_pause_seconds": null,
+        "threads_max": 25.0,
+        "inflight_max": null,
+        "container_cpu_percent_avg": 29.84,
+        "container_memory_max_bytes": 385980825.6
+      },
+      "redis": {
+        "total_commands_processed": 61,
+        "keyspace_hits": 20,
+        "keyspace_misses": 0,
+        "commands_per_request": 3.05
+      }
+    },
+    {
+      "name": "redis-off",
+      "description": "v1 analyze, 20 distinct queries at 1 VU (redis-off)",
+      "offered_load": {
+        "vus": 1,
+        "iterations": 20
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 78.1,
+      "requests": 20,
+      "achieved_rps": 0.2577755580438057,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 4092.4875,
+        "p(95)": 4385.06845,
+        "p(99)": 4618.10649,
+        "max": 4676.366,
+        "avg": 3879.07955
+      },
+      "outcomes": {
+        "ok": 20
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {},
+      "resources": {
+        "samples": 22,
+        "process_cpu_avg": 0.004553306204817641,
+        "process_cpu_max": 0.024637573388375668,
+        "heap_used_max_bytes": 161026872.0,
+        "heap_used_growth_bytes": 64570728.0,
+        "heap_max_bytes": 12884901886.0,
+        "gc_pauses": 8.0,
+        "gc_pause_seconds": 0.022000000000000002,
+        "threads_max": 31.0,
+        "inflight_max": null,
+        "container_cpu_percent_avg": 0.052727272727272734,
+        "container_memory_max_bytes": 392481996.8
+      },
+      "redis": {
+        "total_commands_processed": 16,
+        "keyspace_hits": 0,
+        "keyspace_misses": 0,
+        "commands_per_request": 0.8
+      },
+      "configuration": {
+        "QWENBRIDGE_ANALYSIS_CACHE_ENABLED": "false",
+        "QUARKUS_REDIS_HOSTS": "redis://127.0.0.1:9"
+      }
+    },
+    {
+      "name": "redis-unavailable",
+      "description": "v1 analyze, 20 distinct queries at 1 VU (redis-unavailable)",
+      "offered_load": {
+        "vus": 1,
+        "iterations": 20
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 79.8,
+      "requests": 20,
+      "achieved_rps": 0.251480819658477,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 4181.9425,
+        "p(95)": 4761.65325,
+        "p(99)": 4762.62985,
+        "max": 4762.874,
+        "avg": 3976.18725
+      },
+      "outcomes": {
+        "ok": 20
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {},
+      "resources": {
+        "samples": 22,
+        "process_cpu_avg": 0.004441662629288926,
+        "process_cpu_max": 0.024265489930132073,
+        "heap_used_max_bytes": 170069776.0,
+        "heap_used_growth_bytes": 72288528.0,
+        "heap_max_bytes": 12884901886.0,
+        "gc_pauses": 8.0,
+        "gc_pause_seconds": 0.02,
+        "threads_max": 31.0,
+        "inflight_max": null,
+        "container_cpu_percent_avg": 0.07636363636363636,
+        "container_memory_max_bytes": 392691712.0
+      },
+      "redis": {
+        "total_commands_processed": 17,
+        "keyspace_hits": 0,
+        "keyspace_misses": 0,
+        "commands_per_request": 0.85
+      },
+      "configuration": {
+        "QWENBRIDGE_ANALYSIS_CACHE_ENABLED": "true",
+        "QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST": "127.0.0.1",
+        "QWENBRIDGE_ANALYSIS_CACHE_REDIS_PORT": "9",
+        "QUARKUS_REDIS_HOSTS": "redis://127.0.0.1:9"
+      }
+    }
+  ],
+  "finished": "2026-11-01T21:38:24+0100"
+}

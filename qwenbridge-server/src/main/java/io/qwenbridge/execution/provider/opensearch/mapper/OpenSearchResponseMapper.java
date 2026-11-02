@@ -3,11 +3,11 @@ package io.qwenbridge.execution.provider.opensearch.mapper;
 import io.qwenbridge.execution.provider.model.SearchHit;
 import io.qwenbridge.execution.provider.model.SearchResponse;
 import io.qwenbridge.execution.provider.model.SearchResultSet;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Map;
-import org.springframework.stereotype.Component;
 
-@Component
+@ApplicationScoped
 public class OpenSearchResponseMapper {
 
   @SuppressWarnings("unchecked")

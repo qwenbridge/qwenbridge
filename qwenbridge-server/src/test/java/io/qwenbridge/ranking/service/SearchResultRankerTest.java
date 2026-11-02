@@ -59,6 +59,21 @@ class SearchResultRankerTest {
   }
 
   @Test
+  void shouldPreserveRelevanceOrderingForBackendScoresAboveOne() {
+    var source =
+        new SearchResultSet(
+            List.of(
+                SearchHit.of("a-low", 3.0, Map.of("title", "Less relevant")),
+                SearchHit.of("z-high", 12.0, Map.of("title", "More relevant"))),
+            2,
+            1);
+    var ranked = ranker.rank(source);
+    assertThat(ranked.hits()).extracting(SearchHit::id).containsExactly("z-high", "a-low");
+    assertThat(ranked.hits().getFirst().metadata()).containsEntry("originalScore", 12.0);
+    assertThat(ranked.hits().getFirst().score()).isGreaterThan(ranked.hits().getLast().score());
+  }
+
+  @Test
   void shouldReturnEmptyResultSetForNullOrEmptyInput() {
     assertThat(ranker.rank(null).isEmpty()).isTrue();
     assertThat(ranker.rank(SearchResultSet.empty()).isEmpty()).isTrue();

@@ -1,0 +1,346 @@
+{
+  "id": "commerce-demo",
+  "version": "1.0",
+  "domain": "commerce",
+  "connector": "http-json",
+  "description": "Synthetic, reproducible Commerce catalog for the Playground and service-free tests (QB-203). Every record is invented. Stable ids; each edge case is described in its record's description.",
+  "edgeCases": {
+    "refurbished": "demo-shoe-02",
+    "overBudget": "demo-shoe-03",
+    "otherColour": "demo-shoe-04",
+    "otherBrand": "demo-shoe-05",
+    "outOfStock": "demo-shoe-06",
+    "otherSize": "demo-shoe-07",
+    "otherCurrency": "demo-shoe-08",
+    "conditionUnstated": "demo-shoe-09",
+    "caseAndLanguageVariants": "demo-shoe-10",
+    "priceBoundary": "demo-shoe-11",
+    "persianTitle": "demo-shoe-12",
+    "swedishTitle": "demo-shoe-13"
+  },
+  "records": [
+    {
+      "id": "demo-shoe-01",
+      "title": "Nike Pegasus running shoes",
+      "brand": "Nike",
+      "category": "Footwear",
+      "color": "black",
+      "size": "42",
+      "price": "89.90",
+      "currency": "EUR",
+      "description": "Neutral road running shoe with a cushioned midsole.",
+      "inStock": true,
+      "condition": "new"
+    },
+    {
+      "id": "demo-shoe-02",
+      "title": "Nike Pegasus running shoes (refurbished)",
+      "brand": "Nike",
+      "category": "Footwear",
+      "color": "black",
+      "size": "42",
+      "price": "59.00",
+      "currency": "EUR",
+      "description": "Inspected and cleaned; minor marks.",
+      "inStock": true,
+      "condition": "refurbished"
+    },
+    {
+      "id": "demo-shoe-03",
+      "title": "Nike Pegasus Trail shoes",
+      "brand": "Nike",
+      "category": "Footwear",
+      "color": "black",
+      "size": "42",
+      "price": "129.00",
+      "currency": "EUR",
+      "description": "Trail running shoe with a rugged outsole.",
+      "inStock": true,
+      "condition": "new"
+    },
+    {
+      "id": "demo-shoe-04",
+      "title": "Nike Court Vision sneakers",
+      "brand": "Nike",
+      "category": "Footwear",
+      "color": "white",
+      "size": "42",
+      "price": "79.00",
+      "currency": "EUR",
+      "description": "Low-top leather sneaker.",
+      "inStock": true,
+      "condition": "new"
+    },
+    {
+      "id": "demo-shoe-05",
+      "title": "Adidas Runfalcon running shoes",
+      "brand": "Adidas",
+      "category": "Footwear",
+      "color": "black",
+      "size": "42",
+      "price": "64.95",
+      "currency": "EUR",
+      "description": "Lightweight everyday running shoe.",
+      "inStock": true,
+      "condition": "new"
+    },
+    {
+      "id": "demo-shoe-06",
+      "title": "Nike Revolution walking shoes",
+      "brand": "Nike",
+      "category": "Footwear",
+      "color": "black",
+      "size": "42",
+      "price": "55.00",
+      "currency": "EUR",
+      "description": "Out of stock: walking shoe with a soft foam sole.",
+      "inStock": false,
+      "condition": "new"
+    },
+    {
+      "id": "demo-shoe-07",
+      "title": "Nike Downshifter road shoes",
+      "brand": "Nike",
+      "category": "Footwear",
+      "color": "black",
+      "size": "43",
+      "price": "74.00",
+      "currency": "EUR",
+      "description": "Size 43 road running shoe.",
+      "inStock": true,
+      "condition": "new"
+    },
+    {
+      "id": "demo-shoe-08",
+      "title": "Nike Air Max city shoes",
+      "brand": "Nike",
+      "category": "Footwear",
+      "color": "black",
+      "size": "42",
+      "price": "849.00",
+      "currency": "SEK",
+      "description": "Priced in Swedish kronor.",
+      "inStock": true,
+      "condition": "new"
+    },
+    {
+      "id": "demo-shoe-09",
+      "title": "Nike gym trainers",
+      "brand": "Nike",
+      "category": "Footwear",
+      "color": "black",
+      "size": "42",
+      "price": "99.00",
+      "currency": "EUR",
+      "description": "Condition not stated by the merchant.",
+      "inStock": true
+    },
+    {
+      "id": "demo-shoe-10",
+      "title": "NIKE black sneakers",
+      "brand": "NIKE",
+      "category": "Footwear",
+      "color": "Noir",
+      "size": "42",
+      "price": "49.00",
+      "currency": "EUR",
+      "description": "Brand and colour written differently by the merchant.",
+      "inStock": true,
+      "condition": "new"
+    },
+    {
+      "id": "demo-shoe-11",
+      "title": "Nike Pegasus running shoes",
+      "brand": "Nike",
+      "category": "Footwear",
+      "color": "black",
+      "size": "42",
+      "price": "100.00",
+      "currency": "EUR",
+      "description": "Exactly 100 EUR: outside an 'under 100 EUR' budget.",
+      "inStock": true,
+      "condition": "new"
+    },
+    {
+      "id": "demo-bag-01",
+      "title": "Osprey Daylite backpack",
+      "brand": "Osprey",
+      "category": "Bags",
+      "color": "white",
+      "size": "OS",
+      "price": "60.00",
+      "currency": "EUR",
+      "description": "13 litre day backpack.",
+      "inStock": true,
+      "condition": "new"
+    },
+    {
+      "id": "demo-bag-02",
+      "title": "Fjällräven Kånken ryggsäck",
+      "brand": "Fjällräven",
+      "category": "Bags",
+      "color": "black",
+      "size": "OS",
+      "price": "95.00",
+      "currency": "EUR",
+      "description": "Klassisk ryggsäck i Vinylon F (Swedish title).",
+      "inStock": true,
+      "condition": "new"
+    },
+    {
+      "id": "demo-shoe-12",
+      "title": "کفش دویدن نایک",
+      "brand": "Nike",
+      "category": "Footwear",
+      "color": "black",
+      "size": "42",
+      "price": "79.00",
+      "currency": "EUR",
+      "description": "Persian title: Nike running shoes.",
+      "inStock": true,
+      "condition": "new"
+    },
+    {
+      "id": "demo-shoe-13",
+      "title": "Nike löparskor",
+      "brand": "Nike",
+      "category": "Footwear",
+      "color": "black",
+      "size": "42",
+      "price": "92.00",
+      "currency": "EUR",
+      "description": "Swedish title: Nike running shoes.",
+      "inStock": true,
+      "condition": "new"
+    },
+    {
+      "id": "demo-jacket-01",
+      "title": "Patagonia Torrentshell rain jacket",
+      "brand": "Patagonia",
+      "category": "Clothing",
+      "color": "blue",
+      "size": "M",
+      "price": "149.00",
+      "currency": "EUR",
+      "description": "Waterproof shell jacket.",
+      "inStock": true,
+      "condition": "new"
+    }
+  ],
+  "expectations": [
+    {
+      "name": "every-constraint",
+      "query": "black Nike shoes size 42 under 100 EUR not refurbished in stock",
+      "constraints": [
+        [
+          "brand",
+          "EQ",
+          "Nike"
+        ],
+        [
+          "color",
+          "EQ",
+          "black"
+        ],
+        [
+          "size",
+          "EQ",
+          "42"
+        ],
+        [
+          "price",
+          "LT",
+          "100"
+        ],
+        [
+          "currency",
+          "EQ",
+          "EUR"
+        ],
+        [
+          "condition",
+          "NE",
+          "refurbished"
+        ],
+        [
+          "inStock",
+          "EQ",
+          "true"
+        ]
+      ],
+      "expected": [
+        "demo-shoe-01",
+        "demo-shoe-10",
+        "demo-shoe-12",
+        "demo-shoe-13"
+      ],
+      "why": "Only products meeting every constraint; 02 refurbished, 03 and 11 not under 100, 04 white, 05 Adidas, 06 out of stock, 07 size 43, 08 SEK, 09 condition unstated.",
+      "contract": "apiVersion 2 (no contract)"
+    },
+    {
+      "name": "every-constraint-planned",
+      "contract": "commerce-search/1.0",
+      "query": "black Nike shoes size 42 under 100 EUR not refurbished in stock",
+      "constraints": [
+        [
+          "brand",
+          "EQ",
+          "Nike"
+        ],
+        [
+          "color",
+          "EQ",
+          "black"
+        ],
+        [
+          "size",
+          "EQ",
+          "42"
+        ],
+        [
+          "price",
+          "LT",
+          "100"
+        ],
+        [
+          "currency",
+          "EQ",
+          "EUR"
+        ],
+        [
+          "condition",
+          "NE",
+          "refurbished"
+        ],
+        [
+          "inStock",
+          "EQ",
+          "true"
+        ]
+      ],
+      "expected": [
+        "demo-shoe-01",
+        "demo-shoe-09",
+        "demo-shoe-10",
+        "demo-shoe-12",
+        "demo-shoe-13"
+      ],
+      "why": "Same query under the planned contract. Neutral filter semantics (ADR 0025): an exclusion (condition NE refurbished) keeps documents that lack the field, so demo-shoe-09 (condition unstated) is included; apiVersion 2 requires a stated condition and excludes it."
+    },
+    {
+      "name": "brand-and-category",
+      "query": "Osprey backpack",
+      "constraints": [
+        [
+          "brand",
+          "EQ",
+          "Osprey"
+        ]
+      ],
+      "expected": [
+        "demo-bag-01"
+      ],
+      "why": "One Osprey product."
+    }
+  ]
+}

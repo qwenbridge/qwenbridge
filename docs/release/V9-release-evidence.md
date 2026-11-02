@@ -1,5 +1,7 @@
 # V9 Release Evidence
 
+> Historical release record. The current application is Quarkus on Java 25; the Spring Boot starter was removed. See [current phase audit](../platform/phase-acceptance.md).
+
 ## Release objective
 
 V9 delivers the first QwenBridge developer platform surface: a Java SDK for the Search Analyze API, resilient sync and async client calls, runnable examples, and developer documentation.

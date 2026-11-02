@@ -8,8 +8,8 @@ import lombok.Builder;
 public record ExecutionResult(
     boolean executed, List<ExecutionOperation> operations, List<String> results, String reason) {
   public ExecutionResult {
-    Objects.requireNonNull(operations, "operations must not be null");
-    Objects.requireNonNull(results, "results must not be null");
+    operations = List.copyOf(Objects.requireNonNull(operations, "operations must not be null"));
+    results = List.copyOf(Objects.requireNonNull(results, "results must not be null"));
 
     if (reason == null || reason.isBlank()) {
       reason = "No execution result reason provided.";

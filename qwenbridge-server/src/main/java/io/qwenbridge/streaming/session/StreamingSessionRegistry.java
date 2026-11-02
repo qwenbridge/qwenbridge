@@ -2,16 +2,16 @@ package io.qwenbridge.streaming.session;
 
 import io.qwenbridge.operations.metrics.OperationsMetrics;
 import io.qwenbridge.streaming.config.StreamingProperties;
-import java.io.IOException;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.sse.Sse;
+import jakarta.ws.rs.sse.SseEventSink;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-@Component
+@ApplicationScoped
 public class StreamingSessionRegistry {
 
   private final StreamingProperties properties;
@@ -27,25 +27,28 @@ public class StreamingSessionRegistry {
   }
 
   public StreamingSession register(String requestId) {
-    return register(requestId, properties.sessionTimeoutMs());
+    return register(requestId, new SessionSink.NoOp());
   }
 
-  public StreamingSession register(String requestId, long timeoutMs) {
+  public StreamingSession register(String requestId, SseEventSink eventSink, Sse sse) {
+    return register(requestId, new JaxRsSessionSink(eventSink, sse));
+  }
+
+  public StreamingSession register(String requestId, SessionSink sink) {
     String sessionId = UUID.randomUUID().toString();
-    SseEmitter emitter = new SseEmitter(timeoutMs);
 
     cancelledRequests.remove(requestId);
 
-    StreamingSession session = new StreamingSession(sessionId, requestId, emitter);
-
-    emitter.onCompletion(() -> removeAfterEmitterCompletion(sessionId));
-    emitter.onTimeout(() -> removeAfterEmitterCompletion(sessionId));
-    emitter.onError(error -> removeAfterEmitterCompletion(sessionId));
+    StreamingSession session = new StreamingSession(sessionId, requestId, sink);
 
     sessionsById.put(sessionId, session);
     metrics.sessionOpened();
 
     return session;
+  }
+
+  public long sessionTimeoutMs() {
+    return properties.sessionTimeoutMs();
   }
 
   public Optional<StreamingSession> find(String sessionId) {
@@ -81,7 +84,7 @@ public class StreamingSessionRegistry {
 
     if (removed.close()) {
       metrics.sessionClosed("registry");
-      removed.emitter().complete();
+      removed.sink().close();
     }
 
     return true;
@@ -113,16 +116,6 @@ public class StreamingSessionRegistry {
     cancelledRequests.remove(requestId);
   }
 
-  private void removeAfterEmitterCompletion(String sessionId) {
-    StreamingSession removed = sessionsById.remove(sessionId);
-
-    if (removed != null) {
-      removed.close();
-      metrics.sessionClosed("emitter");
-      markCancelledIfNoSessionsRemain(removed.requestId());
-    }
-  }
-
   private void markCancelledIfNoSessionsRemain(String requestId) {
     if (requestId == null || requestId.isBlank()) {
       return;
@@ -134,17 +127,17 @@ public class StreamingSessionRegistry {
   }
 
   private void send(StreamingSession session, String eventId, String eventName, Object payload) {
-    if (session.closed()) {
-      removeAfterEmitterCompletion(session.sessionId());
+    if (session.closed() || session.sink().isClosed()) {
+      remove(session.sessionId());
       return;
     }
 
     try {
       metrics.recordSseEvent(eventName);
-      session.emitter().send(SseEmitter.event().id(eventId).name(eventName).data(payload));
+      session.sink().send(eventId, eventName, payload);
 
       session.touch();
-    } catch (IOException | IllegalStateException ex) {
+    } catch (RuntimeException ex) {
       remove(session.sessionId());
     }
   }

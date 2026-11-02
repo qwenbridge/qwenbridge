@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+# Sourced by scripts/verify-release.sh (not executed directly).
 check_project_root() {
   echo "Project root: ${PROJECT_ROOT}"
 
@@ -10,7 +12,7 @@ check_required_tools() {
   local ok=0
   local cmd=""
 
-  for cmd in git docker curl jq lsof awk grep sed; do
+  for cmd in git curl jq lsof awk grep sed mvn java node npm python3; do
     if require_command "${cmd}"; then
       pass "Command available: ${cmd}"
     else
@@ -18,6 +20,10 @@ check_required_tools() {
       ok=1
     fi
   done
+
+  if [[ "${RELEASE_LIGHTWEIGHT}" == "true" || "${RUN_DOCKER_RUNTIME}" != "true" ]]; then
+    return "${ok}"
+  fi
 
   if docker compose version >/dev/null 2>&1; then
     pass "Command available: docker compose"
@@ -69,7 +75,7 @@ check_git_state() {
   echo "Current branch: ${branch}"
   git status --short
 
-  if [[ "${branch}" != "${EXPECTED_BRANCH}" ]]; then
+  if [[ -n "${EXPECTED_BRANCH}" && "${branch}" != "${EXPECTED_BRANCH}" ]]; then
     warn "Expected branch ${EXPECTED_BRANCH}, current branch is ${branch}"
   fi
 

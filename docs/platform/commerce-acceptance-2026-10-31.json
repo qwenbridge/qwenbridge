@@ -1,0 +1,389 @@
+{
+  "date": "2026-10-31",
+  "run_id": "20261031-094646",
+  "scope": "Selected 19 phases, locally implemented and accepted within documented capability boundaries; not completion of all 50 product phases",
+  "java": 25,
+  "server_framework": "Quarkus/CDI",
+  "phases": [
+    {
+      "phase": 3,
+      "title": "Translation and Mixed-Language Understanding",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 4,
+      "title": "Intent Detection",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 5,
+      "title": "Entity and Constraint Extraction",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 7,
+      "title": "Schema Registry",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 8,
+      "title": "Constraint Validation and Mapping",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 10,
+      "title": "AI Threat Detection",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 11,
+      "title": "Policy and Authorization Engine",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 12,
+      "title": "Explainability and Confidence Model",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 13,
+      "title": "Filterless Commerce Core",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 15,
+      "title": "Query-to-Filter Compilation",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 17,
+      "title": "Ranking and Reranking",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 19,
+      "title": "Search Suggestions and Refinement",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 22,
+      "title": "Commerce Provider Connectors",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 24,
+      "title": "OpenSearch Connector",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 26,
+      "title": "Frontend-Neutral Search API",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 30,
+      "title": "Search Analytics and Evaluation",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 31,
+      "title": "Plugin SDK Foundation",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 34,
+      "title": "AI Provider Pack Architecture",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    },
+    {
+      "phase": 44,
+      "title": "Evidence and Source Attribution",
+      "status": "local_acceptance_passed",
+      "details": "docs/platform/commerce-acceptance-2026-10-31.md"
+    }
+  ],
+  "tests": {
+    "qwenbridge-server": {
+      "tests": 642,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "qwenbridge-java-sdk": {
+      "tests": 39,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "typescript": {
+    "files": 7,
+    "tests": 36,
+    "failed": 0
+  },
+  "verification": {
+    "passed": 75,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": [
+      "Pre-existing uncommitted working tree",
+      "Optional v0.9.1 tag is not on HEAD; strict tag validation was not required"
+    ],
+    "log": "logs/verification/verify-release-20261031-094646.log",
+    "code_quality": "passed",
+    "live_v2_rest_refinement_evidence_sse": "passed",
+    "secure_opensearch": "passed",
+    "opensearch_http_timeout": "passed"
+  },
+  "performance": {
+    "run_id": "20261031-094646",
+    "model_placement": "http://qwenbridge-ollama:11434",
+    "runner": "docker",
+    "phases": {
+      "cold": {
+        "expected_requests": 10,
+        "completed_requests": 10,
+        "completed_iterations": 10,
+        "exit_code": 0,
+        "passed": true,
+        "checks_passed": 60,
+        "checks_failed": 0,
+        "http_error_rate": 0,
+        "p95_ms": 3143.7098805,
+        "p99_ms": 3151.6296105,
+        "cache_hits": 0,
+        "cache_misses": 10,
+        "ai_p95_ms": 3134.55,
+        "redis_pool_rejected": 0.0,
+        "cache_fallbacks": 0,
+        "vus": 1
+      },
+      "warm-1000": {
+        "expected_requests": 1000,
+        "completed_requests": 1000,
+        "completed_iterations": 1000,
+        "exit_code": 0,
+        "passed": true,
+        "checks_passed": 6000,
+        "checks_failed": 0,
+        "http_error_rate": 0,
+        "p95_ms": 20.301184799999998,
+        "p99_ms": 27.91995408,
+        "cache_hits": 1000,
+        "cache_misses": 0,
+        "ai_p95_ms": 2,
+        "redis_pool_rejected": 0.0,
+        "cache_fallbacks": 0,
+        "vus": 10
+      },
+      "warm-10000": {
+        "expected_requests": 10000,
+        "completed_requests": 10000,
+        "completed_iterations": 10000,
+        "exit_code": 0,
+        "passed": true,
+        "checks_passed": 60000,
+        "checks_failed": 0,
+        "http_error_rate": 0,
+        "p95_ms": 26.431033999999997,
+        "p99_ms": 40.99558157999997,
+        "cache_hits": 10000,
+        "cache_misses": 0,
+        "ai_p95_ms": 3,
+        "redis_pool_rejected": 0.0,
+        "cache_fallbacks": 0,
+        "vus": 50
+      },
+      "warm-concurrency": {
+        "expected_requests": 10000,
+        "completed_requests": 10000,
+        "completed_iterations": 10000,
+        "exit_code": 0,
+        "passed": true,
+        "checks_passed": 60000,
+        "checks_failed": 0,
+        "http_error_rate": 0,
+        "p95_ms": 70.67454199999999,
+        "p99_ms": 95.95660783,
+        "cache_hits": 10000,
+        "cache_misses": 0,
+        "ai_p95_ms": 19,
+        "redis_pool_rejected": 0.0,
+        "cache_fallbacks": 0,
+        "vus": 250
+      },
+      "cached-load": {
+        "expected_requests": 1000000,
+        "completed_requests": 1000000,
+        "completed_iterations": 1000000,
+        "exit_code": 0,
+        "passed": true,
+        "checks_passed": 6000000,
+        "checks_failed": 0,
+        "http_error_rate": 0,
+        "p95_ms": 50.88796105,
+        "p99_ms": 59.83213082999999,
+        "cache_hits": 1000000,
+        "cache_misses": 0,
+        "ai_p95_ms": 14,
+        "redis_pool_rejected": 0.0,
+        "cache_fallbacks": 0,
+        "vus": 250
+      },
+      "security-input": {
+        "expected_requests": 9,
+        "completed_requests": 9,
+        "completed_iterations": 9,
+        "exit_code": 0,
+        "passed": true,
+        "checks_passed": 18,
+        "checks_failed": 0,
+        "http_error_rate": 0,
+        "p95_ms": 2.7252164,
+        "p99_ms": 2.93864328,
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "ai_p95_ms": null,
+        "redis_pool_rejected": 0.0,
+        "cache_fallbacks": 0,
+        "vus": 1
+      },
+      "language-quality": {
+        "expected_requests": 11,
+        "completed_requests": 11,
+        "completed_iterations": 11,
+        "exit_code": 0,
+        "passed": true,
+        "checks_passed": 22,
+        "checks_failed": 0,
+        "http_error_rate": 0,
+        "p95_ms": 2592.7106059999996,
+        "p99_ms": 2668.4495227999996,
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "ai_p95_ms": null,
+        "redis_pool_rejected": 0.0,
+        "cache_fallbacks": 0,
+        "vus": 1
+      },
+      "retrieval-quality": {
+        "expected_requests": 5,
+        "completed_requests": 5,
+        "completed_iterations": 5,
+        "exit_code": 0,
+        "passed": true,
+        "checks_passed": 15,
+        "checks_failed": 0,
+        "http_error_rate": 0,
+        "p95_ms": 2431.887323,
+        "p99_ms": 2442.6021318000003,
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "ai_p95_ms": null,
+        "redis_pool_rejected": 0.0,
+        "cache_fallbacks": 0,
+        "vus": 1
+      },
+      "resilience": {
+        "expected_requests": 4,
+        "completed_requests": 4,
+        "completed_iterations": 4,
+        "exit_code": 0,
+        "passed": true,
+        "checks_passed": 8,
+        "checks_failed": 0,
+        "http_error_rate": 0,
+        "p95_ms": 1.5974107499999999,
+        "p99_ms": 1.62961575,
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "ai_p95_ms": null,
+        "redis_pool_rejected": 0.0,
+        "cache_fallbacks": 0,
+        "vus": 1
+      },
+      "commerce-quality": {
+        "expected_requests": 12,
+        "completed_requests": 12,
+        "completed_iterations": 12,
+        "exit_code": 0,
+        "passed": true,
+        "checks_passed": 72,
+        "checks_failed": 0,
+        "http_error_rate": 0,
+        "p95_ms": 4251.1497645,
+        "p99_ms": 4279.4394545,
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "ai_p95_ms": null,
+        "redis_pool_rejected": 0.0,
+        "cache_fallbacks": 0,
+        "vus": 1
+      },
+      "commerce-throughput": {
+        "expected_requests": 10000,
+        "completed_requests": 10000,
+        "completed_iterations": 10000,
+        "exit_code": 0,
+        "passed": true,
+        "checks_passed": 60000,
+        "checks_failed": 0,
+        "http_error_rate": 0,
+        "p95_ms": 65.82441874999999,
+        "p99_ms": 116.24979833999718,
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "ai_p95_ms": null,
+        "redis_pool_rejected": 0.0,
+        "cache_fallbacks": 0,
+        "vus": 100
+      }
+    },
+    "note": "Cold uses cache misses. Throughput phases repeat ten queries; concurrency is VUs, not total requests.",
+    "passed": true
+  },
+  "load_duration_seconds": 187.892534545,
+  "load_requests_per_second": 5322.191232459539,
+  "environment": {
+    "docker_cpus": 8,
+    "docker_memory_bytes": 24899309568,
+    "java_runtime": "Temurin 25.0.5+8",
+    "qwen_model": "qwen2.5:845dbda0ea48",
+    "embedding_model": "bge-m3:790764642607",
+    "image": "sha256:f5d1f220478b34337c496675a918282d11ee7ea93c06cb6f4358f5596885cdd0"
+  },
+  "post_run": {
+    "services_healthy": true,
+    "oom_kills": 0,
+    "container_restarts": 0,
+    "per_ip_limit_restored": 60,
+    "ai_quota_restored": 120,
+    "secure_test_backend_stopped": true,
+    "agent_debugger_probes_removed": true
+  },
+  "limits": [
+    "Language quality certified only on the documented controlled reference cases, not every language or sentence",
+    "Million-request throughput repeats ten warm queries at 250 VUs; cold sample is ten requests",
+    "No live merchant Shopify or external HTTP AI gateway credentials are configured; independent protocol acceptance passed",
+    "Confidence is explicitly uncalibrated; reranker uplift is one controlled reference, not production relevance certification",
+    "Other 25 absent roadmap phases remain outside this change; no sandbox or marketplace plugin lifecycle is claimed"
+  ]
+}

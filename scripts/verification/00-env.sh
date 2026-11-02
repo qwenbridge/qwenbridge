@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+# Sourced by scripts/verify-release.sh (not executed directly).
 APP_PORT="${APP_PORT:-8080}"
 BASE_URL="${BASE_URL:-http://localhost:${APP_PORT}}"
 
@@ -7,10 +9,10 @@ PUBLIC_HEALTH_ENDPOINT="${PUBLIC_HEALTH_ENDPOINT:-/api/v1/health}"
 VERSION_ENDPOINT="${VERSION_ENDPOINT:-/api/v1/version}"
 SSE_ENDPOINT_PREFIX="${SSE_ENDPOINT_PREFIX:-/api/v1/search/stream}"
 
-EXPECTED_BRANCH="${EXPECTED_BRANCH:-feat/v9-developer-platform}"
-EXPECTED_TAG="${EXPECTED_TAG:-v0.9.0}"
+EXPECTED_VERSION="${EXPECTED_VERSION:-$(sed -n 's:.*<version>\([^<]*\)</version>.*:\1:p' pom.xml | head -1)}"
+EXPECTED_BRANCH="${EXPECTED_BRANCH:-}"
+EXPECTED_TAG="${EXPECTED_TAG:-v${EXPECTED_VERSION}}"
 EXPECTED_TAG_REQUIRED="${EXPECTED_TAG_REQUIRED:-false}"
-EXPECTED_VERSION="${EXPECTED_VERSION:-0.1.0-SNAPSHOT}"
 
 TEST_QUERY="${TEST_QUERY:-best gaming laptop under 1500 euro}"
 TEST_PROMPT="${TEST_PROMPT:-hello qwenbridge}"
@@ -21,22 +23,29 @@ SSE_EVENT_WAIT_SECONDS="${SSE_EVENT_WAIT_SECONDS:-60}"
 SSE_STARTUP_WAIT_SECONDS="${SSE_STARTUP_WAIT_SECONDS:-1}"
 
 COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.yml}"
-COMPOSE_PROFILE="${COMPOSE_PROFILE:-production}"
+# Comma-separated Compose profiles (QB-293). The application is the "production" profile; OpenSearch
+# is an optional connector backend in its own profile, enabled here because the verification
+# exercises the OpenSearch connector path (and selects it as the Commerce backend).
+COMPOSE_PROFILE="${COMPOSE_PROFILE:-production,opensearch}"
+export QWENBRIDGE_COMMERCE_BACKEND="${QWENBRIDGE_COMMERCE_BACKEND:-opensearch}"
+export QWENBRIDGE_SEARCH_BACKEND="${QWENBRIDGE_SEARCH_BACKEND:-opensearch}"
 
 APP_CONTAINER="${APP_CONTAINER:-qwenbridge-app}"
 REDIS_CONTAINER="${REDIS_CONTAINER:-qwenbridge-redis}"
 OLLAMA_CONTAINER="${OLLAMA_CONTAINER:-qwenbridge-ollama}"
 OPENSEARCH_CONTAINER="${OPENSEARCH_CONTAINER:-qwenbridge-opensearch}"
 
-OPENSEARCH_URL="${OPENSEARCH_URL:-http://localhost:9200}"
-OPENSEARCH_INDEX="${OPENSEARCH_INDEX:-qwenbridge-products}"
+OPENSEARCH_URL="${OPENSEARCH_URL:-http://127.0.0.1:9200}"
+OLLAMA_URL="${OLLAMA_URL:-http://127.0.0.1:11434}"
+VERIFY_RUN_ID="${VERIFY_RUN_ID:-$(date +%Y%m%d-%H%M%S)}"
+export OPENSEARCH_INDEX="${OPENSEARCH_INDEX:-qwenbridge-verify-${VERIFY_RUN_ID}}"
 
 QWEN_MODEL="${QWEN_MODEL:-qwen2.5}"
 EMBEDDING_MODEL="${EMBEDDING_MODEL:-bge-m3}"
 
 APP_LOG="${APP_LOG:-/tmp/qwenbridge-verify-release.log}"
 
-FORCE_FRESH="${FORCE_FRESH:-true}"
+FORCE_FRESH="${FORCE_FRESH:-false}"
 RESTART_DOCKER="${RESTART_DOCKER:-false}"
 PULL_DOCKER_IMAGES="${PULL_DOCKER_IMAGES:-true}"
 NO_CACHE_BUILD="${NO_CACHE_BUILD:-false}"
@@ -44,6 +53,7 @@ NO_CACHE_BUILD="${NO_CACHE_BUILD:-false}"
 PASSED=0
 FAILED=0
 WARNINGS=0
+SKIPPED=0
 DOCKER_AVAILABLE=false
 
 SSE_PRIMARY_PID=""
@@ -61,11 +71,8 @@ VERIFY_LOG_FILE="${VERIFY_LOG_FILE:-${VERIFY_LOG_DIR}/verify-release-${VERIFY_RU
 
 SERVER_DIR="${SERVER_DIR:-qwenbridge-server}"
 JAVA_SDK_DIR="${JAVA_SDK_DIR:-qwenbridge-java-sdk}"
-STARTER_DIR="${STARTER_DIR:-qwenbridge-spring-boot-starter}"
 TS_SDK_DIR="${TS_SDK_DIR:-qwenbridge-typescript-sdk}"
 
-JAVA_SDK_EXAMPLE_DIR="${JAVA_SDK_EXAMPLE_DIR:-examples/java-sdk-example}"
-STARTER_EXAMPLE_DIR="${STARTER_EXAMPLE_DIR:-examples/spring-boot-starter-example}"
 
 RUN_V9_RUNTIME_SDK_TESTS="${RUN_V9_RUNTIME_SDK_TESTS:-true}"
 RUN_V9_PERFORMANCE="${RUN_V9_PERFORMANCE:-false}"
@@ -74,6 +81,7 @@ PERF_TOTAL_REQUESTS="${PERF_TOTAL_REQUESTS:-1000000}"
 PERF_VUS="${PERF_VUS:-250}"
 PERF_MAX_DURATION="${PERF_MAX_DURATION:-30m}"
 PERF_PROMETHEUS_REMOTE_WRITE="${PERF_PROMETHEUS_REMOTE_WRITE:-false}"
+PERF_RUNNER="${PERF_RUNNER:-docker}"
 
 RELEASE_LIGHTWEIGHT="${RELEASE_LIGHTWEIGHT:-false}"
 RUN_DOCKER_RUNTIME="${RUN_DOCKER_RUNTIME:-true}"

@@ -1,5 +1,6 @@
 package io.qwenbridge.execution;
 
+import io.quarkus.arc.All;
 import io.qwenbridge.ai.contract.EmbeddingRequest;
 import io.qwenbridge.ai.contract.EmbeddingResponse;
 import io.qwenbridge.ai.exception.AIException;
@@ -13,13 +14,13 @@ import io.qwenbridge.execution.provider.spi.SearchProviderResolver;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.ranking.service.SearchResultRanker;
 import io.qwenbridge.reranking.service.RerankingService;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-@Component
+@ApplicationScoped
 public class DefaultExecutionEngine implements ExecutionEngine {
 
   private final Map<ExecutionOperation, ExecutionOperationExecutor> executors;
@@ -28,9 +29,9 @@ public class DefaultExecutionEngine implements ExecutionEngine {
   private final SearchResultRanker searchResultRanker;
   private final RerankingService rerankingService;
 
-  @Autowired
+  @Inject
   public DefaultExecutionEngine(
-      List<ExecutionOperationExecutor> executors,
+      @All List<ExecutionOperationExecutor> executors,
       SearchProviderResolver searchProviderResolver,
       AIService aiService,
       SearchResultRanker searchResultRanker,
@@ -94,14 +95,18 @@ public class DefaultExecutionEngine implements ExecutionEngine {
     SearchRequest baseRequest = SearchRequestFactory.from(context);
 
     if (plan.contains(ExecutionOperation.HYBRID_SEARCH)) {
-      return SearchRequest.hybrid(baseRequest.query(), embeddingFor(baseRequest.query()).vector());
+      var mode =
+          SearchRequest.hybrid(baseRequest.query(), embeddingFor(baseRequest.query()).vector());
+      return new SearchRequest(mode.query(), baseRequest.constraints(), mode.options());
     }
 
     if (plan.contains(ExecutionOperation.VECTOR_SEARCH)) {
-      return SearchRequest.vector(baseRequest.query(), embeddingFor(baseRequest.query()).vector());
+      var mode =
+          SearchRequest.vector(baseRequest.query(), embeddingFor(baseRequest.query()).vector());
+      return new SearchRequest(mode.query(), baseRequest.constraints(), mode.options());
     }
 
-    return SearchRequest.keyword(baseRequest.query());
+    return baseRequest;
   }
 
   private EmbeddingResponse embeddingFor(String query) {

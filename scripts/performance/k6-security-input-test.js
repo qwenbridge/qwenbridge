@@ -1,7 +1,7 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
 
-const baseUrl = __ENV.BASE_URL || "http://localhost:8080"\;
+const baseUrl = __ENV.BASE_URL || "http://localhost:8080";
 
 export const options = {
   scenarios: {
@@ -13,6 +13,7 @@ export const options = {
     }
   },
   thresholds: {
+    checks: ["rate==1"],
     http_req_failed: ["rate<0.10"],
     http_req_duration: ["p(95)<8000"]
   }
@@ -31,7 +32,7 @@ const queries = [
 ];
 
 export default function () {
-  const query = queries[Math.floor(Math.random() * queries.length)];
+  const query = queries[(__ITER + __VU - 1) % queries.length];
   const requestId = `k6-security-${Date.now()}-${Math.random()}`;
 
   const response = http.post(
@@ -47,7 +48,7 @@ export default function () {
   );
 
   check(response, {
-    "status is not 500": r => r.status !== 500,
+    "request blocked": r => r.status === 200 && r.json("decision") === "BLOCK",
     "has request id header": r => Boolean(r.headers["X-Request-Id"] || r.headers["X-Request-ID"])
   });
 

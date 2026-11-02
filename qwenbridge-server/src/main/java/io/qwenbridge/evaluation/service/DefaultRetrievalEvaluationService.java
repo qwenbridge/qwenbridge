@@ -3,12 +3,12 @@ package io.qwenbridge.evaluation.service;
 import io.qwenbridge.evaluation.metrics.RetrievalEvaluationMetrics;
 import io.qwenbridge.evaluation.model.EvaluationQuery;
 import io.qwenbridge.evaluation.model.EvaluationResult;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.springframework.stereotype.Service;
 
-@Service
+@ApplicationScoped
 public class DefaultRetrievalEvaluationService implements RetrievalEvaluationService {
 
   private final RetrievalEvaluationMetrics metrics;

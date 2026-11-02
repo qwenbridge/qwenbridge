@@ -4,10 +4,10 @@ import io.qwenbridge.threat.correlation.ThreatCorrelation;
 import io.qwenbridge.threat.correlation.ThreatRiskProfile;
 import io.qwenbridge.threat.model.ThreatAnalysis;
 import io.qwenbridge.threat.model.ThreatFinding;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
-import org.springframework.stereotype.Component;
 
-@Component
+@ApplicationScoped
 public class DefaultThreatExplanationBuilder implements ThreatExplanationBuilder {
 
   @Override

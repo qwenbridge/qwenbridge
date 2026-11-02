@@ -6,11 +6,11 @@ import io.qwenbridge.streaming.event.PipelineEventTerminalPolicy;
 import io.qwenbridge.streaming.event.PipelineStreamingEvent;
 import io.qwenbridge.streaming.event.PipelineStreamingEventMapper;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
 
-@Component
+@ApplicationScoped
 @RequiredArgsConstructor
 public class SsePipelineEventListener {
 
@@ -20,8 +20,7 @@ public class SsePipelineEventListener {
 
   private final PipelineEventTerminalPolicy terminalPolicy;
 
-  @EventListener
-  public void onPipelineEvent(PipelineEvent<?> event) {
+  public void onPipelineEvent(@Observes PipelineEvent<?> event) {
     PipelineStreamingEvent streamingEvent = mapper.map(event);
 
     if (streamingEvent.requestId() == null || streamingEvent.requestId().isBlank()) {

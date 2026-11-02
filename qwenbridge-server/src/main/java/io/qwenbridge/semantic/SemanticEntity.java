@@ -12,7 +12,7 @@ public record SemanticEntity(String value, SemanticEntityType type, double confi
       throw new IllegalArgumentException("value must not be blank");
     }
 
-    if (confidence < 0.0 || confidence > 1.0) {
+    if (!Double.isFinite(confidence) || confidence < 0.0 || confidence > 1.0) {
       throw new IllegalArgumentException("confidence must be between 0.0 and 1.0");
     }
   }

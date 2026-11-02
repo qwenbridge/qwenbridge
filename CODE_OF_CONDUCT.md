@@ -1,19 +1,26 @@
 # Code of Conduct
 
-## Our Pledge
+## Our pledge
 
-We aim to keep this project respectful, focused, and constructive.
+We keep this project respectful, focused and constructive for everyone, regardless of background,
+identity or experience.
 
-## Expected Behavior
+## Expected behaviour
 
-- Be respectful
-- Be clear and specific
-- Assume good intent
-- Keep discussions technical and productive
+- Be respectful and assume good intent.
+- Be clear, specific and technical.
+- Accept constructive feedback, and give it the same way.
 
-## Unacceptable Behavior
+## Unacceptable behaviour
 
-- Harassment
-- Personal attacks
-- Spam
-- Sharing private or sensitive information without permission
+- Harassment, discrimination or personal attacks.
+- Spam, trolling or deliberately derailing discussions.
+- Sharing private or sensitive information without permission.
+
+## Scope and enforcement
+
+This code applies in every project space: issues, pull requests, discussions and reviews.
+Maintainers may edit or remove contributions and restrict participation when this code is not
+followed.
+
+Report concerns privately to the maintainers. Reports are handled confidentially.

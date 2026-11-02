@@ -1,0 +1,120 @@
+{
+  "date": "2026-10-31",
+  "docker": {
+    "NCPU": 8,
+    "MemTotal": 24899309568,
+    "ServerVersion": "28.5.1",
+    "Architecture": "aarch64",
+    "OperatingSystem": "Docker Desktop"
+  },
+  "baseline": {
+    "model_placement": "native Mac Ollama",
+    "cold_p95_ms": 6421.56805,
+    "warm_p95_ms": 76.49865
+  },
+  "runs": {
+    "native-cold": {
+      "requests": 10,
+      "virtual_users": 1,
+      "p95_ms": 6549.687,
+      "p99_ms": null,
+      "mean_ms": 5918.0677000000005,
+      "http_error_rate": 0,
+      "checks_passed": 30,
+      "checks_failed": 0,
+      "cache_hits": 0,
+      "cache_misses": 10,
+      "unavailable_confidence": 0,
+      "ai_p95_ms": 6307.7,
+      "execution_p95_ms": 113.89999999999998,
+      "passed": false
+    },
+    "native-warm": {
+      "requests": 10,
+      "virtual_users": 1,
+      "p95_ms": 87.52579999999999,
+      "p99_ms": null,
+      "mean_ms": 28.009700000000002,
+      "http_error_rate": 0,
+      "checks_passed": 30,
+      "checks_failed": 0,
+      "cache_hits": 10,
+      "cache_misses": 0,
+      "unavailable_confidence": 0,
+      "ai_p95_ms": 5.949999999999997,
+      "execution_p95_ms": 79.8,
+      "passed": true
+    },
+    "native-warm-1000": {
+      "requests": 1000,
+      "virtual_users": 10,
+      "p95_ms": 83.46969999999997,
+      "p99_ms": null,
+      "mean_ms": 23.09020300000003,
+      "http_error_rate": 0,
+      "checks_passed": 3000,
+      "checks_failed": 0,
+      "cache_hits": 1000,
+      "cache_misses": 0,
+      "unavailable_confidence": 0,
+      "ai_p95_ms": 1,
+      "execution_p95_ms": 77.04999999999995,
+      "passed": true
+    },
+    "docker-cold": {
+      "requests": 10,
+      "virtual_users": 1,
+      "p95_ms": 13278.7758,
+      "p99_ms": null,
+      "mean_ms": 12420.470800000001,
+      "http_error_rate": 0,
+      "checks_passed": 30,
+      "checks_failed": 0,
+      "cache_hits": 0,
+      "cache_misses": 10,
+      "unavailable_confidence": 0,
+      "ai_p95_ms": 12565.95,
+      "execution_p95_ms": 861.6999999999999,
+      "passed": false
+    },
+    "docker-warm": {
+      "requests": 10,
+      "virtual_users": 1,
+      "p95_ms": 814.66565,
+      "p99_ms": null,
+      "mean_ms": 252.03969999999998,
+      "http_error_rate": 0,
+      "checks_passed": 30,
+      "checks_failed": 0,
+      "cache_hits": 10,
+      "cache_misses": 0,
+      "unavailable_confidence": 0,
+      "ai_p95_ms": 2.7499999999999982,
+      "execution_p95_ms": 807.75,
+      "passed": true
+    },
+    "docker-warm-1000": {
+      "requests": 1000,
+      "virtual_users": 10,
+      "p95_ms": 355.41585,
+      "p99_ms": null,
+      "mean_ms": 95.35589999999983,
+      "http_error_rate": 0,
+      "checks_passed": 3000,
+      "checks_failed": 0,
+      "cache_hits": 1000,
+      "cache_misses": 0,
+      "unavailable_confidence": 0,
+      "ai_p95_ms": 2,
+      "execution_p95_ms": 349.0999999999999,
+      "passed": true
+    }
+  },
+  "unchanged_thresholds": {
+    "p95_ms": 5000,
+    "p99_ms": 15000,
+    "checks_rate": 1
+  },
+  "million_requests_executed": false,
+  "product_code_changed": false
+}

@@ -11,12 +11,12 @@ import io.qwenbridge.threat.model.ThreatAnalysis;
 import io.qwenbridge.threat.model.ThreatDecision;
 import io.qwenbridge.threat.model.ThreatFinding;
 import io.qwenbridge.threat.scoring.ThreatScoringService;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-@Service
+@ApplicationScoped
 @RequiredArgsConstructor
 public class ThreatService {
 
@@ -53,25 +53,44 @@ public class ThreatService {
     List<ThreatFinding> findings = new ArrayList<>();
 
     for (ThreatDetector detector : detectorRegistry.detectors()) {
-      List<ThreatFinding> detectorFindings = detector.detect(safeQuery);
+      List<ThreatFinding> detectorFindings;
+      try {
+        detectorFindings = detector.detect(safeQuery);
+      } catch (RuntimeException ex) {
+        // Rules are a mandatory control (QB-069): a failing detector fails closed.
+        detectorFindings =
+            List.of(
+                new ThreatFinding(
+                    detector.type(),
+                    io.qwenbridge.threat.model.ThreatSeverity.CRITICAL,
+                    1.0,
+                    0.0,
+                    detector.name(),
+                    "detector failure",
+                    "Threat detector failed; request blocked."));
+      }
 
       if (detectorFindings != null && !detectorFindings.isEmpty()) {
         findings.addAll(detectorFindings);
       }
     }
 
-    double baseScore = scoringService.score(findings);
     ThreatRiskProfile riskProfile = correlationService.correlate(findings);
-    double effectiveScore = Math.max(baseScore, riskProfile.correlatedScore());
 
-    ThreatDecision decision = decide(effectiveScore, riskProfile.riskLevel());
+    ThreatDecision decision = decide(scoringService.maxSeverity(findings), riskProfile.riskLevel());
 
     ThreatAnalysis analysis = ThreatAnalysis.from(findings, decision, riskProfile);
 
     return analysis.withExplanation(explanationBuilder.build(analysis));
   }
 
-  private ThreatDecision decide(double score, ThreatRiskLevel riskLevel) {
+  /**
+   * Correlations of several categories escalate the risk level; otherwise the strictest single
+   * finding decides through the severity policy (QB-068). The hand-set rule scores are still
+   * reported but no longer decide.
+   */
+  private ThreatDecision decide(
+      io.qwenbridge.threat.model.ThreatSeverity severity, ThreatRiskLevel riskLevel) {
     if (riskLevel == ThreatRiskLevel.CRITICAL) {
       return ThreatDecision.BLOCK;
     }
@@ -84,6 +103,6 @@ public class ThreatService {
       return ThreatDecision.REVIEW;
     }
 
-    return decisionEngine.decide(score);
+    return decisionEngine.decide(severity);
   }
 }

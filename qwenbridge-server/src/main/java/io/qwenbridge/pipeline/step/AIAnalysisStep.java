@@ -7,10 +7,10 @@ import io.qwenbridge.analysis.service.SearchAnalysisService;
 import io.qwenbridge.event.model.PipelineStage;
 import io.qwenbridge.normalization.model.NormalizedInput;
 import io.qwenbridge.pipeline.ExecutionContext;
+import jakarta.enterprise.context.ApplicationScoped;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-@Component
+@ApplicationScoped
 @RequiredArgsConstructor
 public class AIAnalysisStep implements PipelineStep<SearchAnalysis> {
 

@@ -1,0 +1,229 @@
+{
+  "id": "library",
+  "version": "1.0",
+  "domain": "library",
+  "description": "Synthetic, domain-neutral library catalog (QB-203) for Core retrieval: text, structured filters, exclusions, Unicode, ranking and tenant isolation. Records describe real books; all availability data is invented.",
+  "tenant": "library",
+  "textFields": [
+    "title",
+    "author",
+    "genre"
+  ],
+  "records": [
+    {
+      "tenant": "library",
+      "id": "lib-001",
+      "title": "The Left Hand of Darkness",
+      "author": "Ursula K. Le Guin",
+      "year": 1969,
+      "language": "en",
+      "available": true,
+      "genre": "science-fiction"
+    },
+    {
+      "tenant": "library",
+      "id": "lib-002",
+      "title": "The Dispossessed",
+      "author": "Ursula K. Le Guin",
+      "year": 1974,
+      "language": "en",
+      "available": false,
+      "genre": "science-fiction"
+    },
+    {
+      "tenant": "library",
+      "id": "lib-003",
+      "title": "A Wizard of Earthsea",
+      "author": "Ursula K. Le Guin",
+      "year": 1968,
+      "language": "en",
+      "available": true,
+      "genre": "fantasy"
+    },
+    {
+      "tenant": "library",
+      "id": "lib-004",
+      "title": "Dune",
+      "author": "Frank Herbert",
+      "year": 1965,
+      "language": "en",
+      "available": true,
+      "genre": "science-fiction"
+    },
+    {
+      "tenant": "library",
+      "id": "lib-005",
+      "title": "Mio, min Mio",
+      "author": "Astrid Lindgren",
+      "year": 1954,
+      "language": "sv",
+      "available": true,
+      "genre": "children"
+    },
+    {
+      "tenant": "library",
+      "id": "lib-006",
+      "title": "Bröderna Lejonhjärta",
+      "author": "Astrid Lindgren",
+      "year": 1973,
+      "language": "sv",
+      "available": true,
+      "genre": "children"
+    },
+    {
+      "tenant": "library",
+      "id": "lib-007",
+      "title": "بوف کور",
+      "author": "Sadegh Hedayat",
+      "year": 1937,
+      "language": "fa",
+      "available": true,
+      "genre": "novel"
+    },
+    {
+      "tenant": "library",
+      "id": "lib-008",
+      "title": "شاهنامه",
+      "author": "Ferdowsi",
+      "year": 1010,
+      "language": "fa",
+      "available": true,
+      "genre": "epic"
+    },
+    {
+      "tenant": "library",
+      "id": "lib-009",
+      "title": "Kindred",
+      "author": "Octavia E. Butler",
+      "year": 1979,
+      "language": "en",
+      "available": true,
+      "genre": "science-fiction"
+    },
+    {
+      "tenant": "library",
+      "id": "lib-010",
+      "title": "Parable of the Sower",
+      "author": "Octavia E. Butler",
+      "year": 1993,
+      "language": "en",
+      "available": true,
+      "genre": "science-fiction"
+    },
+    {
+      "tenant": "library",
+      "id": "lib-011",
+      "title": "Collected Letters",
+      "author": "Ursula K. Le Guin",
+      "year": 2023,
+      "language": "en",
+      "available": true
+    },
+    {
+      "tenant": "other",
+      "id": "o-001",
+      "title": "The Left Hand of Darkness",
+      "author": "Ursula K. Le Guin",
+      "year": 1969,
+      "language": "en",
+      "available": true,
+      "genre": "science-fiction"
+    }
+  ],
+  "cases": [
+    {
+      "name": "author-terms",
+      "text": "Le Guin",
+      "filter": [],
+      "expected": [
+        "lib-001",
+        "lib-002",
+        "lib-003",
+        "lib-011"
+      ],
+      "why": "Only Le Guin's records contain the terms; the other tenant's copy is never visible."
+    },
+    {
+      "name": "structured-and-text",
+      "text": "science fiction",
+      "filter": [
+        [
+          "available",
+          "EQ",
+          true
+        ],
+        [
+          "year",
+          "LT",
+          1975
+        ]
+      ],
+      "expected": [
+        "lib-001",
+        "lib-004"
+      ],
+      "why": "Available science fiction before 1975; lib-002 is unavailable, lib-009/010 are later."
+    },
+    {
+      "name": "swedish",
+      "text": "Lindgren",
+      "filter": [
+        [
+          "language",
+          "EQ",
+          "sv"
+        ]
+      ],
+      "expected": [
+        "lib-005",
+        "lib-006"
+      ],
+      "why": "Swedish records by Lindgren; Unicode titles are indexed."
+    },
+    {
+      "name": "persian-script",
+      "text": "شاهنامه",
+      "filter": [],
+      "expected": [
+        "lib-008"
+      ],
+      "why": "Arabic-script tokens match exactly."
+    },
+    {
+      "name": "exclusion-keeps-missing",
+      "text": "Le Guin",
+      "filter": [
+        [
+          "genre",
+          "NE",
+          "science-fiction"
+        ]
+      ],
+      "expected": [
+        "lib-003",
+        "lib-011"
+      ],
+      "why": "ADR 0025: an exclusion keeps a record that lacks the field (lib-011 has no genre)."
+    },
+    {
+      "name": "ranking",
+      "text": "Butler Parable",
+      "filter": [],
+      "expectedTop": "lib-010",
+      "expected": [
+        "lib-009",
+        "lib-010"
+      ],
+      "why": "lib-010 matches both terms and ranks first."
+    },
+    {
+      "name": "tenant-isolation",
+      "text": "Darkness",
+      "filter": [],
+      "expected": [
+        "lib-001"
+      ],
+      "why": "o-001 belongs to tenant 'other'."
+    }
+  ]
+}

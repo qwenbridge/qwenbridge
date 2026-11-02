@@ -45,4 +45,26 @@ class SemanticAnalysisTest {
     assertThat(entity.type()).isEqualTo(SemanticEntityType.PRODUCT);
     assertThat(entity.confidence()).isEqualTo(0.9);
   }
+
+  @Test
+  void shouldRejectNonFiniteAnalysisAndEntityConfidence() {
+    for (double confidence :
+        new double[] {Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY}) {
+      assertThatThrownBy(
+              () ->
+                  new SemanticAnalysis(
+                      "iphone",
+                      "iphone",
+                      "iphone search",
+                      List.of(),
+                      List.of(),
+                      SemanticAmbiguity.none(),
+                      confidence))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage("confidence must be between 0.0 and 1.0");
+      assertThatThrownBy(() -> new SemanticEntity("iphone", SemanticEntityType.PRODUCT, confidence))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage("confidence must be between 0.0 and 1.0");
+    }
+  }
 }

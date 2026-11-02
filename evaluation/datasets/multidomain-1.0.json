@@ -1,0 +1,691 @@
+{
+  "id": "multidomain",
+  "version": "1.0",
+  "description": "Multilingual, multi-domain retrieval evaluation set (QB-207): Commerce products, DevOps runbooks and Security playbooks in English, Persian and Swedish, with graded relevance judgments. All texts are synthetic.",
+  "judgments": {
+    "scale": {
+      "3": "exact answer",
+      "2": "relevant",
+      "1": "partially relevant",
+      "0": "not relevant (also every unjudged document)"
+    },
+    "author": "QwenBridge 1.0 work, single annotator; seed judgments, not an independent human-labelled benchmark (audit H7). Results measure retrieval behaviour on this set, not production relevance."
+  },
+  "splits": {
+    "tuning": "may be used to tune ranking parameters; excluded from reported metrics",
+    "heldout": "reported metrics only"
+  },
+  "kinds": [
+    "exact",
+    "semantic",
+    "multilingual",
+    "mixed-language",
+    "negative"
+  ],
+  "documents": [
+    {
+      "id": "c01",
+      "domain": "commerce",
+      "language": "en",
+      "title": "Trail running shoes, waterproof",
+      "text": "Waterproof trail running shoe with a grippy lug outsole for muddy forest paths and wet rocks."
+    },
+    {
+      "id": "c02",
+      "domain": "commerce",
+      "language": "en",
+      "title": "Road running shoes, cushioned",
+      "text": "Lightweight road running shoe with a soft cushioned midsole for long asphalt runs."
+    },
+    {
+      "id": "c03",
+      "domain": "commerce",
+      "language": "en",
+      "title": "Leather hiking boots",
+      "text": "Full-grain leather hiking boots with ankle support for rough mountain terrain."
+    },
+    {
+      "id": "c04",
+      "domain": "commerce",
+      "language": "en",
+      "title": "Noise-cancelling wireless headphones",
+      "text": "Over-ear Bluetooth headphones with active noise cancellation and 30-hour battery life."
+    },
+    {
+      "id": "c05",
+      "domain": "commerce",
+      "language": "en",
+      "title": "Wired studio headphones",
+      "text": "Closed-back wired headphones for studio monitoring and mixing, no Bluetooth."
+    },
+    {
+      "id": "c06",
+      "domain": "commerce",
+      "language": "en",
+      "title": "Insulated winter jacket",
+      "text": "Down-insulated winter jacket with a hood, rated for temperatures below minus twenty."
+    },
+    {
+      "id": "c07",
+      "domain": "commerce",
+      "language": "en",
+      "title": "Lightweight rain jacket",
+      "text": "Packable waterproof rain shell for hiking in wet weather; not insulated."
+    },
+    {
+      "id": "c08",
+      "domain": "commerce",
+      "language": "sv",
+      "title": "Vattentäta vandringskängor",
+      "text": "Vattentäta vandringskängor i läder med bra fotledsstöd för fjällvandring."
+    },
+    {
+      "id": "c09",
+      "domain": "commerce",
+      "language": "sv",
+      "title": "Ullstrumpor för vinter",
+      "text": "Varma strumpor i merinoull som håller fötterna torra och varma på vintern."
+    },
+    {
+      "id": "c10",
+      "domain": "commerce",
+      "language": "fa",
+      "title": "کیف لپ‌تاپ ضد آب",
+      "text": "کیف لپ‌تاپ ضد آب برای لپ‌تاپ ۱۵ اینچی با بند شانه."
+    },
+    {
+      "id": "c11",
+      "domain": "commerce",
+      "language": "fa",
+      "title": "هدفون بی‌سیم ورزشی",
+      "text": "هدفون بی‌سیم سبک برای دویدن و ورزش، مقاوم در برابر عرق."
+    },
+    {
+      "id": "c12",
+      "domain": "commerce",
+      "language": "en",
+      "title": "Espresso machine",
+      "text": "Compact espresso machine with a milk frother for cappuccino and latte at home."
+    },
+    {
+      "id": "d01",
+      "domain": "devops",
+      "language": "en",
+      "title": "Pod stuck in CrashLoopBackOff",
+      "text": "A Kubernetes pod restarts repeatedly in CrashLoopBackOff: inspect logs of the previous container, check the liveness probe and the start command."
+    },
+    {
+      "id": "d02",
+      "domain": "devops",
+      "language": "en",
+      "title": "Container killed with OOMKilled",
+      "text": "A container was terminated with exit code 137 OOMKilled: the memory limit is too low or the application leaks memory; raise the limit or profile the heap."
+    },
+    {
+      "id": "d03",
+      "domain": "devops",
+      "language": "en",
+      "title": "Disk full on a Linux host",
+      "text": "The root filesystem is at 100 percent: find large files with du, rotate or compress logs, and clean old container images."
+    },
+    {
+      "id": "d04",
+      "domain": "devops",
+      "language": "en",
+      "title": "TLS certificate expired",
+      "text": "Clients report certificate has expired errors: renew the certificate, reload the ingress or web server, and add expiry monitoring."
+    },
+    {
+      "id": "d05",
+      "domain": "devops",
+      "language": "en",
+      "title": "DNS resolution failures inside the cluster",
+      "text": "Services cannot resolve hostnames: check CoreDNS pods, resolv.conf and network policies blocking port 53."
+    },
+    {
+      "id": "d06",
+      "domain": "devops",
+      "language": "en",
+      "title": "Roll back a failed deployment",
+      "text": "Undo a bad release with kubectl rollout undo or redeploy the previous image tag, then verify health checks."
+    },
+    {
+      "id": "d07",
+      "domain": "devops",
+      "language": "en",
+      "title": "Database connection pool exhausted",
+      "text": "Requests time out waiting for a database connection: the pool is too small or connections leak; check max pool size and long transactions."
+    },
+    {
+      "id": "d08",
+      "domain": "devops",
+      "language": "en",
+      "title": "High CPU throttling",
+      "text": "Latency rises because containers hit their CPU limit and are throttled; review CPU limits and requests."
+    },
+    {
+      "id": "d09",
+      "domain": "devops",
+      "language": "sv",
+      "title": "Kafka-konsumenten ligger efter",
+      "text": "Konsumentfördröjningen växer i Kafka: öka antalet konsumenter eller partitioner och kontrollera långsam bearbetning."
+    },
+    {
+      "id": "d10",
+      "domain": "devops",
+      "language": "sv",
+      "title": "Loggrotation på servern",
+      "text": "Ställ in logrotate så att gamla loggfiler komprimeras och raderas innan disken blir full."
+    },
+    {
+      "id": "d11",
+      "domain": "devops",
+      "language": "fa",
+      "title": "کش Redis پر شده است",
+      "text": "وقتی حافظه Redis پر می‌شود کلیدها حذف می‌شوند؛ سیاست حذف و مقدار maxmemory را بررسی کنید."
+    },
+    {
+      "id": "d12",
+      "domain": "devops",
+      "language": "fa",
+      "title": "کند شدن خط لوله CI",
+      "text": "ساخت در خط لوله CI کند شده است؛ کش وابستگی‌ها را فعال کنید و مراحل را موازی اجرا کنید."
+    },
+    {
+      "id": "s01",
+      "domain": "security",
+      "language": "en",
+      "title": "Phishing email reported by an employee",
+      "text": "An employee reports a suspicious email asking for a password reset: do not click links, report it to security, and block the sender domain."
+    },
+    {
+      "id": "s02",
+      "domain": "security",
+      "language": "en",
+      "title": "SQL injection in a login form",
+      "text": "User input concatenated into a SQL query allows authentication bypass; use parameterized queries and input validation."
+    },
+    {
+      "id": "s03",
+      "domain": "security",
+      "language": "en",
+      "title": "Credential stuffing attack",
+      "text": "Many login attempts with leaked username and password pairs from other breaches; enable rate limiting, MFA and breached-password checks."
+    },
+    {
+      "id": "s04",
+      "domain": "security",
+      "language": "en",
+      "title": "Leaked API key in a public repository",
+      "text": "A secret key was committed to a public Git repository: revoke and rotate the key immediately and scan history for other secrets."
+    },
+    {
+      "id": "s05",
+      "domain": "security",
+      "language": "en",
+      "title": "Ransomware on a workstation",
+      "text": "Files are encrypted and a ransom note appears: isolate the machine from the network, preserve evidence, and restore from backups."
+    },
+    {
+      "id": "s06",
+      "domain": "security",
+      "language": "en",
+      "title": "Cross-site scripting in comments",
+      "text": "Comments render user-supplied HTML and execute scripts; encode output and apply a content security policy."
+    },
+    {
+      "id": "s07",
+      "domain": "security",
+      "language": "en",
+      "title": "SSH brute-force attempts",
+      "text": "Thousands of failed SSH logins from many IP addresses; disable password authentication, use keys and fail2ban."
+    },
+    {
+      "id": "s08",
+      "domain": "security",
+      "language": "en",
+      "title": "Public storage bucket exposing data",
+      "text": "A cloud storage bucket allows anonymous read access to customer files; block public access and review access logs."
+    },
+    {
+      "id": "s09",
+      "domain": "security",
+      "language": "sv",
+      "title": "Återställning av tvåfaktorsautentisering",
+      "text": "En användare har tappat sin telefon och behöver återställa tvåfaktorsautentisering; verifiera identiteten innan återställning."
+    },
+    {
+      "id": "s10",
+      "domain": "security",
+      "language": "sv",
+      "title": "Sårbarhet i ett tredjepartsbibliotek",
+      "text": "En kritisk sårbarhet (CVE) i ett beroende: uppdatera biblioteket och kontrollera om sårbarheten utnyttjats."
+    },
+    {
+      "id": "s11",
+      "domain": "security",
+      "language": "fa",
+      "title": "ایمیل فیشینگ",
+      "text": "ایمیلی که درخواست رمز عبور می‌کند مشکوک است؛ روی لینک کلیک نکنید و آن را به تیم امنیت گزارش دهید."
+    },
+    {
+      "id": "s12",
+      "domain": "security",
+      "language": "fa",
+      "title": "افزایش سطح دسترسی با sudo",
+      "text": "کاربر عادی با پیکربندی نادرست sudo به دسترسی ریشه رسیده است؛ فایل sudoers را بررسی و محدود کنید."
+    }
+  ],
+  "queries": [
+    {
+      "id": "qc01",
+      "split": "heldout",
+      "domain": "commerce",
+      "language": "en",
+      "kind": "exact",
+      "text": "waterproof trail running shoes",
+      "judgments": {
+        "c01": 3,
+        "c02": 1,
+        "c08": 1
+      }
+    },
+    {
+      "id": "qc02",
+      "split": "heldout",
+      "domain": "commerce",
+      "language": "en",
+      "kind": "semantic",
+      "text": "something to keep music quiet from the noise on a plane",
+      "judgments": {
+        "c04": 3,
+        "c05": 1,
+        "c11": 1
+      }
+    },
+    {
+      "id": "qc03",
+      "split": "tuning",
+      "domain": "commerce",
+      "language": "en",
+      "kind": "semantic",
+      "text": "warm coat for a very cold winter",
+      "judgments": {
+        "c06": 3,
+        "c09": 1,
+        "c07": 1
+      }
+    },
+    {
+      "id": "qc04",
+      "split": "heldout",
+      "domain": "commerce",
+      "language": "en",
+      "kind": "exact",
+      "text": "espresso machine with milk frother",
+      "judgments": {
+        "c12": 3
+      }
+    },
+    {
+      "id": "qc05",
+      "split": "heldout",
+      "domain": "commerce",
+      "language": "sv",
+      "kind": "multilingual",
+      "text": "vattentäta kängor för vandring",
+      "judgments": {
+        "c08": 3,
+        "c03": 2,
+        "c01": 1
+      }
+    },
+    {
+      "id": "qc06",
+      "split": "tuning",
+      "domain": "commerce",
+      "language": "sv",
+      "kind": "multilingual",
+      "text": "trådlösa hörlurar",
+      "judgments": {
+        "c04": 3,
+        "c11": 2,
+        "c05": 1
+      }
+    },
+    {
+      "id": "qc07",
+      "split": "heldout",
+      "domain": "commerce",
+      "language": "sv",
+      "kind": "multilingual",
+      "text": "varma strumpor",
+      "judgments": {
+        "c09": 3
+      }
+    },
+    {
+      "id": "qc08",
+      "split": "heldout",
+      "domain": "commerce",
+      "language": "fa",
+      "kind": "multilingual",
+      "text": "هدفون بی‌سیم برای ورزش",
+      "judgments": {
+        "c11": 3,
+        "c04": 2
+      }
+    },
+    {
+      "id": "qc09",
+      "split": "tuning",
+      "domain": "commerce",
+      "language": "fa",
+      "kind": "multilingual",
+      "text": "کفش دویدن",
+      "judgments": {
+        "c02": 3,
+        "c01": 2
+      }
+    },
+    {
+      "id": "qc10",
+      "split": "heldout",
+      "domain": "commerce",
+      "language": "fa",
+      "kind": "multilingual",
+      "text": "کیف لپ‌تاپ",
+      "judgments": {
+        "c10": 3
+      }
+    },
+    {
+      "id": "qc11",
+      "split": "heldout",
+      "domain": "commerce",
+      "language": "mixed",
+      "kind": "mixed-language",
+      "text": "hiking boots ضد آب",
+      "judgments": {
+        "c03": 2,
+        "c08": 3,
+        "c01": 1
+      }
+    },
+    {
+      "id": "qc12",
+      "split": "heldout",
+      "domain": "commerce",
+      "language": "en",
+      "kind": "negative",
+      "text": "garden lawn mower",
+      "judgments": {}
+    },
+    {
+      "id": "qd01",
+      "split": "heldout",
+      "domain": "devops",
+      "language": "en",
+      "kind": "exact",
+      "text": "pod CrashLoopBackOff",
+      "judgments": {
+        "d01": 3,
+        "d02": 1
+      }
+    },
+    {
+      "id": "qd02",
+      "split": "heldout",
+      "domain": "devops",
+      "language": "en",
+      "kind": "semantic",
+      "text": "my container keeps dying because it runs out of RAM",
+      "judgments": {
+        "d02": 3,
+        "d01": 1
+      }
+    },
+    {
+      "id": "qd03",
+      "split": "tuning",
+      "domain": "devops",
+      "language": "en",
+      "kind": "semantic",
+      "text": "https certificate no longer valid",
+      "judgments": {
+        "d04": 3
+      }
+    },
+    {
+      "id": "qd04",
+      "split": "heldout",
+      "domain": "devops",
+      "language": "en",
+      "kind": "exact",
+      "text": "database connection pool exhausted",
+      "judgments": {
+        "d07": 3
+      }
+    },
+    {
+      "id": "qd05",
+      "split": "heldout",
+      "domain": "devops",
+      "language": "sv",
+      "kind": "multilingual",
+      "text": "disken är full på servern",
+      "judgments": {
+        "d03": 3,
+        "d10": 2
+      }
+    },
+    {
+      "id": "qd06",
+      "split": "tuning",
+      "domain": "devops",
+      "language": "sv",
+      "kind": "multilingual",
+      "text": "återställa en misslyckad driftsättning",
+      "judgments": {
+        "d06": 3
+      }
+    },
+    {
+      "id": "qd07",
+      "split": "heldout",
+      "domain": "devops",
+      "language": "sv",
+      "kind": "multilingual",
+      "text": "Kafka konsument fördröjning",
+      "judgments": {
+        "d09": 3
+      }
+    },
+    {
+      "id": "qd08",
+      "split": "heldout",
+      "domain": "devops",
+      "language": "fa",
+      "kind": "multilingual",
+      "text": "حافظه Redis پر شده",
+      "judgments": {
+        "d11": 3
+      }
+    },
+    {
+      "id": "qd09",
+      "split": "tuning",
+      "domain": "devops",
+      "language": "fa",
+      "kind": "multilingual",
+      "text": "گواهی TLS منقضی شده",
+      "judgments": {
+        "d04": 3
+      }
+    },
+    {
+      "id": "qd10",
+      "split": "heldout",
+      "domain": "devops",
+      "language": "fa",
+      "kind": "multilingual",
+      "text": "خط لوله CI کند است",
+      "judgments": {
+        "d12": 3
+      }
+    },
+    {
+      "id": "qd11",
+      "split": "heldout",
+      "domain": "devops",
+      "language": "mixed",
+      "kind": "mixed-language",
+      "text": "DNS کار نمی‌کند in Kubernetes",
+      "judgments": {
+        "d05": 3
+      }
+    },
+    {
+      "id": "qd12",
+      "split": "heldout",
+      "domain": "devops",
+      "language": "en",
+      "kind": "negative",
+      "text": "bake sourdough bread",
+      "judgments": {}
+    },
+    {
+      "id": "qs01",
+      "split": "heldout",
+      "domain": "security",
+      "language": "en",
+      "kind": "exact",
+      "text": "leaked API key in git repository",
+      "judgments": {
+        "s04": 3
+      }
+    },
+    {
+      "id": "qs02",
+      "split": "heldout",
+      "domain": "security",
+      "language": "en",
+      "kind": "semantic",
+      "text": "attackers trying many stolen passwords on our login page",
+      "judgments": {
+        "s03": 3,
+        "s07": 1
+      }
+    },
+    {
+      "id": "qs03",
+      "split": "tuning",
+      "domain": "security",
+      "language": "en",
+      "kind": "semantic",
+      "text": "files encrypted and a note asking for bitcoin",
+      "judgments": {
+        "s05": 3
+      }
+    },
+    {
+      "id": "qs04",
+      "split": "heldout",
+      "domain": "security",
+      "language": "en",
+      "kind": "exact",
+      "text": "SQL injection login",
+      "judgments": {
+        "s02": 3
+      }
+    },
+    {
+      "id": "qs05",
+      "split": "heldout",
+      "domain": "security",
+      "language": "sv",
+      "kind": "multilingual",
+      "text": "nätfiskemejl",
+      "judgments": {
+        "s01": 3,
+        "s11": 3
+      }
+    },
+    {
+      "id": "qs06",
+      "split": "tuning",
+      "domain": "security",
+      "language": "sv",
+      "kind": "multilingual",
+      "text": "tappat telefonen och kan inte logga in med tvåfaktor",
+      "judgments": {
+        "s09": 3
+      }
+    },
+    {
+      "id": "qs07",
+      "split": "heldout",
+      "domain": "security",
+      "language": "sv",
+      "kind": "multilingual",
+      "text": "sårbarhet i beroende",
+      "judgments": {
+        "s10": 3
+      }
+    },
+    {
+      "id": "qs08",
+      "split": "heldout",
+      "domain": "security",
+      "language": "fa",
+      "kind": "multilingual",
+      "text": "ایمیل فیشینگ",
+      "judgments": {
+        "s11": 3,
+        "s01": 3
+      }
+    },
+    {
+      "id": "qs09",
+      "split": "tuning",
+      "domain": "security",
+      "language": "fa",
+      "kind": "multilingual",
+      "text": "حمله با رمزهای عبور لو رفته",
+      "judgments": {
+        "s03": 3
+      }
+    },
+    {
+      "id": "qs10",
+      "split": "heldout",
+      "domain": "security",
+      "language": "fa",
+      "kind": "multilingual",
+      "text": "دسترسی ریشه با sudo",
+      "judgments": {
+        "s12": 3
+      }
+    },
+    {
+      "id": "qs11",
+      "split": "heldout",
+      "domain": "security",
+      "language": "mixed",
+      "kind": "mixed-language",
+      "text": "SSH حمله brute-force",
+      "judgments": {
+        "s07": 3
+      }
+    },
+    {
+      "id": "qs12",
+      "split": "heldout",
+      "domain": "security",
+      "language": "en",
+      "kind": "negative",
+      "text": "best pizza recipe",
+      "judgments": {}
+    }
+  ]
+}

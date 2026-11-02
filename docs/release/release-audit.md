@@ -1,4 +1,6 @@
-# Release Documentation Audit
+# Historical Release Documentation Audit
+
+> This is an earlier publishing audit. Maven/npm coordinates are now 0.9.1 and the runtime is Quarkus/Java 25. See [the current audit](../platform/phase-acceptance.md) and [current verification results](../platform/verification-results.md).
 
 This audit records the current documentation and publishing readiness state for QwenBridge.
 

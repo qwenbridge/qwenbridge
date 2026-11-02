@@ -1,9 +1,14 @@
 package io.qwenbridge.normalization.rule;
 
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class HtmlEntityNormalizer implements InputNormalizationRule {
+
+  @Override
+  public int order() {
+    return 20;
+  }
 
   @Override
   public String name() {

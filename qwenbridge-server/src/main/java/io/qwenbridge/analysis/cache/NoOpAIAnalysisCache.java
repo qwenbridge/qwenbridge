@@ -1,12 +1,12 @@
 package io.qwenbridge.analysis.cache;
 
+import io.quarkus.arc.DefaultBean;
 import io.qwenbridge.analysis.model.SearchAnalysis;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Optional;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.stereotype.Component;
 
-@Component
-@ConditionalOnMissingBean(AIAnalysisCache.class)
+@ApplicationScoped
+@DefaultBean
 public class NoOpAIAnalysisCache implements AIAnalysisCache {
 
   @Override

@@ -57,7 +57,7 @@ Provider selection is handled through:
 SearchProviderResolver
 ```
 
-A default Spring-based registry automatically registers all `SearchProvider` beans.
+A default CDI-based registry (Quarkus Arc) automatically registers all `SearchProvider` beans.
 
 The default resolver selects the provider from execution hints when available, otherwise it falls back to `inmemory`.
 
@@ -107,7 +107,7 @@ Positive:
 - Search backends become pluggable.
 - Execution can remain backend-agnostic.
 - Provider implementations can be tested independently.
-- Spring automatically discovers provider beans.
+- CDI (Quarkus Arc) automatically discovers provider beans.
 - InMemory provider acts as a reference implementation.
 - Future providers such as OpenSearch and Elasticsearch can be added without changing core contracts.
 

@@ -10,4 +10,8 @@ public record ReadinessHealthResponse(
     String service,
     String apiVersion,
     Instant checkedAt,
-    List<DependencyHealth> dependencies) {}
+    List<DependencyHealth> dependencies) {
+  public ReadinessHealthResponse {
+    dependencies = dependencies == null ? List.of() : List.copyOf(dependencies);
+  }
+}

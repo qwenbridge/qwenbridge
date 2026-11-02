@@ -3,9 +3,9 @@ package io.qwenbridge.streaming.event;
 import io.qwenbridge.event.model.PipelineEvent;
 import io.qwenbridge.event.model.PipelineEventMetadata;
 import io.qwenbridge.event.snapshot.PipelineContextSnapshot;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class PipelineStreamingEventMapper {
 
   public PipelineStreamingEvent map(PipelineEvent<?> event) {

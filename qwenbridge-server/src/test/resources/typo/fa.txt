@@ -1,0 +1,5 @@
+# Test fixture (QB-291): Persian word list.
+کفش	500
+مشکی	400
+قرمز	300
+کفش مشکی

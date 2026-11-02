@@ -7,7 +7,6 @@ This guide documents the release process for QwenBridge Java artifacts.
 QwenBridge publishes these Maven artifacts:
 
 - `io.qwenbridge:qwenbridge-java-sdk`
-- `io.qwenbridge:qwenbridge-spring-boot-starter`
 
 The server module is an application and is not intended to be published as a reusable Maven library.
 
@@ -16,7 +15,7 @@ The server module is an application and is not intended to be published as a reu
 Release artifacts must not use `-SNAPSHOT`.
 
 ```xml
-<version>0.9.0</version>
+<version>0.9.1</version>
 ```
 
 ## Maven Central requirements
@@ -47,17 +46,17 @@ The working tree must be clean before creating a release tag.
 git checkout main
 git pull --ff-only origin main
 
-mvn versions:set -DnewVersion=0.9.0
+mvn versions:set -DnewVersion=0.9.1
 mvn clean verify
 
 git add -A
-git commit -m "chore(release): prepare v0.9.0"
+git commit -m "chore(release): prepare v0.9.1"
 
-git tag -a v0.9.0 -m "QwenBridge v0.9.0"
+git tag -a v0.9.1 -m "QwenBridge v0.9.1"
 git push origin main
-git push origin v0.9.0
+git push origin v0.9.1
 ```
 
 ## Publication boundary
 
-Publish only after public documentation, examples, license files, signing configuration, and release evidence are finalized.
+Publish only after public documentation, license files, signing configuration, and release evidence are finalized.

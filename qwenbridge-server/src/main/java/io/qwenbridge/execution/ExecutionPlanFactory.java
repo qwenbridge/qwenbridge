@@ -1,12 +1,48 @@
 package io.qwenbridge.execution;
 
+import io.qwenbridge.decision.SearchBackend;
 import io.qwenbridge.decision.SearchDecision;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.stereotype.Component;
 
-@Component
+@ApplicationScoped
 public class ExecutionPlanFactory {
+
+  /**
+   * QB-293: the retrieval backend is infrastructure, chosen by configuration ({@code
+   * qwenbridge.search.backend}: {@code in-memory} by default, or {@code opensearch}), never by the
+   * model's analysis. A direct answer still uses no backend. Without a configured value (unit
+   * tests) the decision's backend is kept.
+   */
+  private final java.util.Optional<SearchBackend> configured;
+
+  public ExecutionPlanFactory() {
+    this.configured = java.util.Optional.empty();
+  }
+
+  @jakarta.inject.Inject
+  public ExecutionPlanFactory(
+      @org.eclipse.microprofile.config.inject.ConfigProperty(name = "qwenbridge.search.backend")
+          java.util.Optional<String> backend) {
+    this.configured = backend.map(ExecutionPlanFactory::parse);
+  }
+
+  static SearchBackend parse(String value) {
+    return switch (value.strip().toLowerCase(java.util.Locale.ROOT)) {
+      case "in-memory", "in_memory", "inmemory", "memory" -> SearchBackend.IN_MEMORY;
+      case "opensearch" -> SearchBackend.OPENSEARCH;
+      case "custom" -> SearchBackend.CUSTOM;
+      default ->
+          throw new IllegalArgumentException(
+              "qwenbridge.search.backend must be in-memory, opensearch or custom");
+    };
+  }
+
+  private SearchBackend backend(SearchDecision decision) {
+    if (decision.backend() == SearchBackend.NONE) return SearchBackend.NONE;
+    return configured.orElse(decision.backend());
+  }
 
   public ExecutionPlan from(SearchDecision decision) {
     List<ExecutionStep> steps = new ArrayList<>();
@@ -25,7 +61,7 @@ public class ExecutionPlanFactory {
               order, ExecutionOperation.DIRECT_ANSWER, "Decision requested direct answer."));
       return ExecutionPlan.builder()
           .mode(decision.mode())
-          .backend(decision.backend())
+          .backend(backend(decision))
           .steps(steps)
           .reason(decision.reason())
           .build();
@@ -70,7 +106,7 @@ public class ExecutionPlanFactory {
 
     return ExecutionPlan.builder()
         .mode(decision.mode())
-        .backend(decision.backend())
+        .backend(backend(decision))
         .steps(steps)
         .reason(decision.reason())
         .build();

@@ -15,7 +15,8 @@ public record ExecutionPlan(
     Objects.requireNonNull(backend, "backend must not be null");
     Objects.requireNonNull(steps, "steps must not be null");
 
-    steps = steps.stream().sorted(Comparator.comparingInt(ExecutionStep::order)).toList();
+    steps =
+        List.copyOf(steps.stream().sorted(Comparator.comparingInt(ExecutionStep::order)).toList());
 
     if (steps.isEmpty()) {
       throw new IllegalArgumentException("steps must not be empty");

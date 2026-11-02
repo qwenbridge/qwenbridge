@@ -45,4 +45,36 @@ class OperationalHealthServiceTest {
 
     assertThat(response.status()).isEqualTo(OperationalStatus.DOWN);
   }
+
+  @Test
+  void anUnselectedOptionalDependencyIsNeitherProbedNorReported() {
+    var probes = new java.util.concurrent.atomic.AtomicInteger();
+    DependencyHealthChecker unselected =
+        new DependencyHealthChecker() {
+          @Override
+          public DependencyHealth check() {
+            probes.incrementAndGet();
+            return DependencyHealth.down("opensearch", "unavailable", 3);
+          }
+
+          @Override
+          public boolean active() {
+            return false;
+          }
+        };
+    var response = new OperationalHealthService(List.of(unselected), "qwenbridge").readiness();
+    assertThat(response.status()).isEqualTo(OperationalStatus.UP);
+    assertThat(response.dependencies()).isEmpty();
+    assertThat(probes.get()).isZero();
+  }
+
+  @Test
+  void openSearchIsActiveOnlyWhenSelected() {
+    assertThat(new OpenSearchDependencyHealthChecker(null, "in-memory", "memory").active())
+        .isFalse();
+    assertThat(new OpenSearchDependencyHealthChecker(null, "opensearch", "memory").active())
+        .isTrue();
+    assertThat(new OpenSearchDependencyHealthChecker(null, "in-memory", "opensearch").active())
+        .isTrue();
+  }
 }

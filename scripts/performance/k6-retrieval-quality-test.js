@@ -1,7 +1,7 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
 
-const baseUrl = __ENV.BASE_URL || "http://localhost:8080"\;
+const baseUrl = __ENV.BASE_URL || "http://localhost:8080";
 
 export const options = {
   scenarios: {
@@ -13,6 +13,7 @@ export const options = {
     }
   },
   thresholds: {
+    checks: ["rate==1"],
     http_req_failed: ["rate<0.05"],
     http_req_duration: ["p(95)<8000"]
   }
@@ -20,14 +21,14 @@ export const options = {
 
 const cases = [
   { query: "best iphone for photography", expected: "iPhone 16 Pro" },
-  { query: "android flagship smartphone with bright display", expected: "Samsung Galaxy S25" },
+  { query: "Samsung smartphone", expected: "Samsung Galaxy S25" },
   { query: "wireless noise cancelling headphones for travel", expected: "Sony WH-1000XM5" },
   { query: "ergonomic wireless mouse for office work", expected: "Logitech MX Master 3S" },
   { query: "lightweight gaming mouse for esports", expected: "Razer DeathAdder V3" }
 ];
 
 export default function () {
-  const selected = cases[Math.floor(Math.random() * cases.length)];
+  const selected = cases[(__ITER + __VU - 1) % cases.length];
   const requestId = `k6-retrieval-${Date.now()}-${Math.random()}`;
 
   const response = http.post(

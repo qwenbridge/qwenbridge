@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+# Sourced by scripts/verify-release.sh (not executed directly).
 v9_path_exists() {
   local path="$1"
   [[ -e "${path}" ]]
@@ -9,20 +11,19 @@ v9_repo_structure_validation() {
     && [[ -f "${SERVER_DIR}/pom.xml" ]] \
     && [[ -d "${JAVA_SDK_DIR}" ]] \
     && [[ -f "${JAVA_SDK_DIR}/pom.xml" ]] \
-    && [[ -d "${STARTER_DIR}" ]] \
-    && [[ -f "${STARTER_DIR}/pom.xml" ]] \
     && [[ -d "${TS_SDK_DIR}" ]] \
     && [[ -f "${TS_SDK_DIR}/package.json" ]] \
-    && [[ -d "${JAVA_SDK_EXAMPLE_DIR}" ]] \
-    && [[ -d "${STARTER_EXAMPLE_DIR}" ]]
+    && [[ -d "e2e/dual-sdk/java-consumer" ]] \
+    && [[ -d "e2e/dual-sdk/typescript-consumer" ]]
 }
 
 v9_parent_modules_validation() {
   grep -q "<module>${SERVER_DIR}</module>" pom.xml \
+    && grep -q "<module>qwenbridge-plugin-sdk</module>" pom.xml \
+    && grep -q "<module>qwenbridge-commerce-pack</module>" pom.xml \
+    && grep -q "<module>qwenbridge-library-pack</module>" pom.xml \
     && grep -q "<module>${JAVA_SDK_DIR}</module>" pom.xml \
-    && grep -q "<module>${STARTER_DIR}</module>" pom.xml \
-    && grep -q "<module>${JAVA_SDK_EXAMPLE_DIR}</module>" pom.xml \
-    && grep -q "<module>${STARTER_EXAMPLE_DIR}</module>" pom.xml
+    && ! grep -q "<module>examples/" pom.xml
 }
 
 v9_docs_validation() {
@@ -30,14 +31,13 @@ v9_docs_validation() {
     && [[ -f "docs/release/V9-release-checklist.md" ]] \
     && [[ -f "docs/release/V9-release-evidence.md" ]] \
     && grep -qi "Java SDK" docs/roadmap/V9.md \
-    && grep -qi "Spring Boot" docs/roadmap/V9.md \
     && grep -qi "TypeScript" docs/roadmap/V9.md \
     && grep -qi "SSE" docs/release/V9-release-evidence.md \
     && grep -qi "publishing" docs/release/V9-release-evidence.md
 }
 
 v9_maven_reactor_validation() {
-  mvn clean test
+  mvn -B clean install
 }
 
 v9_java_sdk_source_validation() {
@@ -52,32 +52,12 @@ v9_java_sdk_tests_validation() {
   mvn -pl "${JAVA_SDK_DIR}" test
 }
 
+# QB-287: the examples/ applications were replaced by the independent E2E consumers, which run the
+# same v1 analyze (sync and async) and typed-streaming calls against the real server (step 24).
 v9_java_sdk_examples_validation() {
-  [[ -f "${JAVA_SDK_EXAMPLE_DIR}/src/main/java/io/qwenbridge/examples/SyncSearchAnalyzeExample.java" ]] \
-    && [[ -f "${JAVA_SDK_EXAMPLE_DIR}/src/main/java/io/qwenbridge/examples/AsyncSearchAnalyzeExample.java" ]] \
-    && [[ -f "${JAVA_SDK_EXAMPLE_DIR}/src/main/java/io/qwenbridge/examples/TypedStreamingExample.java" ]] \
-    && mvn -pl "${JAVA_SDK_EXAMPLE_DIR}" -am test
-}
-
-v9_starter_source_validation() {
-  [[ -f "${STARTER_DIR}/src/main/java/io/qwenbridge/starter/QwenBridgeAutoConfiguration.java" ]] \
-    && [[ -f "${STARTER_DIR}/src/main/java/io/qwenbridge/starter/QwenBridgeProperties.java" ]] \
-    && [[ -f "${STARTER_DIR}/src/main/java/io/qwenbridge/starter/health/QwenBridgeHealthIndicator.java" ]] \
-    && [[ -f "${STARTER_DIR}/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports" ]] \
-    && [[ -f "${STARTER_DIR}/README.md" ]] \
-    && grep -q "QwenBridgeClient" "${STARTER_DIR}/src/main/java/io/qwenbridge/starter/QwenBridgeAutoConfiguration.java" \
-    && grep -q "QwenBridgeStreamingClient" "${STARTER_DIR}/src/main/java/io/qwenbridge/starter/QwenBridgeAutoConfiguration.java"
-}
-
-v9_starter_tests_validation() {
-  mvn -pl "${STARTER_DIR}" -am test
-}
-
-v9_starter_example_validation() {
-  [[ -f "${STARTER_EXAMPLE_DIR}/src/main/resources/application.yml" ]] \
-    && grep -q "qwenbridge:" "${STARTER_EXAMPLE_DIR}/src/main/resources/application.yml" \
-    && grep -q "base-url" "${STARTER_EXAMPLE_DIR}/src/main/resources/application.yml" \
-    && mvn -pl "${STARTER_EXAMPLE_DIR}" -am test
+  [[ -f "e2e/dual-sdk/java-consumer/pom.xml" ]] \
+    && grep -q "analyzeAsync" e2e/dual-sdk/java-consumer/src/main/java/io/qwenbridge/e2e/consumer/JavaConsumer.java \
+    && grep -q "streamTyped" e2e/dual-sdk/java-consumer/src/main/java/io/qwenbridge/e2e/consumer/JavaConsumer.java
 }
 
 v9_typescript_sdk_source_validation() {
@@ -90,11 +70,8 @@ v9_typescript_sdk_source_validation() {
     && [[ -f "${TS_SDK_DIR}/src/streaming/qwenbridge-streaming-client.ts" ]] \
     && [[ -f "${TS_SDK_DIR}/src/streaming/streaming-payload-mapper.ts" ]] \
     && [[ -f "${TS_SDK_DIR}/src/retry/retry-policy.ts" ]] \
-    && [[ -f "examples/typescript-sdk-example/package.json" ]] \
-    && [[ -f "examples/typescript-sdk-example/README.md" ]] \
-    && [[ -f "examples/typescript-sdk-example/tsconfig.json" ]] \
-    && [[ -f "examples/typescript-sdk-example/src/sync-analyze.ts" ]] \
-    && [[ -f "examples/typescript-sdk-example/src/typed-stream.ts" ]]
+    && [[ -f "e2e/dual-sdk/typescript-consumer/package.json" ]] \
+    && grep -q "streamTyped" e2e/dual-sdk/typescript-consumer/src/main.ts
 }
 
 v9_typescript_sdk_package_metadata_validation() {
@@ -115,7 +92,7 @@ v9_typescript_sdk_package_metadata_validation() {
 }
 
 v9_typescript_sdk_build_test_pack_validation() {
-  npm --prefix "${TS_SDK_DIR}" install \
+  npm --prefix "${TS_SDK_DIR}" ci \
     && npm --prefix "${TS_SDK_DIR}" run build \
     && npm --prefix "${TS_SDK_DIR}" test \
     && npm --prefix "${TS_SDK_DIR}" run pack:check
@@ -254,18 +231,24 @@ await client.analyze({
   query: process.env.TEST_QUERY
 });
 
-await Promise.race([
-  streamPromise,
-  new Promise((_, reject) => setTimeout(() => reject(new Error("Timed out waiting for TypeScript SDK SSE stream")), 65000))
-]).catch(error => {
-  if (!terminal) {
-    throw error;
-  }
-});
+let timeout;
+try {
+  await Promise.race([
+    streamPromise,
+    new Promise((_, reject) => {
+      timeout = setTimeout(() => reject(new Error("Timed out waiting for TypeScript SDK SSE stream")), 65000);
+    })
+  ]).catch(error => {
+    if (!terminal) throw error;
+  });
+} finally {
+  clearTimeout(timeout);
+}
 
 if (payloadKinds.length === 0) {
   throw new Error("No typed SSE payloads received");
 }
+if (!terminal) throw new Error("SSE stream ended without a terminal event");
 
 console.log(JSON.stringify({
   requestId,
@@ -277,101 +260,15 @@ NODE
 
 v9_java_sdk_runtime_compile_validation() {
   mvn -pl "${JAVA_SDK_DIR}" -am test \
-    && mvn -pl "${JAVA_SDK_EXAMPLE_DIR}" -am test
+    && mvn -B -q -f e2e/dual-sdk/java-consumer/pom.xml compile
 }
 
 v9_release_docs_no_stale_v8_only_validation() {
   grep -qi "V9" docs/roadmap/V9.md \
-    && grep -qi "TypeScript SDK" docs/release/V9-release-evidence.md \
-    && grep -qi "Spring Boot Starter" docs/release/V9-release-evidence.md
-}
-
-create_v9_performance_k6_script() {
-  mkdir -p scripts/performance
-
-  cat > scripts/performance/v9-k6-load-test.js <<'K6'
-import http from "k6/http";
-import { check, sleep } from "k6";
-import { randomItem, uuidv4 } from "https://jslib.k6.io/k6-utils/1.4.0/index.js";
-
-const baseUrl = __ENV.BASE_URL || "http://localhost:8080";
-const totalRequests = Number(__ENV.PERF_TOTAL_REQUESTS || "1000000");
-const vus = Number(__ENV.PERF_VUS || "250");
-const maxDuration = __ENV.PERF_MAX_DURATION || "30m";
-
-export const options = {
-  scenarios: {
-    mixed_language_users: {
-      executor: "shared-iterations",
-      vus,
-      iterations: totalRequests,
-      maxDuration
-    }
-  },
-  thresholds: {
-    http_req_failed: ["rate<0.05"],
-    http_req_duration: ["p(95)<5000", "p(99)<15000"]
-  }
-};
-
-const queries = [
-  { lang: "en", query: "best gaming laptop under 1500 euro" },
-  { lang: "sv", query: "bästa gaming laptop under 15000 kronor" },
-  { lang: "fa", query: "بهترین لپ تاپ گیمینگ زیر ۱۵۰۰ یورو" },
-  { lang: "de", query: "bester gaming laptop unter 1500 euro" },
-  { lang: "fr", query: "meilleur ordinateur portable gaming moins de 1500 euros" },
-  { lang: "es", query: "mejor portátil gaming por menos de 1500 euros" },
-  { lang: "ar", query: "أفضل لابتوب ألعاب أقل من 1500 يورو" },
-  { lang: "tr", query: "1500 euro altı en iyi oyun laptopu" },
-  { lang: "nl", query: "beste gaming laptop onder 1500 euro" },
-  { lang: "ja", query: "1500ユーロ以下の最高のゲーミングノートPC" }
-];
-
-export default function () {
-  const selected = randomItem(queries);
-  const requestId = `k6-v9-${selected.lang}-${uuidv4()}`;
-
-  const response = http.post(
-    `${baseUrl}/api/v1/search/analyze`,
-    JSON.stringify({
-      requestId,
-      query: selected.query
-    }),
-    {
-      headers: {
-        "Content-Type": "application/json",
-        "X-Request-ID": requestId,
-        "X-Test-Language": selected.lang
-      },
-      timeout: "60s"
-    }
-  );
-
-  check(response, {
-    "status is 200": r => r.status === 200,
-    "has request id": r => {
-      try {
-        return r.json("requestId") === requestId;
-      } catch {
-        return false;
-      }
-    },
-    "has pipeline trace": r => {
-      try {
-        return Array.isArray(r.json("pipelineTrace"));
-      } catch {
-        return false;
-      }
-    }
-  });
-
-  sleep(0.01);
-}
-K6
+    && grep -qi "TypeScript SDK" docs/release/V9-release-evidence.md
 }
 
 v9_performance_script_validation() {
-  create_v9_performance_k6_script
   [[ -f "scripts/performance/v9-k6-load-test.js" ]] \
     && grep -q "shared-iterations" scripts/performance/v9-k6-load-test.js \
     && grep -q "PERF_TOTAL_REQUESTS" scripts/performance/v9-k6-load-test.js \
@@ -379,7 +276,6 @@ v9_performance_script_validation() {
 }
 
 v9_dockerized_k6_compose_validation() {
-  create_v9_performance_k6_script
 
   compose_with_profiles production performance -- config >/tmp/qwenbridge-compose-expanded.yml || return 1
 
@@ -392,25 +288,25 @@ v9_dockerized_k6_compose_validation() {
 }
 
 v9_optional_performance_validation() {
-  create_v9_performance_k6_script
 
-  if [[ "${RUN_V9_PERFORMANCE}" != "true" ]]; then
-    info "RUN_V9_PERFORMANCE=false, generated performance script but skipped execution."
-    info "To run real dockerized k6:"
-    info "RUN_V9_PERFORMANCE=true PERF_TOTAL_REQUESTS=1000000 PERF_VUS=250 PERF_MAX_DURATION=30m bash scripts/verify-release.sh"
-    return 0
+  if [[ "${FAILED}" -gt 0 ]]; then
+    info "Skipping load escalation because an earlier verification step failed."
+    return 77
   fi
 
-  info "Running dockerized k6 performance validation."
-  info "K6 internal BASE_URL=http://qwenbridge-app:8080"
+  if [[ "${RUN_V9_PERFORMANCE}" != "true" ]]; then
+    info "RUN_V9_PERFORMANCE=false, skipped performance execution."
+    info "To run real dockerized k6:"
+    info "RUN_V9_PERFORMANCE=true PERF_TOTAL_REQUESTS=1000000 PERF_VUS=250 PERF_MAX_DURATION=30m bash scripts/verify-release.sh"
+    return 77
+  fi
+
+  info "Running cold-cache and staged cached-throughput verification."
   info "PERF_TOTAL_REQUESTS=${PERF_TOTAL_REQUESTS}"
   info "PERF_VUS=${PERF_VUS}"
   info "PERF_MAX_DURATION=${PERF_MAX_DURATION}"
 
-  compose_with_profiles production performance -- run --rm \
-    -e BASE_URL="http://qwenbridge-app:8080" \
-    -e PERF_TOTAL_REQUESTS="${PERF_TOTAL_REQUESTS}" \
-    -e PERF_VUS="${PERF_VUS}" \
-    -e PERF_MAX_DURATION="${PERF_MAX_DURATION}" \
-    qwenbridge-k6
+  export VERIFY_RUN_ID VERIFY_LOG_DIR BASE_URL COMPOSE_FILE COMPOSE_PROFILE REDIS_CONTAINER
+  export PERF_TOTAL_REQUESTS PERF_VUS PERF_MAX_DURATION PERF_RUNNER
+  python3 scripts/verification/run-performance.py
 }

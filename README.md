@@ -5,251 +5,264 @@
 <h1 align="center">QwenBridge</h1>
 
 <p align="center">
-  <strong>AI-native search decision engine and developer platform.</strong>
-</p>
-
-<p align="center">
-  Query understanding · Safe execution planning · Pluggable retrieval · Typed streaming
+  <strong>Multilingual query-understanding and search engine, built on Quarkus and Java 25.</strong>
 </p>
 
 <p align="center">
   <a href="#quick-start">Quick start</a> ·
   <a href="#architecture">Architecture</a> ·
-  <a href="#sdks-and-starters">SDKs</a> ·
+  <a href="#sdks">SDKs</a> ·
   <a href="#documentation">Documentation</a> ·
   <a href="#contributing">Contributing</a>
 </p>
 
 <p align="center">
-  <a href="https://openjdk.org/">
-    <img src="https://img.shields.io/badge/Java-21%2B-ED8B00?logo=openjdk&logoColor=white" alt="Java 21+" />
-  </a>
-  <a href="https://spring.io/projects/spring-boot">
-    <img src="https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?logo=springboot&logoColor=white" alt="Spring Boot" />
-  </a>
-  <a href="https://maven.apache.org/">
-    <img src="https://img.shields.io/badge/Maven-3.x-C71A36?logo=apachemaven&logoColor=white" alt="Maven" />
-  </a>
-  <a href="LICENSE">
-    <img src="https://img.shields.io/badge/License-Apache--2.0-D22128?logo=apache&logoColor=white" alt="Apache License 2.0" />
-  </a>
-  <a href="https://www.docker.com/">
-    <img src="https://img.shields.io/badge/Docker-supported-2496ED?logo=docker&logoColor=white" alt="Docker" />
-  </a>
-  <a href="https://opensearch.org/">
-    <img src="https://img.shields.io/badge/OpenSearch-supported-005EB8?logo=opensearch&logoColor=white" alt="OpenSearch" />
-  </a>
-  <a href="https://redis.io/">
-    <img src="https://img.shields.io/badge/Redis-supported-DC382D?logo=redis&logoColor=white" alt="Redis" />
-  </a>
-</p>
-
-<p align="center">
-  <a href="qwenbridge-typescript-sdk/">
-    <img src="https://img.shields.io/badge/TypeScript-SDK-3178C6?logo=typescript&logoColor=white" alt="TypeScript SDK" />
-  </a>
-  <a href="../../actions">
-    <img src="https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white" alt="GitHub Actions" />
-  </a>
-  <a href="docs/development/code-quality.md">
-    <img src="https://img.shields.io/badge/Quality-Spotless%20%2B%20SpotBugs-4B32C3" alt="Spotless and SpotBugs" />
-  </a>
+  <img src="https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk&logoColor=white" alt="Java 25" />
+  <img src="https://img.shields.io/badge/Quarkus-3.x-4695EB?logo=quarkus&logoColor=white" alt="Quarkus" />
+  <img src="https://img.shields.io/badge/TypeScript-SDK-3178C6?logo=typescript&logoColor=white" alt="TypeScript SDK" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-D22128" alt="Apache License 2.0" /></a>
 </p>
 
 ---
 
-> **Current public release track:** V9 — Developer Platform
+QwenBridge turns a free-text query, in any supported language, into a typed, validated search
+plan and runs it. It detects the language, corrects typos, optionally expands the query into
+other languages, extracts grounded constraints into a versioned **QueryIR**, checks threats and
+policy, and retrieves with keyword, vector or hybrid search. Every result is checked against the
+query's hard constraints.
 
-QwenBridge accepts a user query, analyzes it through an AI-first pipeline, produces a safe execution plan, runs retrieval through pluggable providers, and exposes results through REST APIs, Server-Sent Events (SSE), a Java SDK, a Spring Boot Starter, and a TypeScript SDK.
+**No database, search engine or cache is required.** By default the server retrieves from an
+in-process index and keeps its state in memory or on a local volume. OpenSearch and Redis are
+optional and off by default.
 
-## What QwenBridge does
+| | |
+|---|---|
+| **Version** | 0.9.1 (QwenBridge 1.0 release candidate) |
+| **Runtime** | Quarkus on Java 25. Quarkus is the only application framework ([certification](docs/architecture/quarkus-only.md)) |
+| **Clients** | REST and SSE; Java SDK (Java 25); TypeScript SDK (Node.js 20+ and browsers) |
+| **Model** | Any Ollama-compatible local model (default `qwen2.5`, embeddings `bge-m3`), or an HTTP JSON gateway |
+| **License** | Apache 2.0 |
+
+## What it does
 
 | Area | Capabilities |
-| --- | --- |
-| **Understanding** | Input normalization, language detection, intent detection, query rewrite, semantic analysis, AI decisioning |
-| **Safety** | Policy evaluation, threat detection, abuse protection, secret-leakage checks, request isolation |
-| **Retrieval** | Keyword, vector, hybrid search, ranking, reranking, facets, provider abstraction |
-| **Developer experience** | REST API, typed SSE events, Java SDK, Spring Boot Starter, TypeScript SDK |
-| **Operations** | Redis cache support, health/readiness, metrics, tracing, structured logging, Docker deployment |
+|---|---|
+| **Language** | Script and model-based language detection, mixed-script segments, text direction, Unicode normalization |
+| **Typo correction** | Dictionary-based, per language and per tenant; protects URLs, e-mail addresses, amounts and identifiers; modes `DISABLED`, `SUGGEST_ONLY`, `SAFE_AUTO_CORRECT` and `AGGRESSIVE` ([details](docs/architecture/typo-correction.md)) |
+| **Multilingual expansion** | Optional translation of the query into configured target languages (glossary and model providers), fused retrieval across languages ([details](docs/architecture/multilingual-expansion.md)) |
+| **Understanding** | Intent, grounded constraint extraction (every value quotes the query), QueryIR 1.1, schema registry, confidence and evidence |
+| **Safety** | Request validation, 12 threat-detector families (SQL, NoSQL, LDAP, command, template, path traversal, SSRF, XSS, prompt injection, jailbreak, secret leakage, Unicode obfuscation), central policy and approvals, rate limits and quotas, tenant isolation |
+| **Retrieval** | Keyword, vector and hybrid (rank fusion), adaptive planning, ranking policy, reranking, zero-result recovery, suggestions |
+| **Platform** | Domain packs (Commerce, Library), connector-pack SPI, plugin SDK, signed packs and offline licences, editions |
+| **Operations** | SmallRye Health, Micrometer metrics with latency histograms, OpenTelemetry tracing, structured logs |
 
-##  Quick start
+## Quick start
 
-### 1. Start local dependencies
+**Requirements:** JDK 25, Maven 3.9+, and a local model server (Ollama). Docker is optional.
+
+### 1. Start the model server
 
 ```bash
-docker compose up -d
+docker compose up -d qwenbridge-ollama qwenbridge-ollama-init   # pulls qwen2.5 and bge-m3
 ```
+
+Plain `docker compose up -d` also starts Redis. QwenBridge uses it only as an optional cache and
+for catalog synchronization.
 
 ### 2. Run the server
 
 ```bash
-mvn -pl qwenbridge-server spring-boot:run
+mvn -B install -DskipTests
+mvn -pl qwenbridge-server quarkus:dev
 ```
 
-### 3. Verify the API
+The server listens on `http://localhost:8080`. Outside the `prod` profile it accepts anonymous
+search requests (it logs a warning). The `prod` profile requires API keys
+(`QWENBRIDGE_SECURITY_API_PRINCIPALS`); see [Configuration](docs/operations/configuration.md).
+
+The packaged application (`java -jar qwenbridge-server/target/quarkus-app/quarkus-run.jar`) runs
+the `prod` profile and refuses requests until API keys are configured. For a local trial, set
+`QWENBRIDGE_SECURITY_AUTHENTICATION_REQUIRED=false`.
+
+To run the packaged application in Docker instead:
 
 ```bash
-curl http://localhost:8080/api/v1/health
+docker compose --profile production up -d --build
 ```
 
-### 4. Analyze a query
+### 3. Check health
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/search/analyze \
+curl -s http://localhost:8080/q/health/ready
+```
+
+### 4. Search over REST (v2)
+
+```bash
+curl -s http://localhost:8080/api/v2/search \
   -H 'Content-Type: application/json' \
-  -d '{"query":"best wireless headphones for travel"}'
+  -d '{"query":"black running shoes under 100 EUR","contract":"commerce-search/1.0"}'
 ```
 
-For environment setup, configuration, and local prerequisites, see [Local Development](docs/development/local-development.md).
+The response carries `status`, `intent`, the `queryIR` (with its grounded constraints), `results`,
+`confidence`, `evidence`, `suggestions` and stage `timings`. With an API key, add
+`-H "Authorization: Bearer $QWENBRIDGE_API_KEY"`.
 
-##  Architecture
+### 5. Stream over SSE (v2)
 
-![QwenBridge architecture diagram](docs/images/Qwen_Architecture.jpg)
-
-QwenBridge separates **AI providers**, **search providers**, **pipeline steps**, and **execution operations** so retrieval and model integrations can evolve independently.
-
-For the detailed architecture model, see:
-[Architecture Overview](docs/architecture/overview.md),
-[Pipeline](docs/architecture/pipeline.md), and
-[Modules](docs/architecture/modules.md).
-
-QwenBridge separates **AI providers**, **search providers**, **pipeline steps**, and **execution operations** so that retrieval and model integrations can evolve independently.
-
-##  Main modules
-
-```text
-qwenbridge-server               Spring Boot runtime and public API
-qwenbridge-java-sdk             Java client SDK
-qwenbridge-spring-boot-starter  Spring Boot auto-configuration
-qwenbridge-typescript-sdk       TypeScript client SDK
-examples                        Runnable consumer examples
-docs                            Architecture, API, operations, release docs
-scripts                         Verification, seed, and performance tooling
+```bash
+curl -N http://localhost:8080/api/v2/search/stream \
+  -H 'Content-Type: application/json' -H 'Accept: text/event-stream' \
+  -d '{"query":"black running shoes under 100 EUR","contract":"commerce-search/1.0"}'
 ```
 
-##  AI and retrieval stack
+Each event has a monotonically increasing sequence number. The stream ends with exactly one
+terminal event, `search.completed` or `search.failed`. See the [SSE contract](docs/api/sse.md).
 
-The default local stack is provider-oriented:
+### 6. Java SDK
 
-- **Qwen** through Ollama for AI-assisted analysis and decisioning
-- **BGE embeddings** through Ollama for vector retrieval
-- **OpenSearch** for keyword, vector, and hybrid retrieval
-- **Redis** for cache and rate-limiting support
-- **Spring Boot** for the server runtime
+```xml
+<dependency>
+  <groupId>io.qwenbridge</groupId>
+  <artifactId>qwenbridge-java-sdk</artifactId>
+  <version>0.9.1</version>
+</dependency>
+```
 
-Provider boundaries are documented in [AI Stack](docs/architecture/ai-stack.md) and [Provider Reliability](docs/architecture/provider-reliability.md).
+```java
+import io.qwenbridge.sdk.commerce.CommerceClient;
+import io.qwenbridge.sdk.commerce.CommerceContracts;
+import java.net.URI;
 
-##  Public API
+try (var client = new CommerceClient(URI.create("http://localhost:8080"), apiKeyOrNull)) {
+  client.requireCompatibleServer();
+  var response = client.search(CommerceContracts.Request.planned("black running shoes under 100 EUR"));
+  response.results().hits().forEach(hit -> System.out.println(hit.id() + " " + hit.score()));
 
-**API version:** `v1`
+  client.stream(
+      CommerceContracts.Request.planned("winter jacket"),
+      event -> System.out.println(event.kind()));
+}
+```
 
-| Interface | Endpoint |
-|---|---|
-| Search analysis | `POST /api/v1/search/analyze` |
-| AI chat | `POST /api/v1/ai/chat` |
-| Health | `GET /api/v1/health` |
-| Version | `GET /api/v1/version` |
-| Streaming | `GET /api/v1/search/stream/{requestId}` |
+The SDK has no dependency other than Jackson. Install it locally with
+`mvn -pl qwenbridge-java-sdk install`. See the [Java SDK README](qwenbridge-java-sdk/README.md).
 
-The streaming interface uses a stable public SSE envelope with typed payloads, including connection, pipeline, token, completion, and failure events.
+### 7. TypeScript SDK
 
-- [REST API reference](docs/api/rest-api.md)
-- [SSE event contract](docs/api/sse.md)
+```bash
+cd qwenbridge-typescript-sdk && npm ci && npm run build && npm pack   # @qwenbridge/sdk tarball
+```
 
-##  SDKs and starters
+```ts
+import { CommerceClient, COMMERCE_CONTRACT_V1 } from "@qwenbridge/sdk";
 
-| Package | Purpose | Documentation |
+const client = new CommerceClient({ baseUrl: "http://localhost:8080", bearerToken: apiKey });
+await client.requireCompatibleServer();
+
+const response = await client.search({ query: "black running shoes under 100 EUR", contract: COMMERCE_CONTRACT_V1 });
+for (const hit of response.results.hits) console.log(hit.id, hit.score);
+
+const controller = new AbortController();
+await client.stream({ query: "winter jacket", contract: COMMERCE_CONTRACT_V1 },
+  event => console.log(event.kind), controller.signal);
+```
+
+The package has no runtime dependencies. See the [TypeScript SDK README](qwenbridge-typescript-sdk/README.md).
+
+**Runnable consumers.** [`e2e/dual-sdk`](e2e/dual-sdk/README.md) contains two independent,
+complete consumers, one per SDK. They cover v2 search, streaming, cancellation, typed errors and
+the legacy v1 API, against a real server.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    C[Clients<br/>REST · SSE · Java SDK · TypeScript SDK] --> S
+    subgraph S[qwenbridge-server · Quarkus]
+      API[REST and SSE API<br/>v2 · legacy v1 · platform] --> P[Query pipeline]
+      P --> E[Execution and retrieval]
+    end
+    P --> CORE[qwenbridge-core<br/>language · spelling · expansion · QueryIR<br/>policy · threat · retrieval · ranking]
+    E --> MEM[(In-process index<br/>default)]
+    E -. optional .-> OS[(OpenSearch)]
+    S -. optional .-> R[(Redis cache)]
+    S --> M[Model server<br/>Ollama or HTTP JSON gateway]
+    PK[Domain packs<br/>Commerce · Library] --> S
+    SDK[qwenbridge-plugin-sdk] --> PK
+```
+
+| Module | Responsibility | Depends on |
 |---|---|---|
-|  Java SDK | Synchronous, asynchronous, and typed streaming clients | [README](qwenbridge-java-sdk/README.md) · [Example](docs/examples/java-sdk-example.md) |
-|  Spring Boot Starter | Auto-configured Java SDK client and health integration | [README](qwenbridge-spring-boot-starter/README.md) · [Example](docs/examples/spring-boot-starter-example.md) |
-|  TypeScript SDK | ESM client with retries and typed streaming | [README](qwenbridge-typescript-sdk/README.md) · [Example](docs/examples/typescript-sdk-example.md) |
+| `qwenbridge-core` | Framework-free engine: language, typo correction, expansion, QueryIR, extraction, validation, policy, threat detection, retrieval, ranking, recovery, connector SPI | Jackson only |
+| `qwenbridge-plugin-sdk` | Public JDK-only contracts for plugins and packs | JDK only |
+| `qwenbridge-commerce-pack` | Commerce domain pack: schema, rules, vocabulary | plugin SDK |
+| `qwenbridge-library-pack` | Library domain pack, a second, independent domain | plugin SDK |
+| `qwenbridge-server` | Quarkus runtime: REST and SSE APIs, pipeline, AI providers, execution, security, operations | core, plugin SDK, packs |
+| `qwenbridge-java-sdk` | Java 25 client | Jackson only |
+| `qwenbridge-typescript-sdk` | TypeScript client (npm `@qwenbridge/sdk`) | none at runtime |
+| `e2e/dual-sdk` | End-to-end suite: both SDKs against the same real server | — |
 
-##  Quality and verification
+Read more in the [architecture overview](docs/architecture/overview.md), the
+[class diagrams](docs/architecture/class-diagrams.md), the [flows](docs/architecture/flows.md) and
+the [sequence diagrams](docs/architecture/sequences.md).
 
-Run the complete Java build and test suite:
+## Optional dependencies
+
+| Dependency | Default | Used for | When absent |
+|---|---|---|---|
+| Model server (Ollama) | Required for model-backed analysis | Analysis, embeddings, model translation | Deterministic analysis paths still run; model stages report degraded |
+| OpenSearch | Off | Alternative retrieval backend (`QWENBRIDGE_SEARCH_BACKEND=opensearch`, `QWENBRIDGE_COMMERCE_BACKEND=opensearch`) | Not probed and not listed in readiness |
+| Redis | Off for state | Analysis cache, distributed rate limits, catalog-sync checkpoint and lock | Caches and rate limits fall back to memory; `POST /api/v2/catalog/sync` returns a typed 503 |
+
+## APIs
+
+| API | Endpoints | Notes |
+|---|---|---|
+| v2 search | `POST /api/v2/search`, `POST /api/v2/search/stream`, refine, suggestions, feedback, recovery, sessions | Tenant-aware; [reference](docs/api/rest-api.md) |
+| v2 language | `GET /api/v2/spelling`, `GET /api/v2/multilingual` | Effective typo and expansion configuration |
+| v2 platform | `/api/v2/platform/*` (packs, connector packs, licences, editions, marketplace) | Administrative roles |
+| v1 (legacy) | `POST /api/v1/search/analyze`, `GET /api/v1/search/stream/{requestId}` | Kept for backward compatibility; refused in authenticated deployments |
+| Health | `/q/health/live`, `/q/health/ready`, `/api/v1/health` | SmallRye Health |
+| Metrics | `/q/metrics` | Prometheus format |
+
+## Build and verify
 
 ```bash
-mvn clean verify
+mvn -B clean verify                       # all modules and their tests
+mvn -B -Pcode-quality -DskipTests verify  # Spotless, SpotBugs and architecture rules
+bash scripts/verify-local.sh              # Java, TypeScript, packaging, versions, scripts
+bash e2e/dual-sdk/scripts/run-dual-sdk-e2e.sh   # both SDKs end to end, offline
 ```
 
-Run release verification:
+`bash scripts/qwenbridge-final-verification.sh` runs the complete master verification: build, all
+suites, live runtime steps, performance, the Quarkus-only audit and the end-to-end suite. It
+starts local Compose services and never deletes volumes. See [Testing](docs/development/testing.md).
 
-```bash
-bash scripts/verify-release.sh
-```
+## Documentation
 
-The repository includes architecture rules, formatting gates, static analysis, unit tests, integration tests, retrieval-quality evaluation, and performance/resilience scripts.
-
-- [Testing](docs/development/testing.md)
-- [Code Quality](docs/development/code-quality.md)
-- [Retrieval Quality Benchmark](docs/evaluation/retrieval-quality-benchmark.md)
-- [Release Audit](docs/release/release-audit.md)
-
-##  Documentation
-
-### Build and contribution
-
-- [Local Development](docs/development/local-development.md)
-- [Testing](docs/development/testing.md)
-- [Code Quality](docs/development/code-quality.md)
-- [Branching and Pull Request Policy](docs/development/branching-and-pr-policy.md)
-- [Contributing Guide](CONTRIBUTING.md)
-
-### Architecture
-
-- [Architecture Overview](docs/architecture/overview.md)
-- [Modules](docs/architecture/modules.md)
-- [Pipeline](docs/architecture/pipeline.md)
-- [Architecture Rules](docs/architecture/architecture-rules.md)
-- [Ranking Policy](docs/architecture/ranking-policy.md)
-- [Retrieval Verification](docs/architecture/retrieval-verification.md)
-
-### Operations and deployment
-
+The [documentation index](docs/README.md) lists everything. Start with:
+- [Getting started](docs/development/getting-started.md)
 - [Configuration](docs/operations/configuration.md)
-- [Health and Readiness](docs/operations/health.md)
-- [Logging](docs/operations/logging.md)
-- [Metrics](docs/operations/metrics.md)
-- [Tracing](docs/operations/tracing.md)
-- [Operational Runbook](docs/operations/runbook.md)
-- [Docker Deployment](docs/deployment/docker.md)
-
-### Publishing and releases
-
-- [Release History](docs/release/README.md)
-- [V9 Roadmap](docs/roadmap/V9.md)
-- [V9 Release Checklist](docs/release/V9-release-checklist.md)
-- [V9 Release Evidence](docs/release/V9-release-evidence.md)
-- [Maven Central Publishing](docs/publishing/maven-central.md)
-- [npm Publishing](docs/publishing/npm.md)
-- [Release Process](docs/publishing/release-process.md)
-
-##  Security
-
-Please read [SECURITY.md](SECURITY.md) before reporting a vulnerability.
-
-- [Abuse Protection](docs/security/abuse-protection.md)
-- [Secrets Handling Policy](docs/security/secrets-handling-policy.md)
-
-**Never commit** secrets, tokens, passwords, private endpoints, generated build output, dependency directories, or local environment files.
+- [Troubleshooting](docs/operations/troubleshooting.md)
+- [REST API](docs/api/rest-api.md) and [SSE](docs/api/sse.md)
+- [Architecture overview](docs/architecture/overview.md)
+- [Remediation proposals](docs/architecture/remediation-proposals.md)
+- [Release process](docs/publishing/release-process.md)
 
 ## Contributing
 
-Contributions are welcome when they are focused, production-ready, and aligned with the QwenBridge architecture.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) and the
+[branching and pull request policy](docs/development/branching-and-pr-policy.md). Changes need
+tests, must pass `mvn clean verify` and the code-quality profile, and must keep the module
+boundaries (the core stays framework-free; no database or search engine becomes mandatory).
 
-Every pull request must:
+## Security
 
-- target a clearly scoped problem or approved issue;
-- preserve module boundaries and architecture rules;
-- include appropriate unit and integration test coverage;
-- pass the required CI checks, including build and test verification;
-- avoid unrelated refactoring, generated files, secrets, and local environment changes;
-- follow the repository formatting, static-analysis, security, and documentation standards.
+Report vulnerabilities privately, as described in [SECURITY.md](SECURITY.md). Never commit
+credentials, tokens or `.env` files. See [abuse protection](docs/security/abuse-protection.md) and
+the [secrets policy](docs/security/secrets-handling-policy.md).
 
-Pull requests that do not meet these requirements may be closed without review.
-
-Before opening a pull request, read the [Contributing Guide](CONTRIBUTING.md) and the [Branching and Pull Request Policy](docs/development/branching-and-pr-policy.md).
-
-##  License
+## License
 
 QwenBridge is licensed under the [Apache License 2.0](LICENSE).

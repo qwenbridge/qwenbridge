@@ -1,0 +1,219 @@
+# QwenBridge - Quarkus configuration
+quarkus:
+  banner:
+    enabled: false
+  application:
+    name: qwenbridge
+  shutdown:
+    timeout: 30
+  log:
+    console:
+      # Masks secrets and escapes control characters in every message (QB-060, QB-061).
+      filter: qwenbridge-redaction
+  http:
+    port: 8080
+    limits:
+      max-header-size: 16K
+      # Hard transport ceiling, independent of abuse protection (QB-005). Must stay above the
+      # largest legitimate body: signed pack uploads (~2.9 MB of JSON).
+      max-body-size: 4M
+    # CORS
+    cors:
+      enabled: true
+      origins: "/.*/"
+      methods: "GET,POST,OPTIONS"
+  # Health & metrics
+  smallrye-health:
+    root-path: /q/health
+  micrometer:
+    export:
+      prometheus:
+        path: /q/metrics
+        enabled: true
+  # OpenAPI / Swagger UI
+  smallrye-openapi:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger
+    always-include: true
+  # Redis
+  redis:
+    hosts: redis://localhost:6379
+    # Bound concurrent cache/rate-limit work without falling back to inference at 250 VUs.
+    max-pool-size: 32
+    max-pool-waiting: 1024
+    # QB-282: Redis is optional (memory and file stores need none). Its availability is reported
+    # by /api/v1/health/ready as a dependency (DEGRADED when unreachable), not as server
+    # readiness, so a deployment without Redis is ready.
+    health:
+      enabled: false
+  # Outbound REST clients (MicroProfile Rest Client)
+  rest-client:
+    ollama:
+      url: ${qwenbridge.ai.ollama.base-url:test}
+      connect-timeout: 5000
+      read-timeout: 60000
+    opensearch:
+      url: ${qwenbridge.search.opensearch.base-url:test}
+      connect-timeout: 5000
+      read-timeout: 30000
+
+mp:
+  openapi:
+    extensions:
+      smallrye:
+        info:
+          title: QwenBridge API
+          version: ${quarkus.application.version}
+          description: AI-native search and provider bridge APIs
+
+# ---------------------------------------------------------------------------
+# QwenBridge application properties
+# ---------------------------------------------------------------------------
+qwenbridge:
+  version: ${quarkus.application.version}
+  # Language processing (QB-004, QB-008). "configured" marks the languages this deployment is
+  # tuned for; it never restricts which languages are accepted or detected.
+  language:
+    configured: en,fa,sv
+    model-enabled: true
+  # Universal request contract limits (QB-005), checked before AI/retrieval work.
+  # Text limits count Unicode code points.
+  request:
+    limits:
+      max-query-code-points: 2048
+      max-context-entries: 16
+      max-context-key-length: 64
+      max-context-value-code-points: 256
+      max-domain-hints: 8
+      max-domain-hint-length: 64
+      max-json-nesting-depth: 64
+  streaming:
+    session-timeout-ms: 300000
+    max-ai-stream-duration: 30s
+    max-ai-token-count: 1000
+    max-ai-event-count: 1100
+  security:
+    cors:
+      allowed-origin-patterns: "*"
+    trusted-proxy:
+      forwarded-headers-enabled: false
+  abuse:
+    enabled: true
+    request-size-limit-bytes: 65536
+    per-ip-limit: 60
+    per-api-key-limit: 600
+    ai-request-quota: 120
+    token-quota: 100000
+    concurrent-stream-limit: 25
+    window: 1m
+    redis-timeout: 1s
+    fail-open-when-redis-unavailable: false
+  ai:
+    provider: ollama
+    ollama:
+      base-url: http://localhost:11434
+      chat-model: qwen2.5
+      embedding-model: bge-m3
+      connect-timeout: 5s
+      read-timeout: 60s
+      retry-count: 1
+      streaming-enabled: false
+  # QB-293/QB-287: Commerce search is database-free by default (in-process backend: keyword,
+  # vector and hybrid). OpenSearch is the only built-in optional backend, selected explicitly.
+  commerce:
+    backend: memory
+  search:
+    # The v1 pipeline's retrieval backend (QB-293): in-memory unless OpenSearch is selected.
+    backend: in-memory
+    opensearch:
+      default-size: 10
+      base-url: http://localhost:9200
+      index: qwenbridge-products
+      connect-timeout: 5s
+      read-timeout: 30s
+  analysis:
+    cache:
+      enabled: true
+      type: redis
+      key-prefix: "qwenbridge:analysis"
+      provider: ollama
+      model: qwen2.5
+      version: v10
+      analysis-timeout: 10s
+      ttl: 10m
+      redis:
+        host: localhost
+        port: 6379
+        connect-timeout: 2s
+        command-timeout: 2s
+  translation:
+    # Optional translation stage for the v1 pipeline (QB-016): none | model. With none, a request
+    # for another content language gets an explicit NO_PROVIDER result and the original is used.
+    provider: none
+    timeout: 30s
+
+# ---------------------------------------------------------------------------
+# Profiles
+# ---------------------------------------------------------------------------
+"%local":
+  qwenbridge:
+    ai:
+      ollama:
+        streaming-enabled: true
+
+"%docker":
+  quarkus:
+    redis:
+      hosts: "redis://${QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST:redis}:6379"
+  qwenbridge:
+    ai:
+      ollama:
+        base-url: "${QWENBRIDGE_AI_OLLAMA_BASE_URL:http://ollama:11434}"
+    search:
+      opensearch:
+        base-url: "${QWENBRIDGE_SEARCH_OPENSEARCH_BASE_URL:http://opensearch:9200}"
+    analysis:
+      cache:
+        redis:
+          host: "${QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST:redis}"
+
+"%test":
+  qwenbridge:
+    ai:
+      ollama:
+        # Tests never reach a model by accident: a developer machine with a running Ollama behaves
+        # exactly like CI. Live tests set QWENBRIDGE_AI_OLLAMA_BASE_URL explicitly (verify-release).
+        base-url: http://127.0.0.1:9
+    # The existing Commerce test suites are written against the OpenSearch connector path.
+    commerce:
+      backend: opensearch
+    search:
+      backend: opensearch
+    abuse:
+      enabled: false
+    analysis:
+      cache:
+        enabled: false
+
+"%prod":
+  quarkus:
+    redis:
+      hosts: "redis://${QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST:localhost}:${QWENBRIDGE_ANALYSIS_CACHE_REDIS_PORT:6379}"
+  qwenbridge:
+    security:
+      # Audit S3: production never serves anonymous requests; startup fails without principals.
+      authentication-required: true
+      cors:
+        allowed-origin-patterns: "${QWENBRIDGE_CORS_ALLOWED_ORIGINS:*}"
+    ai:
+      ollama:
+        base-url: "${QWENBRIDGE_AI_OLLAMA_BASE_URL:http://localhost:11434}"
+    search:
+      opensearch:
+        base-url: "${QWENBRIDGE_SEARCH_OPENSEARCH_BASE_URL:http://localhost:9200}"
+    analysis:
+      cache:
+        redis:
+          host: "${QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST:localhost}"
+          port: "${QWENBRIDGE_ANALYSIS_CACHE_REDIS_PORT:6379}"

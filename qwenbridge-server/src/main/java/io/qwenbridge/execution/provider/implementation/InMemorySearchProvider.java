@@ -5,12 +5,12 @@ import io.qwenbridge.execution.provider.model.SearchRequest;
 import io.qwenbridge.execution.provider.model.SearchResponse;
 import io.qwenbridge.execution.provider.model.SearchResultSet;
 import io.qwenbridge.execution.provider.support.AbstractSearchProvider;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import org.springframework.stereotype.Component;
 
-@Component
+@ApplicationScoped
 public class InMemorySearchProvider extends AbstractSearchProvider {
 
   private final List<Map<String, Object>> documents =
@@ -37,6 +37,9 @@ public class InMemorySearchProvider extends AbstractSearchProvider {
 
   @Override
   protected SearchResponse doSearch(SearchRequest request) {
+    if (!request.constraints().isEmpty() || !"KEYWORD".equals(request.searchMode()))
+      throw new IllegalArgumentException(
+          "In-memory demo supports only unconstrained keyword search");
     String query = request.query().toLowerCase(Locale.ROOT);
 
     List<SearchHit> hits =

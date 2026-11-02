@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-11-01T12:00:00Z",
+  "status": 409,
+  "error": "Conflict",
+  "code": "TENANT_API_REQUIRED",
+  "message": "Use tenant-scoped /api/v2 endpoints in authenticated deployments",
+  "path": "/api/v1/search/analyze",
+  "requestId": "r-3"
+}

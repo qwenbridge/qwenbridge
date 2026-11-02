@@ -1,0 +1,4 @@
+# Test fixture (QB-291): domain vocabulary.
+iPhone 16 Pro
+Samsung Galaxy
+Nike

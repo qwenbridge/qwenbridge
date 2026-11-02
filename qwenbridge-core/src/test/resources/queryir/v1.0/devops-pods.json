@@ -1,0 +1,86 @@
+{
+  "irVersion": "1.0",
+  "queryId": "q-devops-1",
+  "originalText": "Find Kubernetes pods with memory usage above 85% during the last hour",
+  "language": "en",
+  "intents": [
+    {
+      "id": "i1",
+      "type": "investigate",
+      "confidence": {
+        "kind": "HEURISTIC"
+      },
+      "span": {
+        "start": 0,
+        "end": 4,
+        "text": "Find"
+      }
+    }
+  ],
+  "entities": [
+    {
+      "id": "e1",
+      "type": "kubernetes.pod",
+      "value": "Kubernetes pods",
+      "span": {
+        "start": 5,
+        "end": 20,
+        "text": "Kubernetes pods"
+      },
+      "confidence": {
+        "kind": "DETERMINISTIC"
+      }
+    }
+  ],
+  "constraints": [
+    {
+      "id": "c1",
+      "field": "memory_usage",
+      "operator": "GT",
+      "value": {
+        "type": "quantity",
+        "value": 85,
+        "unit": "%"
+      },
+      "strength": "HARD",
+      "provenance": "USER_TEXT",
+      "reason": "explicit threshold 'above'",
+      "span": {
+        "start": 39,
+        "end": 48,
+        "text": "above 85%"
+      },
+      "confidence": {
+        "kind": "DETERMINISTIC"
+      }
+    },
+    {
+      "id": "c2",
+      "field": "observed_at",
+      "operator": "GTE",
+      "value": {
+        "type": "temporal",
+        "kind": "RELATIVE_PAST",
+        "value": "PT1H",
+        "reference": "2026-10-31T12:00:00Z"
+      },
+      "strength": "HARD",
+      "provenance": "USER_TEXT",
+      "reason": "explicit time window resolved against the request time",
+      "span": {
+        "start": 49,
+        "end": 69,
+        "text": "during the last hour"
+      },
+      "confidence": {
+        "kind": "DETERMINISTIC"
+      }
+    }
+  ],
+  "retrievalHints": {
+    "modes": [
+      "STRUCTURED"
+    ],
+    "crossLanguage": false
+  }
+}

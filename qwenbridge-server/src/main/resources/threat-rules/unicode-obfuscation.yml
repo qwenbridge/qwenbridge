@@ -1,10 +1,22 @@
 rules:
+  # Invisible separators that have no orthographic use: always suspicious.
   - id: unicode-zero-width
-    regex: "[\\u200B\\u200C\\u200D\\uFEFF]"
+    regex: '[\x{200B}\x{2060}\x{FEFF}]'
     severity: MEDIUM
     score: 0.60
     confidence: 0.86
     evidence: "zero-width character"
+    reason: "Zero-width Unicode obfuscation detected."
+
+  # ZWNJ/ZWJ outside legitimate contexts. UnicodeObfuscationDetector first removes joiners that
+  # the orthography of joining scripts (Persian, Urdu, Arabic, Indic, ...) or emoji sequences
+  # require, so any joiner that reaches this rule is obfuscation, e.g. "SEL<ZWNJ>ECT".
+  - id: unicode-joiner-out-of-context
+    regex: '[\x{200C}\x{200D}]'
+    severity: MEDIUM
+    score: 0.60
+    confidence: 0.86
+    evidence: "zero-width joiner outside a joining script or emoji sequence"
     reason: "Zero-width Unicode obfuscation detected."
 
   - id: unicode-bidi-override
@@ -23,8 +35,22 @@ rules:
     evidence: "fullwidth characters"
     reason: "Fullwidth Unicode obfuscation detected."
 
+  # Unicode tag characters are invisible and are used to smuggle hidden instructions. Tags inside a
+  # well-formed emoji subdivision flag (U+1F3F4, tag letters, cancel tag) are removed by
+  # UnicodeObfuscationDetector before this rule runs; any remaining tag is flagged.
+  - id: unicode-tag-characters
+    regex: '[\x{E0020}-\x{E007F}]'
+    severity: HIGH
+    score: 0.76
+    confidence: 0.88
+    evidence: "unicode tag characters"
+    reason: "Hidden Unicode tag characters detected."
+
+  # Other format characters (e.g. soft hyphen, Arabic number signs, invisible operators). Excluded
+  # here because handled by the rules above or legitimate: ZWSP/ZWNJ/ZWJ, the LRM/RLM/ALM direction
+  # marks (cannot reorder text), word joiner, BOM, bidi overrides/isolates and tag characters.
   - id: unicode-control-format
-    regex: "\\p{Cf}"
+    regex: '[\p{Cf}&&[^\x{200B}-\x{200F}\x{061C}\x{2060}\x{FEFF}\x{202A}-\x{202E}\x{2066}-\x{2069}\x{E0020}-\x{E007F}]]'
     severity: MEDIUM
     score: 0.55
     confidence: 0.78

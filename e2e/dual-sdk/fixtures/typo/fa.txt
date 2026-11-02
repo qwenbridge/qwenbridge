@@ -1,0 +1,6 @@
+# E2E typo dictionary (QB-295 fixture): Persian
+ژاکت	500
+زمستانی	400
+قرمز	400
+زیر	500
+یورو	300

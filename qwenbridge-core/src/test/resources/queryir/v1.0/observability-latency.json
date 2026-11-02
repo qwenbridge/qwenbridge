@@ -1,0 +1,74 @@
+{
+  "irVersion": "1.0",
+  "originalText": "Find services with increased P99 latency during the last hour",
+  "language": "en",
+  "intents": [
+    {
+      "id": "i1",
+      "type": "investigate",
+      "confidence": {
+        "kind": "HEURISTIC"
+      }
+    }
+  ],
+  "entities": [
+    {
+      "id": "e1",
+      "type": "service",
+      "value": "services",
+      "span": {
+        "start": 5,
+        "end": 13,
+        "text": "services"
+      },
+      "confidence": {
+        "kind": "HEURISTIC"
+      }
+    }
+  ],
+  "constraints": [
+    {
+      "id": "c1",
+      "field": "observed_at",
+      "operator": "GTE",
+      "value": {
+        "type": "temporal",
+        "kind": "RELATIVE_PAST",
+        "value": "PT1H"
+      },
+      "strength": "HARD",
+      "provenance": "USER_TEXT",
+      "reason": "explicit time window; no reference time supplied, so it stays unresolved",
+      "span": {
+        "start": 41,
+        "end": 61,
+        "text": "during the last hour"
+      },
+      "confidence": {
+        "kind": "DETERMINISTIC"
+      }
+    }
+  ],
+  "semanticSignals": [
+    {
+      "id": "g1",
+      "concept": "increase",
+      "polarity": "POSITIVE",
+      "target": "latency.p99",
+      "span": {
+        "start": 19,
+        "end": 40,
+        "text": "increased P99 latency"
+      },
+      "confidence": {
+        "kind": "HEURISTIC"
+      }
+    }
+  ],
+  "retrievalHints": {
+    "modes": [
+      "STRUCTURED"
+    ],
+    "crossLanguage": false
+  }
+}

@@ -1,10 +1,15 @@
 package io.qwenbridge.normalization.rule;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import java.text.Normalizer;
-import org.springframework.stereotype.Component;
 
-@Component
+@ApplicationScoped
 public class UnicodeNormalizer implements InputNormalizationRule {
+
+  @Override
+  public int order() {
+    return 30;
+  }
 
   @Override
   public String name() {

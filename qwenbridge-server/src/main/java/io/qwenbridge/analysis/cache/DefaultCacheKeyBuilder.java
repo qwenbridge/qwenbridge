@@ -1,17 +1,23 @@
 package io.qwenbridge.analysis.cache;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HexFormat;
-import org.springframework.stereotype.Component;
 
-@Component
+@ApplicationScoped
 public class DefaultCacheKeyBuilder implements CacheKeyBuilder {
 
   @Override
   public CacheKey build(String normalizedQuery, String provider, String model, String version) {
     String raw =
-        safe(provider) + "|" + safe(model) + "|" + safe(version) + "|" + safe(normalizedQuery);
+        safe(provider)
+            + "|"
+            + safe(model)
+            + "|"
+            + safe(version)
+            + "|"
+            + (normalizedQuery == null ? "" : normalizedQuery);
 
     return new CacheKey(sha256(raw));
   }
@@ -26,6 +32,6 @@ public class DefaultCacheKeyBuilder implements CacheKeyBuilder {
   }
 
   private static String safe(String value) {
-    return value == null ? "" : value.trim().toLowerCase();
+    return value == null ? "" : value.trim().toLowerCase(java.util.Locale.ROOT);
   }
 }

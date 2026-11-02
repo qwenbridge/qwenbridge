@@ -1,30 +1,24 @@
 package io.qwenbridge.operations.health;
 
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.stereotype.Component;
+import io.quarkus.redis.datasource.RedisDataSource;
+import io.vertx.mutiny.redis.client.Response;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class RedisDependencyHealthChecker implements DependencyHealthChecker {
 
-  private final ObjectProvider<RedisConnectionFactory> redisConnectionFactory;
+  private final RedisDataSource redisDataSource;
 
-  public RedisDependencyHealthChecker(
-      ObjectProvider<RedisConnectionFactory> redisConnectionFactory) {
-    this.redisConnectionFactory = redisConnectionFactory;
+  public RedisDependencyHealthChecker(RedisDataSource redisDataSource) {
+    this.redisDataSource = redisDataSource;
   }
 
   @Override
   public DependencyHealth check() {
     long started = System.nanoTime();
-    RedisConnectionFactory factory = redisConnectionFactory.getIfAvailable();
-    if (factory == null) {
-      return DependencyHealth.degraded("redis", "not_configured", durationMs(started));
-    }
-    try (RedisConnection connection = factory.getConnection()) {
-      String pong = connection.ping();
-      if (pong == null || pong.isBlank()) {
+    try {
+      Response pong = redisDataSource.execute("PING");
+      if (pong == null || pong.toString() == null || pong.toString().isBlank()) {
         return DependencyHealth.degraded("redis", "empty_ping_response", durationMs(started));
       }
       return DependencyHealth.up("redis", durationMs(started));

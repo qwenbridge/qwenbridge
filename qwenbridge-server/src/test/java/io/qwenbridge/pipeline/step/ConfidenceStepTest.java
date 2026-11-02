@@ -2,7 +2,10 @@ package io.qwenbridge.pipeline.step;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.qwenbridge.analysis.model.SearchAnalysis;
+import io.qwenbridge.confidence.ConfidenceAssessment;
 import io.qwenbridge.confidence.ConfidenceService;
+import io.qwenbridge.intent.IntentType;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.result.ConfidenceResult;
 import io.qwenbridge.pipeline.result.RewriteResult;
@@ -12,7 +15,7 @@ import org.junit.jupiter.api.Test;
 class ConfidenceStepTest {
 
   @Test
-  void shouldReturnHighConfidenceForMultipleRewrites() {
+  void shouldNotInferConfidenceFromMultipleRewrites() {
     ExecutionContext context = new ExecutionContext("میز");
     context.store(RewriteResult.class, new RewriteResult(true, "mock", List.of("desk", "table")));
 
@@ -20,11 +23,12 @@ class ConfidenceStepTest {
 
     ConfidenceResult result = step.execute(context);
 
-    assertThat(result.value()).isEqualTo(0.94);
+    assertThat(result.value()).isZero();
+    assertThat(context.get(ConfidenceAssessment.class).method()).isEqualTo("unavailable");
   }
 
   @Test
-  void shouldReturnDefaultConfidenceForSingleRewrite() {
+  void shouldNotInferConfidenceFromSingleRewrite() {
     ExecutionContext context = new ExecutionContext("desk");
     context.store(RewriteResult.class, new RewriteResult(true, "mock", List.of("desk")));
 
@@ -32,6 +36,23 @@ class ConfidenceStepTest {
 
     ConfidenceResult result = step.execute(context);
 
-    assertThat(result.value()).isEqualTo(0.80);
+    assertThat(result.value()).isZero();
+  }
+
+  @Test
+  void shouldUseModelSignalsWhenAnalysisIsAvailable() {
+    ExecutionContext context = new ExecutionContext("desk");
+    context.store(
+        SearchAnalysis.class,
+        SearchAnalysis.builder()
+            .intent(IntentType.PRODUCT_SEARCH)
+            .intentConfidence(.9)
+            .semanticValidated(true)
+            .semanticScore(.8)
+            .decisionConfidence(.3)
+            .build());
+    ConfidenceResult result = new ConfidenceStep(new ConfidenceService()).execute(context);
+    assertThat(result.value()).isEqualTo(.3);
+    assertThat(context.get(ConfidenceAssessment.class).calibrated()).isFalse();
   }
 }

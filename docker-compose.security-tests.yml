@@ -1,0 +1,22 @@
+services:
+  qwenbridge-opensearch-secure-test:
+    image: opensearchproject/opensearch:2.15.0
+    container_name: qwenbridge-opensearch-secure-test
+    mem_limit: 2g
+    environment:
+      discovery.type: single-node
+      OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
+      OPENSEARCH_INITIAL_ADMIN_PASSWORD: ${QWENBRIDGE_TEST_OPENSEARCH_PASSWORD:?Run through the verification entry point}
+      plugins.security.ssl.http.enabled: "true"
+      plugins.security.ssl.http.pemcert_filepath: certs/server.pem
+      plugins.security.ssl.http.pemkey_filepath: certs/server-key.pem
+      plugins.security.ssl.http.pemtrustedcas_filepath: certs/ca.pem
+    volumes:
+      - ${QWENBRIDGE_TEST_TLS_DIR:?Run through the verification entry point}:/usr/share/opensearch/config/certs:ro
+    ports:
+      - 127.0.0.1:${QWENBRIDGE_TEST_OPENSEARCH_PORT:-19200}:9200
+    healthcheck:
+      test: [CMD-SHELL, 'curl -fs --cacert config/certs/ca.pem -u "admin:$$OPENSEARCH_INITIAL_ADMIN_PASSWORD" https://localhost:9200 >/dev/null']
+      interval: 5s
+      timeout: 5s
+      retries: 30

@@ -12,10 +12,10 @@ import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.result.DecisionResult;
 import io.qwenbridge.pipeline.result.ExecutionPlanResult;
 import io.qwenbridge.pipeline.result.ExecutionResultResult;
+import jakarta.enterprise.context.ApplicationScoped;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-@Component
+@ApplicationScoped
 @RequiredArgsConstructor
 public class DecisionStep implements PipelineStep<DecisionResult> {
 
@@ -44,7 +44,30 @@ public class DecisionStep implements PipelineStep<DecisionResult> {
 
   @Override
   public DecisionResult execute(ExecutionContext context) {
+    // Deterministic assessment first (QB-026/027): vague or out-of-domain requests are clarified
+    // with focused questions instead of being executed on fabricated details.
+    io.qwenbridge.core.intent.IntentUnderstanding understanding =
+        context.get(io.qwenbridge.core.intent.IntentUnderstanding.class);
+    if (understanding != null && !understanding.assessment().executable()) {
+      context.store(
+          ConstraintQuestions.class,
+          new ConstraintQuestions(understanding.assessment().questions()));
+      return new DecisionResult(DecisionType.CLARIFY);
+    }
     SearchAnalysis analysis = context.get(SearchAnalysis.class);
+    if (analysis != null
+        && "ALLOW".equals(analysis.modelThreatDecision())
+        && (!analysis.semanticValidated()
+            || !analysis.ambiguities().isEmpty()
+            || analysis.intent() == io.qwenbridge.intent.IntentType.UNKNOWN
+            || analysis.intentConfidence() < 0.6)) return new DecisionResult(DecisionType.CLARIFY);
+    try {
+      io.qwenbridge.execution.provider.model.SearchRequestFactory.from(context);
+    } catch (IllegalArgumentException ex) {
+      context.store(
+          ConstraintQuestions.class, new ConstraintQuestions(java.util.List.of(ex.getMessage())));
+      return new DecisionResult(DecisionType.CLARIFY);
+    }
     SearchDecision decision =
         analysis == null ? SearchDecision.keyword() : analysis.toSearchDecision();
 
@@ -57,6 +80,12 @@ public class DecisionStep implements PipelineStep<DecisionResult> {
         ExecutionResultResult.builder().result(executionResult).build());
 
     return new DecisionResult(resolveDecisionType(decision));
+  }
+
+  public record ConstraintQuestions(java.util.List<String> questions) {
+    public ConstraintQuestions {
+      questions = java.util.List.copyOf(questions);
+    }
   }
 
   private DecisionType resolveDecisionType(SearchDecision decision) {

@@ -1,5 +1,7 @@
 # V9 Release Checklist
 
+> Historical release record. The current application is Quarkus on Java 25; the Spring Boot starter was removed. See [current phase audit](../platform/phase-acceptance.md).
+
 ## Repository and build
 
 - [x] Repository converted to Maven multi-module structure.

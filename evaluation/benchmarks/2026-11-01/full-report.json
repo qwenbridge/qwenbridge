@@ -1,0 +1,5183 @@
+{
+  "run_id": "bench-full-20261101-202339",
+  "app_settings": {
+    "APP_PORT": "8080",
+    "OPENSEARCH_INDEX": "qwenbridge-verify-batch30a-master-20261101-185217",
+    "QWENBRIDGE_ANALYSIS_CACHE_KEY_PREFIX": "qwenbridge:performance:batch30a-master-20261101-185217",
+    "QWENBRIDGE_AI_OLLAMA_BASE_URL": "http://qwenbridge-ollama:11434",
+    "QWENBRIDGE_ABUSE_PER_IP_LIMIT": "100000000",
+    "QWENBRIDGE_ABUSE_AI_REQUEST_QUOTA": "100000000"
+  },
+  "profile": "full",
+  "base_url": "http://localhost:8080",
+  "started": "2026-11-01T20:23:42+0100",
+  "environment": {
+    "host_cpu": "Apple M4 Pro",
+    "host_memory": "51539607552",
+    "os": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "docker": "28.5.1",
+    "docker_cpus": "8",
+    "docker_memory_bytes": "24899309568",
+    "app_container_limits": "1073741824|0|quarkus-qwenbridge-app",
+    "app_java": "Picked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=55 -XX:InitialRAMPercentage=25 -XX:+ExitOnOutOfMemoryError\nopenjdk version \"25.0.5\" 2026-10-20 LTS\nOpenJDK Runtime Environment Temurin-25.0.5+8 (build 25.0.5+8-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.5+8 (build 25.0.5+8-LTS, mixed mode, sharing)",
+    "app_java_opts": "-XX:MaxRAMPercentage=55 -XX:InitialRAMPercentage=25 -XX:+ExitOnOutOfMemoryError",
+    "quarkus": "3.40.1"
+  },
+  "phases": [
+    {
+      "name": "warm-up",
+      "description": "each of the 31 multilingual pool queries once (analysis cache fill)",
+      "offered_load": {
+        "vus": 1
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 50.0,
+      "requests": 31,
+      "achieved_rps": 0.6248127199454148,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 50.032,
+        "p(95)": 4113.718999999999,
+        "p(99)": 4203.1614,
+        "max": 4204.743,
+        "avg": 1599.9920322580645
+      },
+      "outcomes": {
+        "ok": 31
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 31,
+          "mean_ms": 0.39,
+          "p50_ms": 0.52,
+          "p95_ms": 0.98
+        },
+        "analysis": {
+          "count": 31,
+          "mean_ms": 1535.42,
+          "p50_ms": 1.92,
+          "p95_ms": 4110.05
+        },
+        "embedding": {
+          "count": 31,
+          "mean_ms": 0.16,
+          "p50_ms": 0.52,
+          "p95_ms": 0.98
+        },
+        "ranking": {
+          "count": 31,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 31,
+          "mean_ms": 6.13,
+          "p50_ms": 4.12,
+          "p95_ms": 6.22
+        },
+        "constraint-validation": {
+          "count": 31,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 31,
+          "mean_ms": 39.81,
+          "p50_ms": 1.92,
+          "p95_ms": 308.7
+        }
+      },
+      "resources": {
+        "samples": 14,
+        "process_cpu_avg": 0.007918127904741234,
+        "process_cpu_max": 0.04665314401622718,
+        "heap_used_max_bytes": 125177368.0,
+        "heap_used_growth_bytes": 89084528.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 7.0,
+        "gc_pause_seconds": 0.102,
+        "threads_max": 28.0,
+        "inflight_max": 1.0,
+        "container_cpu_percent_avg": 3.6042857142857145,
+        "container_memory_max_bytes": 385666252.8
+      },
+      "redis": {
+        "total_commands_processed": 835,
+        "keyspace_hits": 110,
+        "keyspace_misses": 262,
+        "commands_per_request": 26.94
+      }
+    },
+    {
+      "name": "warm-up-retrieval",
+      "description": "retrieval pool once",
+      "offered_load": {
+        "vus": 1
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 2.4,
+      "requests": 6,
+      "achieved_rps": 63.61053390441457,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 15.292000000000002,
+        "p(95)": 17.6485,
+        "p(99)": 17.8953,
+        "max": 17.957,
+        "avg": 15.255833333333333
+      },
+      "outcomes": {
+        "ok": 6
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 6,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 6,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "embedding": {
+          "count": 6,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 6,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 6,
+          "mean_ms": 3.67,
+          "p50_ms": 3.93,
+          "p95_ms": 4.17
+        },
+        "constraint-validation": {
+          "count": 6,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 6,
+          "mean_ms": 1.33,
+          "p50_ms": 0.6,
+          "p95_ms": 6.57
+        }
+      },
+      "resources": {
+        "samples": 1,
+        "process_cpu_avg": 0.0,
+        "process_cpu_max": 0.0,
+        "heap_used_max_bytes": 142925312.0,
+        "heap_used_growth_bytes": null,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": null,
+        "gc_pause_seconds": null,
+        "threads_max": 28.0,
+        "inflight_max": 0.0,
+        "container_cpu_percent_avg": 0.24,
+        "container_memory_max_bytes": 393006284.8
+      },
+      "redis": {
+        "total_commands_processed": 157,
+        "keyspace_hits": 24,
+        "keyspace_misses": 48,
+        "commands_per_request": 26.17
+      }
+    },
+    {
+      "name": "strategy-keyword-5vu",
+      "description": "KEYWORD search, constant 5 VUs, retrieval pool, warm cache",
+      "offered_load": {
+        "vus": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.1,
+      "duration_s": 20.9,
+      "requests": 13006,
+      "achieved_rps": 650.1883951619704,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 6.908,
+        "p(95)": 11.545499999999999,
+        "p(99)": 16.68704999999999,
+        "max": 31.143,
+        "avg": 7.486692372751028
+      },
+      "outcomes": {
+        "ok": 13006
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 13006,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 13006,
+          "mean_ms": 0.02,
+          "p50_ms": 0.5,
+          "p95_ms": 0.96
+        },
+        "embedding": {
+          "count": 13006,
+          "mean_ms": 0.02,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 13006,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 13006,
+          "mean_ms": 1.44,
+          "p50_ms": 0.75,
+          "p95_ms": 3.08
+        },
+        "constraint-validation": {
+          "count": 13006,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 13006,
+          "mean_ms": 0.12,
+          "p50_ms": 0.51,
+          "p95_ms": 0.98
+        }
+      },
+      "resources": {
+        "samples": 6,
+        "process_cpu_avg": 0.2986882759173881,
+        "process_cpu_max": 0.44,
+        "heap_used_max_bytes": 144406920.0,
+        "heap_used_growth_bytes": 45322080.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 258.0,
+        "gc_pause_seconds": 0.304,
+        "threads_max": 42.0,
+        "inflight_max": 5.0,
+        "container_cpu_percent_avg": 259.87666666666667,
+        "container_memory_max_bytes": 504469913.6
+      },
+      "redis": {
+        "total_commands_processed": 338165,
+        "keyspace_hits": 52024,
+        "keyspace_misses": 104048,
+        "commands_per_request": 26.0
+      }
+    },
+    {
+      "name": "strategy-keyword-20vu",
+      "description": "KEYWORD search, constant 20 VUs, retrieval pool, warm cache",
+      "offered_load": {
+        "vus": 20
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 20.5,
+      "requests": 31807,
+      "achieved_rps": 1589.778951400657,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 12.081,
+        "p(95)": 17.970699999999997,
+        "p(99)": 21.73246,
+        "max": 51.1,
+        "avg": 12.462935831735104
+      },
+      "outcomes": {
+        "ok": 31807
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 31807,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 31807,
+          "mean_ms": 0.09,
+          "p50_ms": 0.51,
+          "p95_ms": 0.97
+        },
+        "embedding": {
+          "count": 31807,
+          "mean_ms": 0.07,
+          "p50_ms": 0.51,
+          "p95_ms": 0.96
+        },
+        "ranking": {
+          "count": 31807,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 31807,
+          "mean_ms": 2.25,
+          "p50_ms": 1.91,
+          "p95_ms": 5.03
+        },
+        "constraint-validation": {
+          "count": 31807,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 31807,
+          "mean_ms": 0.33,
+          "p50_ms": 0.53,
+          "p95_ms": 1.82
+        }
+      },
+      "resources": {
+        "samples": 6,
+        "process_cpu_avg": 0.3334456175130742,
+        "process_cpu_max": 0.4092465753424657,
+        "heap_used_max_bytes": 138016896.0,
+        "heap_used_growth_bytes": 10534272.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 643.0,
+        "gc_pause_seconds": 0.998,
+        "threads_max": 58.0,
+        "inflight_max": 19.0,
+        "container_cpu_percent_avg": 320.96666666666664,
+        "container_memory_max_bytes": 545783808.0
+      },
+      "redis": {
+        "total_commands_processed": 827005,
+        "keyspace_hits": 127228,
+        "keyspace_misses": 254456,
+        "commands_per_request": 26.0
+      }
+    },
+    {
+      "name": "strategy-keyword-50vu",
+      "description": "KEYWORD search, constant 50 VUs, retrieval pool, warm cache",
+      "offered_load": {
+        "vus": 50
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 20.3,
+      "requests": 31695,
+      "achieved_rps": 1582.9614909594393,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 30.615,
+        "p(95)": 50.4463,
+        "p(99)": 59.701299999999996,
+        "max": 86.178,
+        "avg": 31.44619009307464
+      },
+      "outcomes": {
+        "ok": 31695
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 31695,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 31695,
+          "mean_ms": 0.18,
+          "p50_ms": 0.51,
+          "p95_ms": 0.98
+        },
+        "embedding": {
+          "count": 31695,
+          "mean_ms": 0.13,
+          "p50_ms": 0.51,
+          "p95_ms": 0.97
+        },
+        "ranking": {
+          "count": 31695,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 31695,
+          "mean_ms": 2.75,
+          "p50_ms": 2.03,
+          "p95_ms": 6.56
+        },
+        "constraint-validation": {
+          "count": 31695,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 31695,
+          "mean_ms": 0.54,
+          "p50_ms": 0.55,
+          "p95_ms": 2.8
+        }
+      },
+      "resources": {
+        "samples": 6,
+        "process_cpu_avg": 0.34331364522628965,
+        "process_cpu_max": 0.42089771891096395,
+        "heap_used_max_bytes": 159757304.0,
+        "heap_used_growth_bytes": -834560.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 636.0,
+        "gc_pause_seconds": 1.3220000000000003,
+        "threads_max": 88.0,
+        "inflight_max": 48.0,
+        "container_cpu_percent_avg": 330.81,
+        "container_memory_max_bytes": 562456166.4
+      },
+      "redis": {
+        "total_commands_processed": 824085,
+        "keyspace_hits": 126780,
+        "keyspace_misses": 253560,
+        "commands_per_request": 26.0
+      }
+    },
+    {
+      "name": "strategy-vector-5vu",
+      "description": "VECTOR search, constant 5 VUs, retrieval pool, warm cache",
+      "offered_load": {
+        "vus": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 20.4,
+      "requests": 1027,
+      "achieved_rps": 51.186459262655816,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 88.834,
+        "p(95)": 139.8881,
+        "p(99)": 230.63024,
+        "max": 308.913,
+        "avg": 97.20035540408972
+      },
+      "outcomes": {
+        "ok": 1027
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 1027,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 1027,
+          "mean_ms": 0.03,
+          "p50_ms": 0.5,
+          "p95_ms": 0.96
+        },
+        "embedding": {
+          "count": 1027,
+          "mean_ms": 89.71,
+          "p50_ms": 82.54,
+          "p95_ms": 131.72
+        },
+        "ranking": {
+          "count": 1027,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 1027,
+          "mean_ms": 2.27,
+          "p50_ms": 1.87,
+          "p95_ms": 5.47
+        },
+        "constraint-validation": {
+          "count": 1027,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 1027,
+          "mean_ms": 0.09,
+          "p50_ms": 0.51,
+          "p95_ms": 0.97
+        }
+      },
+      "resources": {
+        "samples": 6,
+        "process_cpu_avg": 0.02773907175460463,
+        "process_cpu_max": 0.04718945176960444,
+        "heap_used_max_bytes": 172668392.0,
+        "heap_used_growth_bytes": -39570080.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 26.0,
+        "gc_pause_seconds": 0.03400000000000025,
+        "threads_max": 88.0,
+        "inflight_max": 5.0,
+        "container_cpu_percent_avg": 30.075,
+        "container_memory_max_bytes": 566335897.6
+      },
+      "redis": {
+        "total_commands_processed": 26707,
+        "keyspace_hits": 4108,
+        "keyspace_misses": 8216,
+        "commands_per_request": 26.0
+      }
+    },
+    {
+      "name": "strategy-vector-20vu",
+      "description": "VECTOR search, constant 20 VUs, retrieval pool, warm cache",
+      "offered_load": {
+        "vus": 20
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 20.6,
+      "requests": 1076,
+      "achieved_rps": 53.0374749193372,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 359.0765,
+        "p(95)": 451.9904999999999,
+        "p(99)": 780.0982499999999,
+        "max": 844.305,
+        "avg": 374.09199628252736
+      },
+      "outcomes": {
+        "ok": 1076
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 1076,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 1076,
+          "mean_ms": 0.03,
+          "p50_ms": 0.5,
+          "p95_ms": 0.96
+        },
+        "embedding": {
+          "count": 1076,
+          "mean_ms": 366.8,
+          "p50_ms": 346.95,
+          "p95_ms": 447.0
+        },
+        "ranking": {
+          "count": 1076,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 1076,
+          "mean_ms": 2.05,
+          "p50_ms": 1.83,
+          "p95_ms": 5.01
+        },
+        "constraint-validation": {
+          "count": 1076,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 1076,
+          "mean_ms": 0.07,
+          "p50_ms": 0.51,
+          "p95_ms": 0.97
+        }
+      },
+      "resources": {
+        "samples": 6,
+        "process_cpu_avg": 0.028027087532138933,
+        "process_cpu_max": 0.03352152434721242,
+        "heap_used_max_bytes": 175002640.0,
+        "heap_used_growth_bytes": 11604528.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 27.0,
+        "gc_pause_seconds": 0.04599999999999982,
+        "threads_max": 88.0,
+        "inflight_max": 20.0,
+        "container_cpu_percent_avg": 23.88,
+        "container_memory_max_bytes": 566965043.2
+      },
+      "redis": {
+        "total_commands_processed": 27984,
+        "keyspace_hits": 4304,
+        "keyspace_misses": 8608,
+        "commands_per_request": 26.01
+      }
+    },
+    {
+      "name": "strategy-vector-50vu",
+      "description": "VECTOR search, constant 50 VUs, retrieval pool, warm cache",
+      "offered_load": {
+        "vus": 50
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 21.2,
+      "requests": 1151,
+      "achieved_rps": 55.22489920376347,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 887.631,
+        "p(95)": 992.132,
+        "p(99)": 1046.2334999999998,
+        "max": 1099.917,
+        "avg": 886.848727193744
+      },
+      "outcomes": {
+        "ok": 1151
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 1151,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 1151,
+          "mean_ms": 0.04,
+          "p50_ms": 0.51,
+          "p95_ms": 0.96
+        },
+        "embedding": {
+          "count": 1151,
+          "mean_ms": 878.23,
+          "p50_ms": 871.4,
+          "p95_ms": 989.59
+        },
+        "ranking": {
+          "count": 1151,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 1151,
+          "mean_ms": 2.1,
+          "p50_ms": 1.79,
+          "p95_ms": 5.49
+        },
+        "constraint-validation": {
+          "count": 1151,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 1151,
+          "mean_ms": 0.09,
+          "p50_ms": 0.51,
+          "p95_ms": 0.98
+        }
+      },
+      "resources": {
+        "samples": 6,
+        "process_cpu_avg": 0.02480985101576111,
+        "process_cpu_max": 0.03278110680296087,
+        "heap_used_max_bytes": 174531624.0,
+        "heap_used_growth_bytes": -39397472.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 30.0,
+        "gc_pause_seconds": 0.06700000000000017,
+        "threads_max": 88.0,
+        "inflight_max": 50.0,
+        "container_cpu_percent_avg": 24.07166666666667,
+        "container_memory_max_bytes": 573571072.0
+      },
+      "redis": {
+        "total_commands_processed": 29929,
+        "keyspace_hits": 4604,
+        "keyspace_misses": 9208,
+        "commands_per_request": 26.0
+      }
+    },
+    {
+      "name": "strategy-hybrid-5vu",
+      "description": "HYBRID search, constant 5 VUs, retrieval pool, warm cache",
+      "offered_load": {
+        "vus": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 20.4,
+      "requests": 1079,
+      "achieved_rps": 53.73726223938361,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 86.624,
+        "p(95)": 131.4770999999998,
+        "p(99)": 171.41093999999995,
+        "max": 225.659,
+        "avg": 92.5408878591288
+      },
+      "outcomes": {
+        "ok": 1079
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 1079,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 1079,
+          "mean_ms": 0.03,
+          "p50_ms": 0.5,
+          "p95_ms": 0.96
+        },
+        "embedding": {
+          "count": 1079,
+          "mean_ms": 85.13,
+          "p50_ms": 81.39,
+          "p95_ms": 124.21
+        },
+        "ranking": {
+          "count": 1079,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 1079,
+          "mean_ms": 2.26,
+          "p50_ms": 1.86,
+          "p95_ms": 5.67
+        },
+        "constraint-validation": {
+          "count": 1079,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 1079,
+          "mean_ms": 0.05,
+          "p50_ms": 0.51,
+          "p95_ms": 0.97
+        }
+      },
+      "resources": {
+        "samples": 6,
+        "process_cpu_avg": 0.022927408886211465,
+        "process_cpu_max": 0.02893436838390967,
+        "heap_used_max_bytes": 136300576.0,
+        "heap_used_growth_bytes": 21810936.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 27.0,
+        "gc_pause_seconds": 0.03299999999999992,
+        "threads_max": 88.0,
+        "inflight_max": 5.0,
+        "container_cpu_percent_avg": 21.378333333333334,
+        "container_memory_max_bytes": 573885644.8
+      },
+      "redis": {
+        "total_commands_processed": 28059,
+        "keyspace_hits": 4316,
+        "keyspace_misses": 8632,
+        "commands_per_request": 26.0
+      }
+    },
+    {
+      "name": "strategy-hybrid-20vu",
+      "description": "HYBRID search, constant 20 VUs, retrieval pool, warm cache",
+      "offered_load": {
+        "vus": 20
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 20.6,
+      "requests": 1065,
+      "achieved_rps": 52.39462113375663,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 359.626,
+        "p(95)": 497.4751999999999,
+        "p(99)": 782.18404,
+        "max": 887.89,
+        "avg": 378.5901915492961
+      },
+      "outcomes": {
+        "ok": 1065
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 1065,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 1065,
+          "mean_ms": 0.01,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "embedding": {
+          "count": 1065,
+          "mean_ms": 370.88,
+          "p50_ms": 347.45,
+          "p95_ms": 503.17
+        },
+        "ranking": {
+          "count": 1065,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 1065,
+          "mean_ms": 2.23,
+          "p50_ms": 1.86,
+          "p95_ms": 5.27
+        },
+        "constraint-validation": {
+          "count": 1065,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 1065,
+          "mean_ms": 0.07,
+          "p50_ms": 0.51,
+          "p95_ms": 0.97
+        }
+      },
+      "resources": {
+        "samples": 6,
+        "process_cpu_avg": 0.025961394757745254,
+        "process_cpu_max": 0.030345800988002825,
+        "heap_used_max_bytes": 162455640.0,
+        "heap_used_growth_bytes": -47462456.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 28.0,
+        "gc_pause_seconds": 0.04499999999999993,
+        "threads_max": 88.0,
+        "inflight_max": 20.0,
+        "container_cpu_percent_avg": 22.695000000000004,
+        "container_memory_max_bytes": 574095360.0
+      },
+      "redis": {
+        "total_commands_processed": 27698,
+        "keyspace_hits": 4260,
+        "keyspace_misses": 8520,
+        "commands_per_request": 26.01
+      }
+    },
+    {
+      "name": "strategy-hybrid-50vu",
+      "description": "HYBRID search, constant 50 VUs, retrieval pool, warm cache",
+      "offered_load": {
+        "vus": 50
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 21.0,
+      "requests": 1128,
+      "achieved_rps": 54.41620290682865,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 912.764,
+        "p(95)": 1017.3130499999999,
+        "p(99)": 1057.8962199999999,
+        "max": 1083.264,
+        "avg": 902.0698191489363
+      },
+      "outcomes": {
+        "ok": 1128
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 1128,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 1128,
+          "mean_ms": 0.1,
+          "p50_ms": 0.51,
+          "p95_ms": 0.97
+        },
+        "embedding": {
+          "count": 1128,
+          "mean_ms": 892.23,
+          "p50_ms": 904.69,
+          "p95_ms": 1033.18
+        },
+        "ranking": {
+          "count": 1128,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 1128,
+          "mean_ms": 2.2,
+          "p50_ms": 1.86,
+          "p95_ms": 5.4
+        },
+        "constraint-validation": {
+          "count": 1128,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 1128,
+          "mean_ms": 0.12,
+          "p50_ms": 0.52,
+          "p95_ms": 0.98
+        }
+      },
+      "resources": {
+        "samples": 6,
+        "process_cpu_avg": 0.02394309582170748,
+        "process_cpu_max": 0.03067700987306065,
+        "heap_used_max_bytes": 187194176.0,
+        "heap_used_growth_bytes": 17156936.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 28.0,
+        "gc_pause_seconds": 0.06699999999999973,
+        "threads_max": 88.0,
+        "inflight_max": 50.0,
+        "container_cpu_percent_avg": 23.459999999999997,
+        "container_memory_max_bytes": 580596531.2
+      },
+      "redis": {
+        "total_commands_processed": 29331,
+        "keyspace_hits": 4512,
+        "keyspace_misses": 9024,
+        "commands_per_request": 26.0
+      }
+    },
+    {
+      "name": "spike-baseline",
+      "description": "KEYWORD at 20 requests/s, retrieval pool",
+      "offered_load": {
+        "arrival_rate_per_s": 20
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 33.1,
+      "requests": 601,
+      "achieved_rps": 20.026334129555053,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 10.624,
+        "p(95)": 13.54,
+        "p(99)": 14.577,
+        "max": 16.625,
+        "avg": 10.540367720465895
+      },
+      "outcomes": {
+        "ok": 601
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 601,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 601,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "embedding": {
+          "count": 601,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 601,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 601,
+          "mean_ms": 2.43,
+          "p50_ms": 2.04,
+          "p95_ms": 4.06
+        },
+        "constraint-validation": {
+          "count": 601,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 601,
+          "mean_ms": 0.42,
+          "p50_ms": 0.5,
+          "p95_ms": 0.96
+        }
+      },
+      "resources": {
+        "samples": 9,
+        "process_cpu_avg": 0.01280383748982692,
+        "process_cpu_max": 0.01519434628975265,
+        "heap_used_max_bytes": 185988624.0,
+        "heap_used_growth_bytes": -7875104.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 13.0,
+        "gc_pause_seconds": 0.020999999999999908,
+        "threads_max": 88.0,
+        "inflight_max": 1.0,
+        "container_cpu_percent_avg": 10.193333333333333,
+        "container_memory_max_bytes": 580911104.0
+      },
+      "redis": {
+        "total_commands_processed": 15634,
+        "keyspace_hits": 2404,
+        "keyspace_misses": 4808,
+        "commands_per_request": 26.01
+      }
+    },
+    {
+      "name": "spike-peak",
+      "description": "KEYWORD at 300 requests/s, retrieval pool",
+      "offered_load": {
+        "arrival_rate_per_s": 300
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 31.0,
+      "requests": 9001,
+      "achieved_rps": 299.97370855919536,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 5.249,
+        "p(95)": 7.128,
+        "p(99)": 9.573,
+        "max": 21.666,
+        "avg": 5.379747805799341
+      },
+      "outcomes": {
+        "ok": 9001
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 9001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 9001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "embedding": {
+          "count": 9001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 9001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 9001,
+          "mean_ms": 0.78,
+          "p50_ms": 0.55,
+          "p95_ms": 1.91
+        },
+        "constraint-validation": {
+          "count": 9001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 9001,
+          "mean_ms": 0.02,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 9,
+        "process_cpu_avg": 0.09198158027208922,
+        "process_cpu_max": 0.1089001447178003,
+        "heap_used_max_bytes": 185054816.0,
+        "heap_used_growth_bytes": -3748712.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 185.0,
+        "gc_pause_seconds": 0.18599999999999994,
+        "threads_max": 43.0,
+        "inflight_max": 3.0,
+        "container_cpu_percent_avg": 81.86222222222221,
+        "container_memory_max_bytes": 579967385.6
+      },
+      "redis": {
+        "total_commands_processed": 234033,
+        "keyspace_hits": 36004,
+        "keyspace_misses": 72008,
+        "commands_per_request": 26.0
+      }
+    },
+    {
+      "name": "spike-recovery",
+      "description": "KEYWORD at 20 requests/s, retrieval pool",
+      "offered_load": {
+        "arrival_rate_per_s": 20
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 34.7,
+      "requests": 601,
+      "achieved_rps": 20.027402551857644,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 10.413,
+        "p(95)": 13.54,
+        "p(99)": 15.187,
+        "max": 17.81,
+        "avg": 10.445417637271216
+      },
+      "outcomes": {
+        "ok": 601
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 601,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 601,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "embedding": {
+          "count": 601,
+          "mean_ms": 0.01,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 601,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 601,
+          "mean_ms": 2.44,
+          "p50_ms": 2.04,
+          "p95_ms": 4.05
+        },
+        "constraint-validation": {
+          "count": 601,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 601,
+          "mean_ms": 0.4,
+          "p50_ms": 0.5,
+          "p95_ms": 0.96
+        }
+      },
+      "resources": {
+        "samples": 10,
+        "process_cpu_avg": 0.011728539551576801,
+        "process_cpu_max": 0.014856738592147152,
+        "heap_used_max_bytes": 189877600.0,
+        "heap_used_growth_bytes": 2499168.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 13.0,
+        "gc_pause_seconds": 0.02400000000000002,
+        "threads_max": 43.0,
+        "inflight_max": 1.0,
+        "container_cpu_percent_avg": 9.433,
+        "container_memory_max_bytes": 579443097.6
+      },
+      "redis": {
+        "total_commands_processed": 15635,
+        "keyspace_hits": 2404,
+        "keyspace_misses": 4808,
+        "commands_per_request": 26.01
+      }
+    },
+    {
+      "name": "soak",
+      "description": "KEYWORD at 50 requests/s for 10 minutes, retrieval pool",
+      "offered_load": {
+        "arrival_rate_per_s": 50
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 600.4,
+      "requests": 29949,
+      "achieved_rps": 49.91419513360347,
+      "dropped_iterations": 52,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 7.728,
+        "p(95)": 9.957,
+        "p(99)": 128.26995999999872,
+        "max": 3646.74,
+        "avg": 26.203930782329955
+      },
+      "outcomes": {
+        "ok": 29949
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 29949,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 29949,
+          "mean_ms": 18.04,
+          "p50_ms": 0.51,
+          "p95_ms": 0.96
+        },
+        "embedding": {
+          "count": 29949,
+          "mean_ms": 0.02,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 29949,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 29949,
+          "mean_ms": 1.64,
+          "p50_ms": 1.76,
+          "p95_ms": 2.83
+        },
+        "constraint-validation": {
+          "count": 29949,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 29949,
+          "mean_ms": 0.19,
+          "p50_ms": 0.51,
+          "p95_ms": 0.96
+        }
+      },
+      "resources": {
+        "samples": 165,
+        "process_cpu_avg": 0.02521482470868437,
+        "process_cpu_max": 0.03937007874015748,
+        "heap_used_max_bytes": 210373240.0,
+        "heap_used_growth_bytes": 63251992.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 638.0,
+        "gc_pause_seconds": 0.8039999999999994,
+        "threads_max": 138.0,
+        "inflight_max": 96.0,
+        "container_cpu_percent_avg": 20.21127272727273,
+        "container_memory_max_bytes": 609746944.0
+      },
+      "redis": {
+        "total_commands_processed": 778841,
+        "keyspace_hits": 119484,
+        "keyspace_misses": 239904,
+        "commands_per_request": 26.01
+      }
+    },
+    {
+      "name": "stress-100",
+      "description": "KEYWORD at 100 requests/s (step), retrieval pool",
+      "offered_load": {
+        "arrival_rate_per_s": 100
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 1.3,
+      "duration_s": 20.6,
+      "requests": 2001,
+      "achieved_rps": 100.01457483759253,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 5.978,
+        "p(95)": 7.811,
+        "p(99)": 9.303,
+        "max": 21.756,
+        "avg": 6.0701504247876095
+      },
+      "outcomes": {
+        "ok": 2001
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 2001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 2001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "embedding": {
+          "count": 2001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 2001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 2001,
+          "mean_ms": 1.13,
+          "p50_ms": 0.64,
+          "p95_ms": 2.03
+        },
+        "constraint-validation": {
+          "count": 2001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 2001,
+          "mean_ms": 0.02,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 6,
+        "process_cpu_avg": 0.03263938266581836,
+        "process_cpu_max": 0.04021543985637343,
+        "heap_used_max_bytes": 210455136.0,
+        "heap_used_growth_bytes": -48521680.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 41.0,
+        "gc_pause_seconds": 0.04400000000000048,
+        "threads_max": 40.0,
+        "inflight_max": 1.0,
+        "container_cpu_percent_avg": 31.096666666666664,
+        "container_memory_max_bytes": 603770060.8
+      },
+      "redis": {
+        "total_commands_processed": 52029,
+        "keyspace_hits": 8004,
+        "keyspace_misses": 16008,
+        "commands_per_request": 26.0
+      }
+    },
+    {
+      "name": "stress-200",
+      "description": "KEYWORD at 200 requests/s (step), retrieval pool",
+      "offered_load": {
+        "arrival_rate_per_s": 200
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 20.3,
+      "requests": 4001,
+      "achieved_rps": 199.9993801568823,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 5.317,
+        "p(95)": 7.721,
+        "p(99)": 9.219,
+        "max": 15.35,
+        "avg": 5.529669082729323
+      },
+      "outcomes": {
+        "ok": 4001
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 4001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 4001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "embedding": {
+          "count": 4001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 4001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 4001,
+          "mean_ms": 0.85,
+          "p50_ms": 0.56,
+          "p95_ms": 1.95
+        },
+        "constraint-validation": {
+          "count": 4001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 4001,
+          "mean_ms": 0.02,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 6,
+        "process_cpu_avg": 0.05824944936252414,
+        "process_cpu_max": 0.07396351575456053,
+        "heap_used_max_bytes": 199725736.0,
+        "heap_used_growth_bytes": -25721968.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 79.0,
+        "gc_pause_seconds": 0.06899999999999995,
+        "threads_max": 40.0,
+        "inflight_max": 1.0,
+        "container_cpu_percent_avg": 56.431666666666665,
+        "container_memory_max_bytes": 606076928.0
+      },
+      "redis": {
+        "total_commands_processed": 104033,
+        "keyspace_hits": 16004,
+        "keyspace_misses": 32008,
+        "commands_per_request": 26.0
+      }
+    },
+    {
+      "name": "stress-400",
+      "description": "KEYWORD at 400 requests/s (step), retrieval pool",
+      "offered_load": {
+        "arrival_rate_per_s": 400
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 20.4,
+      "requests": 8000,
+      "achieved_rps": 399.8967066806644,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 5.572,
+        "p(95)": 7.57505,
+        "p(99)": 9.402199999999997,
+        "max": 19.203,
+        "avg": 5.67883674999998
+      },
+      "outcomes": {
+        "ok": 8000
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 8000,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 8000,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "embedding": {
+          "count": 8000,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 8000,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 8000,
+          "mean_ms": 0.92,
+          "p50_ms": 0.56,
+          "p95_ms": 1.97
+        },
+        "constraint-validation": {
+          "count": 8000,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 8000,
+          "mean_ms": 0.03,
+          "p50_ms": 0.5,
+          "p95_ms": 0.96
+        }
+      },
+      "resources": {
+        "samples": 6,
+        "process_cpu_avg": 0.12657184680944708,
+        "process_cpu_max": 0.14681834340561678,
+        "heap_used_max_bytes": 205339504.0,
+        "heap_used_growth_bytes": 25084616.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 155.0,
+        "gc_pause_seconds": 0.16799999999999926,
+        "threads_max": 45.0,
+        "inflight_max": 2.0,
+        "container_cpu_percent_avg": 118.705,
+        "container_memory_max_bytes": 609012940.8
+      },
+      "redis": {
+        "total_commands_processed": 208011,
+        "keyspace_hits": 32000,
+        "keyspace_misses": 64000,
+        "commands_per_request": 26.0
+      }
+    },
+    {
+      "name": "stress-800",
+      "description": "KEYWORD at 800 requests/s (step), retrieval pool",
+      "offered_load": {
+        "arrival_rate_per_s": 800
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 20.8,
+      "requests": 16001,
+      "achieved_rps": 799.8246893850002,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 6.526,
+        "p(95)": 10.47,
+        "p(99)": 15.381,
+        "max": 44.312,
+        "avg": 6.9765202174863825
+      },
+      "outcomes": {
+        "ok": 16001
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 16001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 16001,
+          "mean_ms": 0.01,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "embedding": {
+          "count": 16001,
+          "mean_ms": 0.01,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 16001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 16001,
+          "mean_ms": 1.21,
+          "p50_ms": 0.65,
+          "p95_ms": 2.09
+        },
+        "constraint-validation": {
+          "count": 16001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 16001,
+          "mean_ms": 0.05,
+          "p50_ms": 0.51,
+          "p95_ms": 0.96
+        }
+      },
+      "resources": {
+        "samples": 6,
+        "process_cpu_avg": 0.2397092821048383,
+        "process_cpu_max": 0.28899937849596025,
+        "heap_used_max_bytes": 210697024.0,
+        "heap_used_growth_bytes": 21186648.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 315.0,
+        "gc_pause_seconds": 0.3960000000000008,
+        "threads_max": 66.0,
+        "inflight_max": 7.0,
+        "container_cpu_percent_avg": 219.4766666666667,
+        "container_memory_max_bytes": 618659840.0
+      },
+      "redis": {
+        "total_commands_processed": 416047,
+        "keyspace_hits": 64004,
+        "keyspace_misses": 128008,
+        "commands_per_request": 26.0
+      }
+    },
+    {
+      "name": "stress-1200",
+      "description": "KEYWORD at 1200 requests/s (step), retrieval pool",
+      "offered_load": {
+        "arrival_rate_per_s": 1200
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 21.3,
+      "requests": 24001,
+      "achieved_rps": 1199.6375646052888,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 7.997,
+        "p(95)": 19.123,
+        "p(99)": 39.403,
+        "max": 82.513,
+        "avg": 9.640345193950257
+      },
+      "outcomes": {
+        "ok": 24001
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 24001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 24001,
+          "mean_ms": 0.05,
+          "p50_ms": 0.5,
+          "p95_ms": 0.96
+        },
+        "embedding": {
+          "count": 24001,
+          "mean_ms": 0.04,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 24001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 24001,
+          "mean_ms": 1.63,
+          "p50_ms": 0.84,
+          "p95_ms": 4.0
+        },
+        "constraint-validation": {
+          "count": 24001,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 24001,
+          "mean_ms": 0.14,
+          "p50_ms": 0.51,
+          "p95_ms": 0.98
+        }
+      },
+      "resources": {
+        "samples": 6,
+        "process_cpu_avg": 0.3032651408682843,
+        "process_cpu_max": 0.3623079805170476,
+        "heap_used_max_bytes": 200375704.0,
+        "heap_used_growth_bytes": 42904008.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 486.0,
+        "gc_pause_seconds": 0.7279999999999998,
+        "threads_max": 103.0,
+        "inflight_max": 15.0,
+        "container_cpu_percent_avg": 272.36833333333334,
+        "container_memory_max_bytes": 635856486.4
+      },
+      "redis": {
+        "total_commands_processed": 624039,
+        "keyspace_hits": 96004,
+        "keyspace_misses": 192008,
+        "commands_per_request": 26.0
+      }
+    },
+    {
+      "name": "stress-1600",
+      "description": "KEYWORD at 1600 requests/s (step), retrieval pool",
+      "offered_load": {
+        "arrival_rate_per_s": 1600
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 25.4,
+      "requests": 17383,
+      "achieved_rps": 730.0666152712314,
+      "dropped_iterations": 14617,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 541.286,
+        "p(95)": 4485.98,
+        "p(99)": 6589.788859999996,
+        "max": 11031.744,
+        "avg": 1876.1712878674502
+      },
+      "outcomes": {
+        "ok": 17383
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 17383,
+          "mean_ms": 0.02,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 17383,
+          "mean_ms": 124.42,
+          "p50_ms": 0.55,
+          "p95_ms": 7.44
+        },
+        "embedding": {
+          "count": 17383,
+          "mean_ms": 0.76,
+          "p50_ms": 0.55,
+          "p95_ms": 3.93
+        },
+        "ranking": {
+          "count": 17383,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 17383,
+          "mean_ms": 4.62,
+          "p50_ms": 2.81,
+          "p95_ms": 16.39
+        },
+        "constraint-validation": {
+          "count": 17383,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 17383,
+          "mean_ms": 2.37,
+          "p50_ms": 0.59,
+          "p95_ms": 7.48
+        }
+      },
+      "resources": {
+        "samples": 5,
+        "process_cpu_avg": 0.17388105220333147,
+        "process_cpu_max": 0.39372469635627527,
+        "heap_used_max_bytes": 415673456.0,
+        "heap_used_growth_bytes": -2330328.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 376.0,
+        "gc_pause_seconds": 2.482000000000001,
+        "threads_max": 237.0,
+        "inflight_max": 199.0,
+        "container_cpu_percent_avg": 167.45600000000002,
+        "container_memory_max_bytes": 965004492.8
+      },
+      "redis": {
+        "total_commands_processed": 451969,
+        "keyspace_hits": 68783,
+        "keyspace_misses": 139813,
+        "commands_per_request": 26.0
+      },
+      "saturation": "stop: error rate > 1 %, dropped iterations > 1 % or p95 > 2 s"
+    },
+    {
+      "name": "multilingual-keyword-2vu",
+      "description": "KEYWORD search, constant 2 VUs, 31-query multilingual pool (15 languages)",
+      "offered_load": {
+        "vus": 2
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 38.4,
+      "requests": 9,
+      "achieved_rps": 0.2660698739103736,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 7167,
+        "p(95)": 8392.1934,
+        "p(99)": 8445.90828,
+        "max": 8459.337,
+        "avg": 7170.8
+      },
+      "outcomes": {
+        "ok": 9
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 9,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 9,
+          "mean_ms": 7156.89,
+          "p50_ms": 6979.32,
+          "p95_ms": 8428.87
+        },
+        "embedding": {
+          "count": 9,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 9,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 9,
+          "mean_ms": 3.78,
+          "p50_ms": 2.97,
+          "p95_ms": 9.16
+        },
+        "constraint-validation": {
+          "count": 9,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 9,
+          "mean_ms": 1.56,
+          "p50_ms": 0.9,
+          "p95_ms": 2.99
+        }
+      },
+      "resources": {
+        "samples": 11,
+        "process_cpu_avg": 0.002853142595553339,
+        "process_cpu_max": 0.015625,
+        "heap_used_max_bytes": 220202200.0,
+        "heap_used_growth_bytes": 46230704.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 0.0,
+        "gc_pause_seconds": 0.0,
+        "threads_max": 237.0,
+        "inflight_max": 2.0,
+        "container_cpu_percent_avg": 1.6700000000000002,
+        "container_memory_max_bytes": 965004492.8
+      },
+      "redis": {
+        "total_commands_processed": -5106079,
+        "keyspace_hits": -784361,
+        "keyspace_misses": -1571618,
+        "commands_per_request": -567342.11
+      }
+    },
+    {
+      "name": "multilingual-keyword-5vu",
+      "description": "KEYWORD search, constant 5 VUs, 31-query multilingual pool (15 languages)",
+      "offered_load": {
+        "vus": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 46.3,
+      "requests": 16,
+      "achieved_rps": 0.3483898726547918,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 16878.1,
+        "p(95)": 19327.297749999998,
+        "p(99)": 21407.12035,
+        "max": 21927.076,
+        "avg": 12177.857187499998
+      },
+      "outcomes": {
+        "ok": 16
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 16,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 16,
+          "mean_ms": 11859.13,
+          "p50_ms": 15986.82,
+          "p95_ms": 21379.39
+        },
+        "embedding": {
+          "count": 16,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 16,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 16,
+          "mean_ms": 2.06,
+          "p50_ms": 1.88,
+          "p95_ms": 5.87
+        },
+        "constraint-validation": {
+          "count": 16,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 16,
+          "mean_ms": 310.0,
+          "p50_ms": 0.8,
+          "p95_ms": 4581.3
+        }
+      },
+      "resources": {
+        "samples": 13,
+        "process_cpu_avg": 0.0007730107967129264,
+        "process_cpu_max": 0.0014094432699083862,
+        "heap_used_max_bytes": 283546512.0,
+        "heap_used_growth_bytes": 53263104.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 0.0,
+        "gc_pause_seconds": 0.0,
+        "threads_max": 47.0,
+        "inflight_max": 5.0,
+        "container_cpu_percent_avg": 0.45000000000000007,
+        "container_memory_max_bytes": 942879539.2
+      },
+      "redis": {
+        "total_commands_processed": 445,
+        "keyspace_hits": 51,
+        "keyspace_misses": 141,
+        "commands_per_request": 27.81
+      }
+    },
+    {
+      "name": "combined",
+      "description": "mixed traffic at 20 requests/s, multilingual pool: keyword 40%, vector 12%, hybrid 12%, planned 10%, suggestions 8%, memory 8%, v1 analyze 6%, sessions 4%",
+      "offered_load": {
+        "arrival_rate_per_s": 20
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 92.9,
+      "requests": 410,
+      "achieved_rps": 4.555398697993721,
+      "dropped_iterations": 736,
+      "http_error_rate": 0.3804878048780488,
+      "latency_ms": {
+        "med": 42133.7285,
+        "p(95)": 60001.600900000005,
+        "p(99)": 60001.916059999996,
+        "max": 60002.96,
+        "avg": 41417.52273902439
+      },
+      "outcomes": {
+        "status-clarification_required": 7,
+        "status-unknown": 15,
+        "status-review": 7,
+        "ok": 202,
+        "transport": 145
+      },
+      "per_workload": {
+        "suggestions": {
+          "p50_ms": 42720.046,
+          "p95_ms": 60000.6548,
+          "p99_ms": 60001.06
+        },
+        "planned": {
+          "p50_ms": 45599.066,
+          "p95_ms": 60000.53,
+          "p99_ms": 60001.549549999996
+        },
+        "analyze": {
+          "p50_ms": 59060.841,
+          "p95_ms": 60000.385200000004,
+          "p99_ms": 60000.43408
+        },
+        "sessions": {
+          "p50_ms": 24368.524,
+          "p95_ms": 60001.650200000004,
+          "p99_ms": 60002.58956
+        },
+        "memory": {
+          "p50_ms": 40107.543,
+          "p95_ms": 60000.0668,
+          "p99_ms": 60000.132
+        },
+        "keyword": {
+          "p50_ms": 36956.0015,
+          "p95_ms": 60001.6618,
+          "p99_ms": 60001.85187
+        },
+        "hybrid": {
+          "p50_ms": 59999.814,
+          "p95_ms": 60001.3902,
+          "p99_ms": 60001.6226
+        },
+        "vector": {
+          "p50_ms": 59999.896,
+          "p95_ms": 60001.2324,
+          "p99_ms": 60002.13804
+        }
+      },
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 196,
+          "mean_ms": 0.01,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "interpretation": {
+          "count": 29,
+          "mean_ms": 2.31,
+          "p50_ms": 0.69,
+          "p95_ms": 9.16
+        },
+        "execution": {
+          "count": 195,
+          "mean_ms": 11.44,
+          "p50_ms": 8.19,
+          "p95_ms": 36.15
+        },
+        "constraint-validation": {
+          "count": 167,
+          "mean_ms": 0.01,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 196,
+          "mean_ms": 18278.69,
+          "p50_ms": 14930.12,
+          "p95_ms": 57564.46
+        },
+        "analysis": {
+          "count": 196,
+          "mean_ms": 408.33,
+          "p50_ms": 0.57,
+          "p95_ms": 4.1
+        },
+        "embedding": {
+          "count": 167,
+          "mean_ms": 1466.35,
+          "p50_ms": 1.88,
+          "p95_ms": 13815.48
+        },
+        "ranking": {
+          "count": 167,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 11,
+        "process_cpu_avg": 0.0064706565019555205,
+        "process_cpu_max": 0.021311475409836064,
+        "heap_used_max_bytes": 297815416.0,
+        "heap_used_growth_bytes": -4760952.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 4.0,
+        "gc_pause_seconds": 0.07200000000000095,
+        "threads_max": 247.0,
+        "inflight_max": 187.0,
+        "container_cpu_percent_avg": 6.814545454545455,
+        "container_memory_max_bytes": 994469478.4
+      },
+      "redis": {
+        "total_commands_processed": 6971,
+        "keyspace_hits": 986,
+        "keyspace_misses": 2355,
+        "commands_per_request": 17.0
+      }
+    },
+    {
+      "name": "cold-keyword",
+      "description": "KEYWORD search with unique queries (cold analysis cache), 1 VU, retrieval pool",
+      "offered_load": {
+        "vus": 1
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 150.1,
+      "duration_s": 20.6,
+      "requests": 6,
+      "achieved_rps": 0.2964944131310655,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 3393.091,
+        "p(95)": 3775.22225,
+        "p(99)": 3786.9492499999997,
+        "max": 3789.881,
+        "avg": 3371.4563333333335
+      },
+      "outcomes": {
+        "status-clarification_required": 3,
+        "ok": 3
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0.0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 3,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 3,
+          "mean_ms": 3.0,
+          "p50_ms": 2.97,
+          "p95_ms": 4.14
+        },
+        "constraint-validation": {
+          "count": 3,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 3,
+          "mean_ms": 1.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 3,
+          "mean_ms": 3336.33,
+          "p50_ms": 3400.18,
+          "p95_ms": 3561.24
+        },
+        "embedding": {
+          "count": 3,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 3,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 6,
+        "process_cpu_avg": 0.004594665126911018,
+        "process_cpu_max": 0.0196078431372549,
+        "heap_used_max_bytes": 331057080.0,
+        "heap_used_growth_bytes": -126285288.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.004999999999999005,
+        "threads_max": 87.0,
+        "inflight_max": 1.0,
+        "container_cpu_percent_avg": 1.505,
+        "container_memory_max_bytes": 977901977.6
+      },
+      "redis": {
+        "total_commands_processed": 159,
+        "keyspace_hits": 18,
+        "keyspace_misses": 42,
+        "commands_per_request": 26.5
+      }
+    },
+    {
+      "name": "outage-ollama-before-hybrid",
+      "description": "HYBRID at 5 rps, before qwenbridge-ollama outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 56.3,
+      "requests": 8,
+      "achieved_rps": 0.1454482620896232,
+      "dropped_iterations": 73,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 21737.186,
+        "p(95)": 32033.05795,
+        "p(99)": 33016.51399,
+        "max": 33262.378,
+        "avg": 21252.938374999998
+      },
+      "outcomes": {
+        "ok": 8
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0.0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 8,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 8,
+          "mean_ms": 3.75,
+          "p50_ms": 3.15,
+          "p95_ms": 6.43
+        },
+        "constraint-validation": {
+          "count": 8,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 8,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 8,
+          "mean_ms": 346.12,
+          "p50_ms": 0.67,
+          "p95_ms": 2362.23
+        },
+        "embedding": {
+          "count": 8,
+          "mean_ms": 20895.25,
+          "p50_ms": 22906.49,
+          "p95_ms": 33214.41
+        },
+        "ranking": {
+          "count": 8,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 16,
+        "process_cpu_avg": 0.0007225439721356188,
+        "process_cpu_max": 0.0031768443346276033,
+        "heap_used_max_bytes": 325498048.0,
+        "heap_used_growth_bytes": 98405952.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 0.0,
+        "gc_pause_seconds": 0.0,
+        "threads_max": 91.0,
+        "inflight_max": 50.0,
+        "container_cpu_percent_avg": 0.551875,
+        "container_memory_max_bytes": 977167974.4
+      },
+      "redis": {
+        "total_commands_processed": 471,
+        "keyspace_hits": 30,
+        "keyspace_misses": 219,
+        "commands_per_request": 58.88
+      }
+    },
+    {
+      "name": "outage-ollama-before-vector",
+      "description": "VECTOR at 5 rps, before qwenbridge-ollama outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 68.9,
+      "duration_s": 56.8,
+      "requests": 10,
+      "achieved_rps": 0.18180858893590743,
+      "dropped_iterations": 71,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 24995.909,
+        "p(95)": 43254.9817,
+        "p(99)": 44770.52914,
+        "max": 45149.416,
+        "avg": 24502.7391
+      },
+      "outcomes": {
+        "ok": 10
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0.0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 10,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 10,
+          "mean_ms": 2.0,
+          "p50_ms": 1.82,
+          "p95_ms": 6.29
+        },
+        "constraint-validation": {
+          "count": 10,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 10,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 10,
+          "mean_ms": 0.1,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "embedding": {
+          "count": 10,
+          "mean_ms": 24494.9,
+          "p50_ms": 22906.49,
+          "p95_ms": 44381.33
+        },
+        "ranking": {
+          "count": 10,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 16,
+        "process_cpu_avg": 0.0005718582808344937,
+        "process_cpu_max": 0.0017649135192375574,
+        "heap_used_max_bytes": 295919464.0,
+        "heap_used_growth_bytes": 98303336.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 0.0,
+        "gc_pause_seconds": 0.0,
+        "threads_max": 91.0,
+        "inflight_max": 50.0,
+        "container_cpu_percent_avg": 0.255625,
+        "container_memory_max_bytes": 977901977.6
+      },
+      "redis": {
+        "total_commands_processed": 508,
+        "keyspace_hits": 47,
+        "keyspace_misses": 219,
+        "commands_per_request": 50.8
+      }
+    },
+    {
+      "name": "outage-ollama-before-memory",
+      "description": "MEMORY at 5 rps, before qwenbridge-ollama outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 65.3,
+      "duration_s": 25.3,
+      "requests": 121,
+      "achieved_rps": 4.8364177620919735,
+      "dropped_iterations": 5,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 14.812,
+        "p(95)": 5657.882,
+        "p(99)": 8242.2172,
+        "max": 10978.634,
+        "avg": 841.4538264462813
+      },
+      "outcomes": {
+        "ok": 121
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0.0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 121,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 121,
+          "mean_ms": 0.67,
+          "p50_ms": 0.56,
+          "p95_ms": 2.09
+        },
+        "constraint-validation": {
+          "count": 121,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 121,
+          "mean_ms": 2.09,
+          "p50_ms": 0.82,
+          "p95_ms": 9.05
+        },
+        "analysis": {
+          "count": 121,
+          "mean_ms": 827.88,
+          "p50_ms": 0.7,
+          "p95_ms": 5708.73
+        },
+        "embedding": {
+          "count": 121,
+          "mean_ms": 0.04,
+          "p50_ms": 0.51,
+          "p95_ms": 0.97
+        },
+        "ranking": {
+          "count": 121,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 7,
+        "process_cpu_avg": 0.0066860236110242565,
+        "process_cpu_max": 0.010386819484240688,
+        "heap_used_max_bytes": 323046576.0,
+        "heap_used_growth_bytes": -125710008.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 2.0,
+        "gc_pause_seconds": 0.01899999999999835,
+        "threads_max": 80.0,
+        "inflight_max": 10.0,
+        "container_cpu_percent_avg": 2.8214285714285716,
+        "container_memory_max_bytes": 977797120.0
+      },
+      "redis": {
+        "total_commands_processed": 3164,
+        "keyspace_hits": 450,
+        "keyspace_misses": 1002,
+        "commands_per_request": 26.15
+      },
+      "invalid_credential_status": "401"
+    },
+    {
+      "name": "outage-ollama-during-hybrid",
+      "description": "HYBRID at 5 rps, during qwenbridge-ollama outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": null,
+      "duration_s": 26.8,
+      "requests": 125,
+      "achieved_rps": 4.999727214883157,
+      "dropped_iterations": 0,
+      "http_error_rate": 1,
+      "latency_ms": {
+        "med": 10.56,
+        "p(95)": 14.917799999999996,
+        "p(99)": 18.883159999999997,
+        "max": 21.497,
+        "avg": 9.888688
+      },
+      "outcomes": {
+        "error5xx-typed": 125
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 125.0,
+        "interruptions": 0.0
+      },
+      "stages": {},
+      "resources": {
+        "samples": 8,
+        "process_cpu_avg": 0.00623287525201461,
+        "process_cpu_max": 0.008097165991902834,
+        "heap_used_max_bytes": 324373392.0,
+        "heap_used_growth_bytes": 44613080.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.006000000000000227,
+        "threads_max": 25.0,
+        "inflight_max": 0.0,
+        "container_cpu_percent_avg": 4.635,
+        "container_memory_max_bytes": 972239667.2
+      },
+      "redis": {
+        "total_commands_processed": 885,
+        "keyspace_hits": 125,
+        "keyspace_misses": 500,
+        "commands_per_request": 7.08
+      }
+    },
+    {
+      "name": "outage-ollama-during-vector",
+      "description": "VECTOR at 5 rps, during qwenbridge-ollama outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": null,
+      "duration_s": 28.2,
+      "requests": 126,
+      "achieved_rps": 5.037477231402514,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 12.6695,
+        "p(95)": 17.01775,
+        "p(99)": 21.86275,
+        "max": 25.711,
+        "avg": 12.338198412698409
+      },
+      "outcomes": {
+        "status-review": 126
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 0.0,
+        "interruptions": 0.0
+      },
+      "stages": {},
+      "resources": {
+        "samples": 8,
+        "process_cpu_avg": 0.005559895413331766,
+        "process_cpu_max": 0.007084661707403472,
+        "heap_used_max_bytes": 324429568.0,
+        "heap_used_growth_bytes": -84987264.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.009999999999999787,
+        "threads_max": 29.0,
+        "inflight_max": 1.0,
+        "container_cpu_percent_avg": 3.72375,
+        "container_memory_max_bytes": 972659097.6
+      },
+      "redis": {
+        "total_commands_processed": 2402,
+        "keyspace_hits": 252,
+        "keyspace_misses": 630,
+        "commands_per_request": 19.06
+      }
+    },
+    {
+      "name": "outage-ollama-during-memory",
+      "description": "MEMORY at 5 rps, during qwenbridge-ollama outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": null,
+      "duration_s": 25.5,
+      "requests": 126,
+      "achieved_rps": 5.036649016676225,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 13.023499999999999,
+        "p(95)": 16.698,
+        "p(99)": 18.145249999999997,
+        "max": 23.586,
+        "avg": 12.115825396825393
+      },
+      "outcomes": {
+        "status-review": 126
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 0.0,
+        "interruptions": 0.0
+      },
+      "stages": {},
+      "resources": {
+        "samples": 7,
+        "process_cpu_avg": 0.006569398113452291,
+        "process_cpu_max": 0.010589481115425344,
+        "heap_used_max_bytes": 303507720.0,
+        "heap_used_growth_bytes": 61579528.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 0.0,
+        "gc_pause_seconds": 0.0,
+        "threads_max": 28.0,
+        "inflight_max": 0.0,
+        "container_cpu_percent_avg": 4.508571428571428,
+        "container_memory_max_bytes": 976329113.6
+      },
+      "redis": {
+        "total_commands_processed": 2402,
+        "keyspace_hits": 252,
+        "keyspace_misses": 630,
+        "commands_per_request": 19.06
+      },
+      "invalid_credential_status": "401"
+    },
+    {
+      "name": "outage-ollama-after-hybrid",
+      "description": "HYBRID at 5 rps, after qwenbridge-ollama outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 1.3,
+      "duration_s": 55.3,
+      "requests": 7,
+      "achieved_rps": 0.12725656800234675,
+      "dropped_iterations": 73,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 31566.529,
+        "p(95)": 37602.9449,
+        "p(99)": 38370.09218,
+        "max": 38561.879,
+        "avg": 28828.528
+      },
+      "outcomes": {
+        "ok": 7
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 0.0,
+        "interruptions": 0.0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 7,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 7,
+          "mean_ms": 4.14,
+          "p50_ms": 3.01,
+          "p95_ms": 10.7
+        },
+        "constraint-validation": {
+          "count": 7,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 7,
+          "mean_ms": 0.57,
+          "p50_ms": 0.7,
+          "p95_ms": 2.04
+        },
+        "analysis": {
+          "count": 7,
+          "mean_ms": 4823.71,
+          "p50_ms": 5010.8,
+          "p95_ms": 10952.17
+        },
+        "embedding": {
+          "count": 7,
+          "mean_ms": 23990.86,
+          "p50_ms": 25769.8,
+          "p95_ms": 39084.2
+        },
+        "ranking": {
+          "count": 7,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 15,
+        "process_cpu_avg": 0.00045383354876117686,
+        "process_cpu_max": 0.0015375153751537515,
+        "heap_used_max_bytes": 330974944.0,
+        "heap_used_growth_bytes": -67497224.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.004000000000001336,
+        "threads_max": 85.0,
+        "inflight_max": 50.0,
+        "container_cpu_percent_avg": 0.27266666666666667,
+        "container_memory_max_bytes": 981886566.4
+      },
+      "redis": {
+        "total_commands_processed": 407,
+        "keyspace_hits": 17,
+        "keyspace_misses": 197,
+        "commands_per_request": 58.14
+      }
+    },
+    {
+      "name": "outage-ollama-after-vector",
+      "description": "VECTOR at 5 rps, after qwenbridge-ollama outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 70.3,
+      "duration_s": 56.3,
+      "requests": 13,
+      "achieved_rps": 0.23633594208824074,
+      "dropped_iterations": 68,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 14747.928,
+        "p(95)": 35348.5606,
+        "p(99)": 37277.617719999995,
+        "max": 37759.882,
+        "avg": 15825.867461538463
+      },
+      "outcomes": {
+        "ok": 13
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 0.0,
+        "interruptions": 0.0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 13,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 13,
+          "mean_ms": 3.23,
+          "p50_ms": 2.01,
+          "p95_ms": 7.93
+        },
+        "constraint-validation": {
+          "count": 13,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 13,
+          "mean_ms": 0.08,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "analysis": {
+          "count": 13,
+          "mean_ms": 252.62,
+          "p50_ms": 0.59,
+          "p95_ms": 2272.75
+        },
+        "embedding": {
+          "count": 13,
+          "mean_ms": 15562.54,
+          "p50_ms": 15032.39,
+          "p95_ms": 36364.06
+        },
+        "ranking": {
+          "count": 13,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 16,
+        "process_cpu_avg": 0.0015926618901353905,
+        "process_cpu_max": 0.017241379310344827,
+        "heap_used_max_bytes": 332479288.0,
+        "heap_used_growth_bytes": -48050456.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.010999999999999233,
+        "threads_max": 85.0,
+        "inflight_max": 50.0,
+        "container_cpu_percent_avg": 0.43437499999999996,
+        "container_memory_max_bytes": 983040000.0
+      },
+      "redis": {
+        "total_commands_processed": 549,
+        "keyspace_hits": 41,
+        "keyspace_misses": 245,
+        "commands_per_request": 42.23
+      }
+    },
+    {
+      "name": "outage-ollama-after-memory",
+      "description": "MEMORY at 5 rps, after qwenbridge-ollama outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 67.3,
+      "duration_s": 28.2,
+      "requests": 120,
+      "achieved_rps": 4.797048472016138,
+      "dropped_iterations": 6,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 14.5465,
+        "p(95)": 5146.094149999994,
+        "p(99)": 8606.328829999999,
+        "max": 10244.214,
+        "avg": 813.6476750000003
+      },
+      "outcomes": {
+        "ok": 120
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 0.0,
+        "interruptions": 0.0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 120,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 120,
+          "mean_ms": 0.52,
+          "p50_ms": 0.54,
+          "p95_ms": 2.01
+        },
+        "constraint-validation": {
+          "count": 120,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 120,
+          "mean_ms": 1.42,
+          "p50_ms": 0.7,
+          "p95_ms": 6.99
+        },
+        "analysis": {
+          "count": 120,
+          "mean_ms": 800.38,
+          "p50_ms": 0.71,
+          "p95_ms": 5726.62
+        },
+        "embedding": {
+          "count": 120,
+          "mean_ms": 0.15,
+          "p50_ms": 0.52,
+          "p95_ms": 0.99
+        },
+        "ranking": {
+          "count": 120,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 8,
+        "process_cpu_avg": 0.004090021480004847,
+        "process_cpu_max": 0.008141592920353982,
+        "heap_used_max_bytes": 318912224.0,
+        "heap_used_growth_bytes": 52139648.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.005000000000000782,
+        "threads_max": 79.0,
+        "inflight_max": 11.0,
+        "container_cpu_percent_avg": 3.085,
+        "container_memory_max_bytes": 982935142.4
+      },
+      "redis": {
+        "total_commands_processed": 2787,
+        "keyspace_hits": 326,
+        "keyspace_misses": 994,
+        "commands_per_request": 23.23
+      },
+      "invalid_credential_status": "401"
+    },
+    {
+      "name": "outage-opensearch-before-keyword",
+      "description": "KEYWORD at 5 rps, before qwenbridge-opensearch outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 25.3,
+      "requests": 126,
+      "achieved_rps": 5.035961360427391,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 16.289,
+        "p(95)": 22.06075,
+        "p(99)": 23.990499999999997,
+        "max": 25.521,
+        "avg": 15.684603174603165
+      },
+      "outcomes": {
+        "ok": 126
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 0.0,
+        "interruptions": 0.0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 126,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 126,
+          "mean_ms": 4.0,
+          "p50_ms": 3.91,
+          "p95_ms": 7.39
+        },
+        "constraint-validation": {
+          "count": 126,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 126,
+          "mean_ms": 0.87,
+          "p50_ms": 0.62,
+          "p95_ms": 2.07
+        },
+        "analysis": {
+          "count": 126,
+          "mean_ms": 0.02,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "embedding": {
+          "count": 126,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 126,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 7,
+        "process_cpu_avg": 0.00720420174249633,
+        "process_cpu_max": 0.011327433628318584,
+        "heap_used_max_bytes": 322325848.0,
+        "heap_used_growth_bytes": 42040752.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.007999999999999119,
+        "threads_max": 53.0,
+        "inflight_max": 0.0,
+        "container_cpu_percent_avg": 5.728571428571429,
+        "container_memory_max_bytes": 981152563.2
+      },
+      "redis": {
+        "total_commands_processed": 2905,
+        "keyspace_hits": 378,
+        "keyspace_misses": 1008,
+        "commands_per_request": 23.06
+      }
+    },
+    {
+      "name": "outage-opensearch-before-memory",
+      "description": "MEMORY at 5 rps, before qwenbridge-opensearch outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 27.1,
+      "requests": 126,
+      "achieved_rps": 5.037601094358867,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 11.3765,
+        "p(95)": 15.206,
+        "p(99)": 18.1235,
+        "max": 32.971,
+        "avg": 11.312960317460321
+      },
+      "outcomes": {
+        "ok": 126
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 0.0,
+        "interruptions": 0.0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 126,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 126,
+          "mean_ms": 0.34,
+          "p50_ms": 0.51,
+          "p95_ms": 0.97
+        },
+        "constraint-validation": {
+          "count": 126,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 126,
+          "mean_ms": 0.74,
+          "p50_ms": 0.6,
+          "p95_ms": 2.03
+        },
+        "analysis": {
+          "count": 126,
+          "mean_ms": 0.01,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "embedding": {
+          "count": 126,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 126,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 8,
+        "process_cpu_avg": 0.005131323154140245,
+        "process_cpu_max": 0.008489564909798374,
+        "heap_used_max_bytes": 327992248.0,
+        "heap_used_growth_bytes": 55839008.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.006999999999999673,
+        "threads_max": 40.0,
+        "inflight_max": 0.0,
+        "container_cpu_percent_avg": 4.26,
+        "container_memory_max_bytes": 979579699.2
+      },
+      "redis": {
+        "total_commands_processed": 2905,
+        "keyspace_hits": 378,
+        "keyspace_misses": 1008,
+        "commands_per_request": 23.06
+      },
+      "invalid_credential_status": "401"
+    },
+    {
+      "name": "outage-opensearch-during-keyword",
+      "description": "KEYWORD at 5 rps, during qwenbridge-opensearch outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.1,
+      "duration_s": 25.4,
+      "requests": 126,
+      "achieved_rps": 5.037994273719747,
+      "dropped_iterations": 0,
+      "http_error_rate": 1,
+      "latency_ms": {
+        "med": 8.863,
+        "p(95)": 13.148749999999998,
+        "p(99)": 16.658749999999998,
+        "max": 19.361,
+        "avg": 8.703825396825396
+      },
+      "outcomes": {
+        "error5xx-typed": 126
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 126.0,
+        "interruptions": 0.0
+      },
+      "stages": {},
+      "resources": {
+        "samples": 7,
+        "process_cpu_avg": 0.0066928853732223246,
+        "process_cpu_max": 0.0196078431372549,
+        "heap_used_max_bytes": 309108392.0,
+        "heap_used_growth_bytes": 27374888.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.0039999999999995595,
+        "threads_max": 40.0,
+        "inflight_max": 1.0,
+        "container_cpu_percent_avg": 3.21,
+        "container_memory_max_bytes": 980103987.2
+      },
+      "redis": {
+        "total_commands_processed": 1141,
+        "keyspace_hits": 126,
+        "keyspace_misses": 756,
+        "commands_per_request": 9.06
+      }
+    },
+    {
+      "name": "outage-opensearch-during-memory",
+      "description": "MEMORY at 5 rps, during qwenbridge-opensearch outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 27.7,
+      "requests": 125,
+      "achieved_rps": 4.9999316009356995,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 12.564,
+        "p(95)": 16.233999999999998,
+        "p(99)": 19.030319999999996,
+        "max": 21.901,
+        "avg": 12.312536000000003
+      },
+      "outcomes": {
+        "ok": 125
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 0.0,
+        "interruptions": 0.0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 125,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 125,
+          "mean_ms": 0.38,
+          "p50_ms": 0.51,
+          "p95_ms": 0.97
+        },
+        "constraint-validation": {
+          "count": 125,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 125,
+          "mean_ms": 0.88,
+          "p50_ms": 0.64,
+          "p95_ms": 2.03
+        },
+        "analysis": {
+          "count": 125,
+          "mean_ms": 0.02,
+          "p50_ms": 0.5,
+          "p95_ms": 0.96
+        },
+        "embedding": {
+          "count": 125,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 125,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 8,
+        "process_cpu_avg": 0.004780307719337129,
+        "process_cpu_max": 0.006246096189881324,
+        "heap_used_max_bytes": 321023464.0,
+        "heap_used_growth_bytes": 56323976.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.004999999999999005,
+        "threads_max": 40.0,
+        "inflight_max": 0.0,
+        "container_cpu_percent_avg": 3.7975,
+        "container_memory_max_bytes": 979894272.0
+      },
+      "redis": {
+        "total_commands_processed": 2881,
+        "keyspace_hits": 375,
+        "keyspace_misses": 1000,
+        "commands_per_request": 23.05
+      },
+      "invalid_credential_status": "401"
+    },
+    {
+      "name": "outage-opensearch-after-keyword",
+      "description": "KEYWORD at 5 rps, after qwenbridge-opensearch outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 27.1,
+      "requests": 126,
+      "achieved_rps": 5.035331844553551,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 18.7255,
+        "p(95)": 26.341999999999995,
+        "p(99)": 46.42074999999998,
+        "max": 67.493,
+        "avg": 18.9758253968254
+      },
+      "outcomes": {
+        "ok": 126
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 0.0,
+        "interruptions": 0.0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 126,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 126,
+          "mean_ms": 7.98,
+          "p50_ms": 7.48,
+          "p95_ms": 11.09
+        },
+        "constraint-validation": {
+          "count": 126,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 126,
+          "mean_ms": 0.85,
+          "p50_ms": 0.64,
+          "p95_ms": 2.85
+        },
+        "analysis": {
+          "count": 126,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "embedding": {
+          "count": 126,
+          "mean_ms": 0.01,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 126,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 8,
+        "process_cpu_avg": 0.007678700318250672,
+        "process_cpu_max": 0.016129032258064516,
+        "heap_used_max_bytes": 308748312.0,
+        "heap_used_growth_bytes": 64842536.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.004000000000001336,
+        "threads_max": 40.0,
+        "inflight_max": 1.0,
+        "container_cpu_percent_avg": 5.720000000000001,
+        "container_memory_max_bytes": 988282880.0
+      },
+      "redis": {
+        "total_commands_processed": 2905,
+        "keyspace_hits": 378,
+        "keyspace_misses": 1008,
+        "commands_per_request": 23.06
+      }
+    },
+    {
+      "name": "outage-opensearch-after-memory",
+      "description": "MEMORY at 5 rps, after qwenbridge-opensearch outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 25.3,
+      "requests": 125,
+      "achieved_rps": 4.999931400941179,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 12.275,
+        "p(95)": 17.283399999999997,
+        "p(99)": 19.06872,
+        "max": 20.248,
+        "avg": 12.223831999999994
+      },
+      "outcomes": {
+        "ok": 125
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 0.0,
+        "interruptions": 0.0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 125,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 125,
+          "mean_ms": 0.3,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "constraint-validation": {
+          "count": 125,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 125,
+          "mean_ms": 1.06,
+          "p50_ms": 0.69,
+          "p95_ms": 2.07
+        },
+        "analysis": {
+          "count": 125,
+          "mean_ms": 0.02,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "embedding": {
+          "count": 125,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 125,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 7,
+        "process_cpu_avg": 0.004836687732158587,
+        "process_cpu_max": 0.006342494714587738,
+        "heap_used_max_bytes": 332023512.0,
+        "heap_used_growth_bytes": 34014496.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.0039999999999995595,
+        "threads_max": 40.0,
+        "inflight_max": 0.0,
+        "container_cpu_percent_avg": 3.9442857142857144,
+        "container_memory_max_bytes": 984193433.6
+      },
+      "redis": {
+        "total_commands_processed": 2883,
+        "keyspace_hits": 375,
+        "keyspace_misses": 1000,
+        "commands_per_request": 23.06
+      },
+      "invalid_credential_status": "401"
+    },
+    {
+      "name": "outage-redis-before-keyword",
+      "description": "KEYWORD at 5 rps, before qwenbridge-redis outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.2,
+      "duration_s": 25.3,
+      "requests": 125,
+      "achieved_rps": 4.999953000441796,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 14.88,
+        "p(95)": 21.7338,
+        "p(99)": 23.9554,
+        "max": 33.393,
+        "avg": 15.099528
+      },
+      "outcomes": {
+        "ok": 125
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 0.0,
+        "interruptions": 0.0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 125,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 125,
+          "mean_ms": 5.53,
+          "p50_ms": 5.5,
+          "p95_ms": 8.8
+        },
+        "constraint-validation": {
+          "count": 125,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 125,
+          "mean_ms": 0.74,
+          "p50_ms": 0.61,
+          "p95_ms": 2.01
+        },
+        "analysis": {
+          "count": 125,
+          "mean_ms": 0.03,
+          "p50_ms": 0.5,
+          "p95_ms": 0.96
+        },
+        "embedding": {
+          "count": 125,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 125,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 7,
+        "process_cpu_avg": 0.004270813847787736,
+        "process_cpu_max": 0.006041222459132907,
+        "heap_used_max_bytes": 320401112.0,
+        "heap_used_growth_bytes": 40270928.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.0030000000000001137,
+        "threads_max": 39.0,
+        "inflight_max": 0.0,
+        "container_cpu_percent_avg": 3.6185714285714288,
+        "container_memory_max_bytes": 984193433.6
+      },
+      "redis": {
+        "total_commands_processed": 2881,
+        "keyspace_hits": 375,
+        "keyspace_misses": 1000,
+        "commands_per_request": 23.05
+      }
+    },
+    {
+      "name": "outage-redis-before-analyze",
+      "description": "ANALYZE at 5 rps, before qwenbridge-redis outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 26.6,
+      "requests": 126,
+      "achieved_rps": 5.038103456334897,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 10.6435,
+        "p(95)": 16.5235,
+        "p(99)": 24.334999999999994,
+        "max": 38.524,
+        "avg": 11.04281746031746
+      },
+      "outcomes": {
+        "ok": 126
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 0.0,
+        "interruptions": 0.0
+      },
+      "stages": {},
+      "resources": {
+        "samples": 8,
+        "process_cpu_avg": 0.005501921972895058,
+        "process_cpu_max": 0.009200283085633403,
+        "heap_used_max_bytes": 313007568.0,
+        "heap_used_growth_bytes": -8061256.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.0039999999999995595,
+        "threads_max": 40.0,
+        "inflight_max": 0.0,
+        "container_cpu_percent_avg": 4.4125,
+        "container_memory_max_bytes": 985661440.0
+      },
+      "redis": {
+        "total_commands_processed": 386,
+        "keyspace_hits": 126,
+        "keyspace_misses": 0,
+        "commands_per_request": 3.06
+      },
+      "invalid_credential_status": "401"
+    },
+    {
+      "name": "outage-redis-during-keyword",
+      "description": "KEYWORD at 5 rps, during qwenbridge-redis outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.1,
+      "duration_s": 26.3,
+      "requests": 126,
+      "achieved_rps": 5.03913750122529,
+      "dropped_iterations": 0,
+      "http_error_rate": 1,
+      "latency_ms": {
+        "med": 5.0785,
+        "p(95)": 9.274,
+        "p(99)": 15.703249999999997,
+        "max": 20.711,
+        "avg": 5.292039682539684
+      },
+      "outcomes": {
+        "error5xx-typed": 126
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 126.0,
+        "interruptions": 0.0
+      },
+      "stages": {},
+      "resources": {
+        "samples": 7,
+        "process_cpu_avg": 0.008173780052006962,
+        "process_cpu_max": 0.03225806451612903,
+        "heap_used_max_bytes": 327249520.0,
+        "heap_used_growth_bytes": 42735624.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 0.0,
+        "gc_pause_seconds": 0.0,
+        "threads_max": 40.0,
+        "inflight_max": 0.0,
+        "container_cpu_percent_avg": 2.7114285714285713,
+        "container_memory_max_bytes": 986290585.6
+      },
+      "redis": "not applicable: Redis not running"
+    },
+    {
+      "name": "outage-redis-during-analyze",
+      "description": "ANALYZE at 5 rps, during qwenbridge-redis outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.1,
+      "duration_s": 35.3,
+      "requests": 100,
+      "achieved_rps": 2.85662866398334,
+      "dropped_iterations": 26,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 6934.7215,
+        "p(95)": 13213.89375,
+        "p(99)": 15628.889259999998,
+        "max": 17807.41,
+        "avg": 7646.760050000001
+      },
+      "outcomes": {
+        "ok": 100
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 0.0,
+        "interruptions": 0.0
+      },
+      "stages": {},
+      "resources": {
+        "samples": 10,
+        "process_cpu_avg": 0.0032554529710727685,
+        "process_cpu_max": 0.0052835505459668895,
+        "heap_used_max_bytes": 329427192.0,
+        "heap_used_growth_bytes": -12810064.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.0039999999999995595,
+        "threads_max": 69.0,
+        "inflight_max": 0.0,
+        "container_cpu_percent_avg": 3.747,
+        "container_memory_max_bytes": 989436313.6
+      },
+      "redis": "not applicable: Redis not running",
+      "invalid_credential_status": "401"
+    },
+    {
+      "name": "outage-redis-after-keyword",
+      "description": "KEYWORD at 5 rps, after qwenbridge-redis outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 26.9,
+      "requests": 126,
+      "achieved_rps": 4.8507465703200605,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 18.863500000000002,
+        "p(95)": 23.8005,
+        "p(99)": 1039.0304999999985,
+        "max": 2174.519,
+        "avg": 45.57511904761904
+      },
+      "outcomes": {
+        "ok": 126
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 0.0,
+        "interruptions": 0.0
+      },
+      "stages": {
+        "input-validation": {
+          "count": 126,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "execution": {
+          "count": 126,
+          "mean_ms": 6.06,
+          "p50_ms": 6.31,
+          "p95_ms": 9.11
+        },
+        "constraint-validation": {
+          "count": 126,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "translation": {
+          "count": 126,
+          "mean_ms": 0.87,
+          "p50_ms": 0.63,
+          "p95_ms": 2.09
+        },
+        "analysis": {
+          "count": 126,
+          "mean_ms": 28.03,
+          "p50_ms": 0.51,
+          "p95_ms": 0.97
+        },
+        "embedding": {
+          "count": 126,
+          "mean_ms": 0.01,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        },
+        "ranking": {
+          "count": 126,
+          "mean_ms": 0.0,
+          "p50_ms": 0.5,
+          "p95_ms": 0.95
+        }
+      },
+      "resources": {
+        "samples": 8,
+        "process_cpu_avg": 0.005967818919119923,
+        "process_cpu_max": 0.00886839304717985,
+        "heap_used_max_bytes": 321067320.0,
+        "heap_used_growth_bytes": 65325680.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.004999999999999005,
+        "threads_max": 65.0,
+        "inflight_max": 2.0,
+        "container_cpu_percent_avg": 4.35875,
+        "container_memory_max_bytes": 989436313.6
+      },
+      "redis": {
+        "total_commands_processed": 2906,
+        "keyspace_hits": 376,
+        "keyspace_misses": 1010,
+        "commands_per_request": 23.06
+      }
+    },
+    {
+      "name": "outage-redis-after-analyze",
+      "description": "ANALYZE at 5 rps, after qwenbridge-redis outage",
+      "offered_load": {
+        "arrival_rate_per_s": 5
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 28.2,
+      "requests": 126,
+      "achieved_rps": 5.0375473189613444,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 13.897,
+        "p(95)": 18.17575,
+        "p(99)": 19.959999999999997,
+        "max": 21.005,
+        "avg": 13.014547619047612
+      },
+      "outcomes": {
+        "ok": 126
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 0.0,
+        "interruptions": 0.0
+      },
+      "stages": {},
+      "resources": {
+        "samples": 8,
+        "process_cpu_avg": 0.007300530554437573,
+        "process_cpu_max": 0.01818181818181818,
+        "heap_used_max_bytes": 311855152.0,
+        "heap_used_growth_bytes": -12479480.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.002000000000000668,
+        "threads_max": 37.0,
+        "inflight_max": 0.0,
+        "container_cpu_percent_avg": 4.5325,
+        "container_memory_max_bytes": 990065459.2
+      },
+      "redis": {
+        "total_commands_processed": 386,
+        "keyspace_hits": 126,
+        "keyspace_misses": 0,
+        "commands_per_request": 3.06
+      },
+      "invalid_credential_status": "401"
+    },
+    {
+      "name": "redis-on",
+      "description": "v1 analyze, 20 requests over 10 distinct queries at 1 VU (Redis cache on)",
+      "offered_load": {
+        "vus": 1
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 77.0,
+      "requests": 20,
+      "achieved_rps": 0.26086443639573315,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 4011.6940000000004,
+        "p(95)": 4498.45655,
+        "p(99)": 4698.99851,
+        "max": 4749.134,
+        "avg": 3833.0572999999995
+      },
+      "outcomes": {
+        "ok": 20
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0.0,
+        "errors_operational": 0.0,
+        "interruptions": 0.0
+      },
+      "stages": {},
+      "resources": {
+        "samples": 21,
+        "process_cpu_avg": 0.0021040072879185247,
+        "process_cpu_max": 0.017857142857142856,
+        "heap_used_max_bytes": 329936016.0,
+        "heap_used_growth_bytes": -26312240.0,
+        "heap_max_bytes": 571736064.0,
+        "gc_pauses": 1.0,
+        "gc_pause_seconds": 0.002000000000000668,
+        "threads_max": 36.0,
+        "inflight_max": 0.0,
+        "container_cpu_percent_avg": 1.0242857142857145,
+        "container_memory_max_bytes": 990484889.6
+      },
+      "redis": {
+        "total_commands_processed": 98,
+        "keyspace_hits": 0,
+        "keyspace_misses": 20,
+        "commands_per_request": 4.9
+      }
+    },
+    {
+      "name": "redis-off",
+      "description": "v1 analyze, 20 requests over 10 distinct queries at 1 VU (redis-off)",
+      "offered_load": {
+        "vus": 1,
+        "iterations": 20
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 78.6,
+      "requests": 20,
+      "achieved_rps": 0.25560366627163544,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 4122.9395,
+        "p(95)": 4456.10705,
+        "p(99)": 4461.13901,
+        "max": 4462.397,
+        "avg": 3912.096049999999
+      },
+      "outcomes": {
+        "ok": 20
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {},
+      "resources": {
+        "samples": 22,
+        "process_cpu_avg": 0.004860569344924019,
+        "process_cpu_max": 0.02359085346062145,
+        "heap_used_max_bytes": 197138416.0,
+        "heap_used_growth_bytes": 175347240.0,
+        "heap_max_bytes": 12884901886.0,
+        "gc_pauses": 6.0,
+        "gc_pause_seconds": 0.015000000000000001,
+        "threads_max": 31.0,
+        "inflight_max": null,
+        "container_cpu_percent_avg": 0.07818181818181819,
+        "container_memory_max_bytes": 990380032.0
+      },
+      "redis": {
+        "total_commands_processed": 15,
+        "keyspace_hits": 0,
+        "keyspace_misses": 0,
+        "commands_per_request": 0.75
+      },
+      "configuration": {
+        "QWENBRIDGE_ANALYSIS_CACHE_ENABLED": "false",
+        "QUARKUS_REDIS_HOSTS": "redis://127.0.0.1:9"
+      }
+    },
+    {
+      "name": "redis-unavailable",
+      "description": "v1 analyze, 20 requests over 10 distinct queries at 1 VU (redis-unavailable)",
+      "offered_load": {
+        "vus": 1,
+        "iterations": 20
+      },
+      "k6_exit": 0,
+      "model_backlog_drain_s": 0.0,
+      "duration_s": 82.9,
+      "requests": 20,
+      "achieved_rps": 0.24211701793911566,
+      "dropped_iterations": 0,
+      "http_error_rate": 0,
+      "latency_ms": {
+        "med": 4249.816000000001,
+        "p(95)": 4848.3301,
+        "p(99)": 4899.06922,
+        "max": 4911.754,
+        "avg": 4130.02715
+      },
+      "outcomes": {
+        "ok": 20
+      },
+      "per_workload": {},
+      "server_errors": {
+        "errors_expected": 0,
+        "errors_operational": 0,
+        "interruptions": 0
+      },
+      "stages": {},
+      "resources": {
+        "samples": 23,
+        "process_cpu_avg": 0.004243099579538993,
+        "process_cpu_max": 0.0207788165629044,
+        "heap_used_max_bytes": 261581776.0,
+        "heap_used_growth_bytes": 152752344.0,
+        "heap_max_bytes": 12884901886.0,
+        "gc_pauses": 6.0,
+        "gc_pause_seconds": 0.016,
+        "threads_max": 31.0,
+        "inflight_max": null,
+        "container_cpu_percent_avg": 0.027391304347826086,
+        "container_memory_max_bytes": 989016883.2
+      },
+      "redis": {
+        "total_commands_processed": 14,
+        "keyspace_hits": 0,
+        "keyspace_misses": 0,
+        "commands_per_request": 0.7
+      },
+      "configuration": {
+        "QWENBRIDGE_ANALYSIS_CACHE_ENABLED": "true",
+        "QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST": "127.0.0.1",
+        "QWENBRIDGE_ANALYSIS_CACHE_REDIS_PORT": "9",
+        "QUARKUS_REDIS_HOSTS": "redis://127.0.0.1:9"
+      }
+    }
+  ],
+  "java": {
+    "RetrievalBenchmarkTest": {
+      "results": [
+        {
+          "workload": "keyword",
+          "strategy": "keyword",
+          "documents": 1000,
+          "dimensions": 0,
+          "topK": 10,
+          "concurrency": 1,
+          "queries": 4000,
+          "p50Ms": 0.118709,
+          "p95Ms": 0.24425,
+          "p99Ms": 0.32525,
+          "meanMs": 0.12849797400000001,
+          "throughputQps": 7749.588837814622
+        },
+        {
+          "workload": "keyword",
+          "strategy": "keyword",
+          "documents": 1000,
+          "dimensions": 0,
+          "topK": 10,
+          "concurrency": 8,
+          "queries": 4000,
+          "p50Ms": 0.242042,
+          "p95Ms": 0.605542,
+          "p99Ms": 0.823334,
+          "meanMs": 0.28442529175,
+          "throughputQps": 27579.668613044323
+        },
+        {
+          "workload": "keyword",
+          "strategy": "keyword",
+          "documents": 1000,
+          "dimensions": 0,
+          "topK": 10,
+          "concurrency": 32,
+          "queries": 4000,
+          "p50Ms": 0.109625,
+          "p95Ms": 0.211458,
+          "p99Ms": 0.336208,
+          "meanMs": 0.12417080250000001,
+          "throughputQps": 91063.88295304145
+        },
+        {
+          "workload": "keyword",
+          "strategy": "keyword",
+          "documents": 10000,
+          "dimensions": 0,
+          "topK": 10,
+          "concurrency": 1,
+          "queries": 4000,
+          "p50Ms": 1.472417,
+          "p95Ms": 2.499709,
+          "p99Ms": 3.104166,
+          "meanMs": 1.54445211025,
+          "throughputQps": 647.359021995884
+        },
+        {
+          "workload": "keyword",
+          "strategy": "keyword",
+          "documents": 10000,
+          "dimensions": 0,
+          "topK": 10,
+          "concurrency": 8,
+          "queries": 4000,
+          "p50Ms": 1.31775,
+          "p95Ms": 2.703625,
+          "p99Ms": 3.920666,
+          "meanMs": 1.4588329169999998,
+          "throughputQps": 5270.440582599088
+        },
+        {
+          "workload": "keyword",
+          "strategy": "keyword",
+          "documents": 10000,
+          "dimensions": 0,
+          "topK": 10,
+          "concurrency": 32,
+          "queries": 4000,
+          "p50Ms": 1.42925,
+          "p95Ms": 14.487167,
+          "p99Ms": 31.772916,
+          "meanMs": 3.261613537,
+          "throughputQps": 7807.802493578272
+        },
+        {
+          "workload": "keyword",
+          "strategy": "keyword",
+          "documents": 100000,
+          "dimensions": 0,
+          "topK": 10,
+          "concurrency": 1,
+          "queries": 4000,
+          "p50Ms": 21.31525,
+          "p95Ms": 33.519875,
+          "p99Ms": 38.017834,
+          "meanMs": 21.8364494975,
+          "throughputQps": 45.79211383815021
+        },
+        {
+          "workload": "keyword",
+          "strategy": "keyword",
+          "documents": 100000,
+          "dimensions": 0,
+          "topK": 10,
+          "concurrency": 8,
+          "queries": 4000,
+          "p50Ms": 19.676125,
+          "p95Ms": 32.651834,
+          "p99Ms": 38.32025,
+          "meanMs": 20.7306614875,
+          "throughputQps": 375.3384951981335
+        },
+        {
+          "workload": "keyword",
+          "strategy": "keyword",
+          "documents": 100000,
+          "dimensions": 0,
+          "topK": 10,
+          "concurrency": 32,
+          "queries": 4000,
+          "p50Ms": 66.623584,
+          "p95Ms": 112.452958,
+          "p99Ms": 138.150125,
+          "meanMs": 68.09570889475,
+          "throughputQps": 449.04816314997663
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 1000,
+          "dimensions": 384,
+          "topK": 5,
+          "concurrency": 1,
+          "queries": 4000,
+          "p50Ms": 0.245833,
+          "p95Ms": 0.290875,
+          "p99Ms": 0.362084,
+          "meanMs": 0.25270310949999997,
+          "throughputQps": 3955.9147910788683
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 1000,
+          "dimensions": 384,
+          "topK": 5,
+          "concurrency": 8,
+          "queries": 4000,
+          "p50Ms": 0.645166,
+          "p95Ms": 0.927917,
+          "p99Ms": 0.984958,
+          "meanMs": 0.55523872175,
+          "throughputQps": 14291.843649117001
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 1000,
+          "dimensions": 384,
+          "topK": 5,
+          "concurrency": 32,
+          "queries": 4000,
+          "p50Ms": 0.244,
+          "p95Ms": 0.535167,
+          "p99Ms": 1.58175,
+          "meanMs": 0.320259031,
+          "throughputQps": 40573.574832390055
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 1000,
+          "dimensions": 384,
+          "topK": 20,
+          "concurrency": 1,
+          "queries": 4000,
+          "p50Ms": 0.24275,
+          "p95Ms": 0.276667,
+          "p99Ms": 0.31375,
+          "meanMs": 0.246862475,
+          "throughputQps": 4049.4044225568373
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 1000,
+          "dimensions": 384,
+          "topK": 20,
+          "concurrency": 8,
+          "queries": 4000,
+          "p50Ms": 0.24525,
+          "p95Ms": 0.272375,
+          "p99Ms": 0.324333,
+          "meanMs": 0.25027285375,
+          "throughputQps": 31652.205565249045
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 1000,
+          "dimensions": 384,
+          "topK": 20,
+          "concurrency": 32,
+          "queries": 4000,
+          "p50Ms": 0.244625,
+          "p95Ms": 0.546291,
+          "p99Ms": 1.641666,
+          "meanMs": 0.32438137475,
+          "throughputQps": 41995.41200123887
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 1000,
+          "dimensions": 384,
+          "topK": 100,
+          "concurrency": 1,
+          "queries": 4000,
+          "p50Ms": 0.245375,
+          "p95Ms": 0.280459,
+          "p99Ms": 0.306542,
+          "meanMs": 0.24969526725,
+          "throughputQps": 4003.697414562348
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 1000,
+          "dimensions": 384,
+          "topK": 100,
+          "concurrency": 8,
+          "queries": 4000,
+          "p50Ms": 0.245916,
+          "p95Ms": 0.26575,
+          "p99Ms": 0.315,
+          "meanMs": 0.24875690925,
+          "throughputQps": 31754.76859176802
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 1000,
+          "dimensions": 384,
+          "topK": 100,
+          "concurrency": 32,
+          "queries": 4000,
+          "p50Ms": 0.247042,
+          "p95Ms": 0.582042,
+          "p99Ms": 1.755292,
+          "meanMs": 0.336443436,
+          "throughputQps": 38311.80634439299
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 384,
+          "topK": 5,
+          "concurrency": 1,
+          "queries": 4000,
+          "p50Ms": 2.909458,
+          "p95Ms": 4.540125,
+          "p99Ms": 5.056875,
+          "meanMs": 3.1135146355,
+          "throughputQps": 321.16818073297316
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 384,
+          "topK": 5,
+          "concurrency": 8,
+          "queries": 4000,
+          "p50Ms": 3.239917,
+          "p95Ms": 3.58725,
+          "p99Ms": 3.762166,
+          "meanMs": 3.2762351485,
+          "throughputQps": 2439.871154966865
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 384,
+          "topK": 5,
+          "concurrency": 32,
+          "queries": 4000,
+          "p50Ms": 3.563916,
+          "p95Ms": 28.1695,
+          "p99Ms": 39.364041,
+          "meanMs": 8.37459901625,
+          "throughputQps": 3478.88706923768
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 384,
+          "topK": 20,
+          "concurrency": 1,
+          "queries": 4000,
+          "p50Ms": 3.162334,
+          "p95Ms": 3.5495,
+          "p99Ms": 3.759166,
+          "meanMs": 3.1873204485,
+          "throughputQps": 313.73254403556615
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 384,
+          "topK": 20,
+          "concurrency": 8,
+          "queries": 4000,
+          "p50Ms": 3.33825,
+          "p95Ms": 3.681417,
+          "p99Ms": 4.074959,
+          "meanMs": 3.37490034675,
+          "throughputQps": 2364.3038580928464
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 384,
+          "topK": 20,
+          "concurrency": 32,
+          "queries": 4000,
+          "p50Ms": 3.553417,
+          "p95Ms": 28.213,
+          "p99Ms": 43.343334,
+          "meanMs": 8.440003649,
+          "throughputQps": 3452.186108633877
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 384,
+          "topK": 100,
+          "concurrency": 1,
+          "queries": 4000,
+          "p50Ms": 3.176583,
+          "p95Ms": 3.545541,
+          "p99Ms": 3.719542,
+          "meanMs": 3.1945522677500002,
+          "throughputQps": 313.0227275596375
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 384,
+          "topK": 100,
+          "concurrency": 8,
+          "queries": 4000,
+          "p50Ms": 3.378958,
+          "p95Ms": 3.690375,
+          "p99Ms": 4.002333,
+          "meanMs": 3.3962676845,
+          "throughputQps": 2351.1001157159753
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 384,
+          "topK": 100,
+          "concurrency": 32,
+          "queries": 4000,
+          "p50Ms": 3.403,
+          "p95Ms": 27.983458,
+          "p99Ms": 41.083291,
+          "meanMs": 8.14420273525,
+          "throughputQps": 3450.779908610408
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 50000,
+          "dimensions": 384,
+          "topK": 5,
+          "concurrency": 1,
+          "queries": 1000,
+          "p50Ms": 19.75875,
+          "p95Ms": 20.48525,
+          "p99Ms": 20.897125,
+          "meanMs": 19.803596923,
+          "throughputQps": 50.49475412228767
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 50000,
+          "dimensions": 384,
+          "topK": 5,
+          "concurrency": 8,
+          "queries": 1000,
+          "p50Ms": 20.016375,
+          "p95Ms": 20.653125,
+          "p99Ms": 21.686375,
+          "meanMs": 20.070999203000003,
+          "throughputQps": 398.5008928807021
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 50000,
+          "dimensions": 384,
+          "topK": 5,
+          "concurrency": 32,
+          "queries": 1000,
+          "p50Ms": 58.715917,
+          "p95Ms": 91.59575,
+          "p99Ms": 113.176125,
+          "meanMs": 58.451699973,
+          "throughputQps": 523.6935434453555
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 50000,
+          "dimensions": 384,
+          "topK": 20,
+          "concurrency": 1,
+          "queries": 1000,
+          "p50Ms": 19.818375,
+          "p95Ms": 20.452916,
+          "p99Ms": 20.788834,
+          "meanMs": 19.840799488000002,
+          "throughputQps": 50.400246524419266
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 50000,
+          "dimensions": 384,
+          "topK": 20,
+          "concurrency": 8,
+          "queries": 1000,
+          "p50Ms": 20.2165,
+          "p95Ms": 21.183042,
+          "p99Ms": 21.8255,
+          "meanMs": 20.278348324,
+          "throughputQps": 394.38343422767826
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 50000,
+          "dimensions": 384,
+          "topK": 20,
+          "concurrency": 32,
+          "queries": 1000,
+          "p50Ms": 59.584875,
+          "p95Ms": 89.999792,
+          "p99Ms": 101.587375,
+          "meanMs": 59.089133125,
+          "throughputQps": 519.2967310605208
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 50000,
+          "dimensions": 384,
+          "topK": 100,
+          "concurrency": 1,
+          "queries": 1000,
+          "p50Ms": 19.830833,
+          "p95Ms": 20.474834,
+          "p99Ms": 20.776125,
+          "meanMs": 19.855422038,
+          "throughputQps": 50.36319787547427
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 50000,
+          "dimensions": 384,
+          "topK": 100,
+          "concurrency": 8,
+          "queries": 1000,
+          "p50Ms": 20.034583,
+          "p95Ms": 20.7395,
+          "p99Ms": 21.641708,
+          "meanMs": 20.099866087000002,
+          "throughputQps": 397.8987234212471
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 50000,
+          "dimensions": 384,
+          "topK": 100,
+          "concurrency": 32,
+          "queries": 1000,
+          "p50Ms": 59.503542,
+          "p95Ms": 87.999416,
+          "p99Ms": 99.34725,
+          "meanMs": 59.386502626,
+          "throughputQps": 517.730053996656
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 1024,
+          "topK": 5,
+          "concurrency": 1,
+          "queries": 4000,
+          "p50Ms": 7.682541,
+          "p95Ms": 9.199583,
+          "p99Ms": 9.574083,
+          "meanMs": 7.843227901750001,
+          "throughputQps": 127.49676736655755
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 1024,
+          "topK": 5,
+          "concurrency": 8,
+          "queries": 4000,
+          "p50Ms": 7.681292,
+          "p95Ms": 7.899083,
+          "p99Ms": 8.253208,
+          "meanMs": 7.69210334775,
+          "throughputQps": 1039.7910374375535
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 1024,
+          "topK": 5,
+          "concurrency": 32,
+          "queries": 4000,
+          "p50Ms": 18.026667,
+          "p95Ms": 49.156417,
+          "p99Ms": 67.924125,
+          "meanMs": 21.6938863405,
+          "throughputQps": 1432.386586151109
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 1024,
+          "topK": 20,
+          "concurrency": 1,
+          "queries": 4000,
+          "p50Ms": 7.596459,
+          "p95Ms": 7.972167,
+          "p99Ms": 8.158875,
+          "meanMs": 7.614082009,
+          "throughputQps": 131.33350581747897
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 1024,
+          "topK": 20,
+          "concurrency": 8,
+          "queries": 4000,
+          "p50Ms": 7.685208,
+          "p95Ms": 7.904209,
+          "p99Ms": 8.3195,
+          "meanMs": 7.691423769999999,
+          "throughputQps": 1038.1660443020417
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 1024,
+          "topK": 20,
+          "concurrency": 32,
+          "queries": 4000,
+          "p50Ms": 19.083958,
+          "p95Ms": 47.504292,
+          "p99Ms": 65.190375,
+          "meanMs": 21.779257486000002,
+          "throughputQps": 1411.4183066348812
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 1024,
+          "topK": 100,
+          "concurrency": 1,
+          "queries": 4000,
+          "p50Ms": 7.595041,
+          "p95Ms": 7.970792,
+          "p99Ms": 8.128959,
+          "meanMs": 7.62180416,
+          "throughputQps": 131.19997526880465
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 1024,
+          "topK": 100,
+          "concurrency": 8,
+          "queries": 4000,
+          "p50Ms": 7.688583,
+          "p95Ms": 7.9025,
+          "p99Ms": 8.443917,
+          "meanMs": 7.6968474342499995,
+          "throughputQps": 1039.1805379132613
+        },
+        {
+          "workload": "vector",
+          "strategy": "vector",
+          "documents": 10000,
+          "dimensions": 1024,
+          "topK": 100,
+          "concurrency": 32,
+          "queries": 4000,
+          "p50Ms": 17.888125,
+          "p95Ms": 48.181791,
+          "p99Ms": 67.377125,
+          "meanMs": 21.40709172925,
+          "throughputQps": 1432.3320034578285
+        },
+        {
+          "workload": "hybrid",
+          "strategy": "hybrid",
+          "documents": 10000,
+          "dimensions": 384,
+          "topK": 10,
+          "concurrency": 1,
+          "queries": 4000,
+          "p50Ms": 3.867917,
+          "p95Ms": 4.205917,
+          "p99Ms": 4.38425,
+          "meanMs": 3.8855249895000004,
+          "throughputQps": 257.3098581385312
+        },
+        {
+          "workload": "hybrid",
+          "strategy": "hybrid",
+          "documents": 10000,
+          "dimensions": 384,
+          "topK": 10,
+          "concurrency": 8,
+          "queries": 4000,
+          "p50Ms": 4.229083,
+          "p95Ms": 5.533375,
+          "p99Ms": 6.49475,
+          "meanMs": 4.37863182275,
+          "throughputQps": 1805.173390006752
+        },
+        {
+          "workload": "hybrid",
+          "strategy": "hybrid",
+          "documents": 10000,
+          "dimensions": 384,
+          "topK": 10,
+          "concurrency": 32,
+          "queries": 4000,
+          "p50Ms": 14.699625,
+          "p95Ms": 29.254333,
+          "p99Ms": 40.780792,
+          "meanMs": 16.11056496925,
+          "throughputQps": 1901.409500697366
+        },
+        {
+          "workload": "fusion",
+          "strategy": "rrf",
+          "documents": 60,
+          "dimensions": 0,
+          "topK": 10,
+          "concurrency": 1,
+          "queries": 4000,
+          "p50Ms": 0.019625,
+          "p95Ms": 0.022958,
+          "p99Ms": 0.030334,
+          "meanMs": 0.02000996375,
+          "throughputQps": 49787.75418157701
+        }
+      ],
+      "environment": {
+        "profile": "full",
+        "java": "25.0.4.1+1-LTS",
+        "availableProcessors": 14,
+        "maxHeapBytes": 12884901888,
+        "os": "Mac OS X aarch64"
+      }
+    },
+    "AiTransformationBenchmarkTest": {
+      "providers": {
+        "chat": "ollama qwen2.5",
+        "endpoint": "http://localhost:11434",
+        "external providers": "none configured; not measured",
+        "embedding": "ollama bge-m3",
+        "translation (v1 pipeline)": "qwenbridge.translation.provider=none",
+        "translation (Commerce v2)": "model, always (measured as commerce-model-translation)"
+      },
+      "models": {
+        "bge-m3:latest": {
+          "parameters": "566.70M",
+          "digest": "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab",
+          "quantization": "F16"
+        },
+        "qwen2.5:latest": {
+          "parameters": "7.6B",
+          "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+          "quantization": "Q4_K_M"
+        }
+      },
+      "results": [
+        {
+          "stage": "language-detection",
+          "provider": "lingua (in-process)",
+          "concurrency": 1,
+          "batch": 1,
+          "calls": 2000,
+          "failures": 0,
+          "p50Ms": 0.026167,
+          "p95Ms": 0.362708,
+          "p99Ms": 0.695333,
+          "meanMs": 0.309908363,
+          "throughputPerSecond": 3223.3412921820177
+        },
+        {
+          "stage": "intent-analysis",
+          "provider": "core rules (in-process)",
+          "concurrency": 1,
+          "batch": 1,
+          "calls": 2000,
+          "failures": 0,
+          "p50Ms": 0.070333,
+          "p95Ms": 0.153792,
+          "p99Ms": 0.186,
+          "meanMs": 0.08704703999999999,
+          "throughputPerSecond": 11466.577695197013
+        },
+        {
+          "stage": "constraint-extraction",
+          "provider": "core rules (in-process)",
+          "concurrency": 1,
+          "batch": 1,
+          "calls": 2000,
+          "failures": 0,
+          "p50Ms": 0.108875,
+          "p95Ms": 0.288417,
+          "p99Ms": 0.627,
+          "meanMs": 0.151959536,
+          "throughputPerSecond": 6574.1051075024625
+        },
+        {
+          "stage": "language-detection",
+          "provider": "lingua (in-process)",
+          "concurrency": 8,
+          "batch": 1,
+          "calls": 2000,
+          "failures": 0,
+          "p50Ms": 0.017834,
+          "p95Ms": 0.996917,
+          "p99Ms": 1.363916,
+          "meanMs": 0.25979220999999997,
+          "throughputPerSecond": 24311.675682246398
+        },
+        {
+          "stage": "intent-analysis",
+          "provider": "core rules (in-process)",
+          "concurrency": 8,
+          "batch": 1,
+          "calls": 2000,
+          "failures": 0,
+          "p50Ms": 0.077125,
+          "p95Ms": 0.178416,
+          "p99Ms": 0.368542,
+          "meanMs": 0.092454354,
+          "throughputPerSecond": 58892.30869981919
+        },
+        {
+          "stage": "constraint-extraction",
+          "provider": "core rules (in-process)",
+          "concurrency": 8,
+          "batch": 1,
+          "calls": 2000,
+          "failures": 0,
+          "p50Ms": 0.129084,
+          "p95Ms": 0.551459,
+          "p99Ms": 2.0175,
+          "meanMs": 0.2305946475,
+          "throughputPerSecond": 31134.76488387706
+        },
+        {
+          "stage": "model-analysis-cold",
+          "provider": "ollama qwen2.5",
+          "concurrency": 1,
+          "batch": 1,
+          "calls": 1,
+          "failures": 0,
+          "p50Ms": 2758.773917,
+          "p95Ms": 2758.773917,
+          "p99Ms": 2758.773917,
+          "meanMs": 2758.773917,
+          "throughputPerSecond": 0.36245145500094544
+        },
+        {
+          "stage": "model-analysis",
+          "provider": "ollama qwen2.5",
+          "concurrency": 1,
+          "batch": 1,
+          "calls": 8,
+          "failures": 0,
+          "p50Ms": 2760.30675,
+          "p95Ms": 3796.732375,
+          "p99Ms": 3796.732375,
+          "meanMs": 3010.279901,
+          "throughputPerSecond": 0.3321891970445311
+        },
+        {
+          "stage": "model-analysis",
+          "provider": "ollama qwen2.5",
+          "concurrency": 2,
+          "batch": 1,
+          "calls": 8,
+          "failures": 0,
+          "p50Ms": 6171.711209,
+          "p95Ms": 7560.052083,
+          "p99Ms": 7560.052083,
+          "meanMs": 5918.09081775,
+          "throughputPerSecond": 0.31959443891401607
+        },
+        {
+          "stage": "model-analysis",
+          "provider": "ollama qwen2.5",
+          "concurrency": 4,
+          "batch": 1,
+          "calls": 12,
+          "failures": 9,
+          "p50Ms": 10003.827334,
+          "p95Ms": 12552.443458,
+          "p99Ms": 12552.443458,
+          "meanMs": 9150.74142,
+          "throughputPerSecond": 0.3685426420018122
+        },
+        {
+          "stage": "commerce-model-translation",
+          "provider": "ollama qwen2.5 (TranslationStages.model)",
+          "concurrency": 1,
+          "batch": 1,
+          "calls": 8,
+          "failures": 0,
+          "p50Ms": 617.580834,
+          "p95Ms": 4683.207625,
+          "p99Ms": 4683.207625,
+          "meanMs": 1230.383073,
+          "throughputPerSecond": 0.8127339356216687
+        },
+        {
+          "stage": "commerce-model-translation",
+          "provider": "ollama qwen2.5 (TranslationStages.model)",
+          "concurrency": 2,
+          "batch": 1,
+          "calls": 8,
+          "failures": 0,
+          "p50Ms": 1248.234958,
+          "p95Ms": 1668.775125,
+          "p99Ms": 1668.775125,
+          "meanMs": 1344.51031775,
+          "throughputPerSecond": 1.3913241590722651
+        },
+        {
+          "stage": "model-backlog-drain",
+          "provider": "ollama (after abandoned analysis calls)",
+          "concurrency": 1,
+          "batch": 1,
+          "calls": 1,
+          "failures": 0,
+          "p50Ms": 1349.931583,
+          "p95Ms": 1349.931583,
+          "p99Ms": 1349.931583,
+          "meanMs": 1349.931583,
+          "throughputPerSecond": 0.0
+        },
+        {
+          "stage": "embedding-cold",
+          "provider": "ollama bge-m3",
+          "concurrency": 1,
+          "batch": 1,
+          "calls": 1,
+          "failures": 0,
+          "p50Ms": 36.374666,
+          "p95Ms": 36.374666,
+          "p99Ms": 36.374666,
+          "meanMs": 36.374666,
+          "throughputPerSecond": 27.318952181589072
+        },
+        {
+          "stage": "embedding",
+          "provider": "ollama bge-m3",
+          "concurrency": 1,
+          "batch": 1,
+          "calls": 10,
+          "failures": 0,
+          "p50Ms": 16.546375,
+          "p95Ms": 25.987042,
+          "p99Ms": 25.987042,
+          "meanMs": 17.933633399999998,
+          "throughputPerSecond": 55.69317679889755
+        },
+        {
+          "stage": "embedding",
+          "provider": "ollama bge-m3",
+          "concurrency": 1,
+          "batch": 8,
+          "calls": 10,
+          "failures": 0,
+          "p50Ms": 131.200292,
+          "p95Ms": 151.93175,
+          "p99Ms": 151.93175,
+          "meanMs": 133.7793959,
+          "throughputPerSecond": 59.79036377391545
+        },
+        {
+          "stage": "embedding",
+          "provider": "ollama bge-m3",
+          "concurrency": 1,
+          "batch": 32,
+          "calls": 10,
+          "failures": 0,
+          "p50Ms": 567.838125,
+          "p95Ms": 690.700125,
+          "p99Ms": 690.700125,
+          "meanMs": 583.5611249,
+          "throughputPerSecond": 54.83388507105669
+        },
+        {
+          "stage": "embedding",
+          "provider": "ollama bge-m3",
+          "concurrency": 4,
+          "batch": 1,
+          "calls": 40,
+          "failures": 0,
+          "p50Ms": 55.251042,
+          "p95Ms": 81.221,
+          "p99Ms": 83.147834,
+          "meanMs": 58.8337261,
+          "throughputPerSecond": 65.46104239159078
+        }
+      ]
+    }
+  },
+  "finished": "2026-11-01T21:32:59+0100"
+}

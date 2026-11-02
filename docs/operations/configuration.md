@@ -6,13 +6,16 @@ QwenBridge configuration is environment-aware and must be explicit for productio
 
 Configuration can be supplied through:
 
-- `application.yml`
+- `application.yaml`
+- Quarkus configuration profiles (`%local`, `%docker`, `%test`, `%prod`)
 - environment variables
 - container environment
 - deployment platform configuration
 - local uncommitted overrides during development
 
 Do not commit secrets or environment-specific private values.
+
+Any configuration key can be overridden at runtime through its environment variable form (for example, `quarkus.http.port` becomes `QUARKUS_HTTP_PORT`), and profile-specific values are selected through the active Quarkus profile.
 
 ## Core configuration areas
 
@@ -46,7 +49,12 @@ Provider-specific code must stay behind the AI Provider SPI.
 
 QwenBridge supports pluggable search providers through the Search Provider SPI.
 
-The default production-oriented search backend is OpenSearch.
+The default search backend is in process (QB-293): `qwenbridge.search.backend=in-memory` for the
+v1 pipeline and `qwenbridge.commerce.backend=memory` for Commerce search. OpenSearch is the only
+built-in optional backend, selected explicitly (`qwenbridge.search.backend=opensearch`,
+`qwenbridge.commerce.backend=opensearch`); it is never contacted, not even by the readiness check,
+unless selected (QB-287). See
+[database-free runtime](../architecture/database-free-runtime.md).
 
 Typical values include:
 

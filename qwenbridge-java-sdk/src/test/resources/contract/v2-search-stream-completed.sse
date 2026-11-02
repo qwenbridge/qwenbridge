@@ -1,0 +1,8 @@
+event:search.started
+data:{"version":2,"kind":"search.started","requestId":"r-1","response":null,"message":"","sequence":1,"terminal":false,"traceId":"4bf92f3577b34da6a3ce929d0e0e4736"}
+
+:heartbeat
+
+event:search.completed
+data:{"version":2,"kind":"search.completed","requestId":"r-1","response":{"apiVersion":2,"status":"OK"},"message":"","sequence":2,"terminal":true,"traceId":"4bf92f3577b34da6a3ce929d0e0e4736"}
+

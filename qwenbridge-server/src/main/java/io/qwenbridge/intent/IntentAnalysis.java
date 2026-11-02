@@ -11,7 +11,7 @@ public record IntentAnalysis(IntentType type, String reason, double confidence) 
       reason = "No intent reason provided.";
     }
 
-    if (confidence < 0.0 || confidence > 1.0) {
+    if (!Double.isFinite(confidence) || confidence < 0.0 || confidence > 1.0) {
       throw new IllegalArgumentException("confidence must be between 0.0 and 1.0");
     }
   }

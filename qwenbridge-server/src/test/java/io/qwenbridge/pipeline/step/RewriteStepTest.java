@@ -26,6 +26,15 @@ class RewriteStepTest {
   }
 
   @Test
+  void shouldPreserveTheQueryWhenTheModelProvidesNoRewrite() {
+    ExecutionContext context = new ExecutionContext("mouse under 50 EUR");
+    context.store(SearchAnalysis.class, analysis(List.of()));
+    RewriteResult result = new RewriteStep().execute(context);
+    assertThat(result.performed()).isFalse();
+    assertThat(result.rewrites()).containsExactly("mouse under 50 EUR");
+  }
+
+  @Test
   void shouldReturnNoneWhenSearchAnalysisIsMissing() {
     ExecutionContext context = new ExecutionContext("table");
 

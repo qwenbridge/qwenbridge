@@ -1,15 +1,26 @@
 # AI Stack
 
-QwenBridge uses an AI Provider SPI to isolate application behavior from a concrete model runtime.
+QwenBridge uses an AI Provider SPI (`io.qwenbridge.ai.provider`) to isolate application behaviour
+from a concrete model runtime.
 
 ## Responsibilities
 
-- QwenBridge owns prompts, parsing, reliability policy, typed contracts, and pipeline behavior.
-- The AI provider owns transport to the model runtime.
-- Ollama is the default local provider implementation.
+| Party | Owns |
+|---|---|
+| QwenBridge | Prompts, parsing, reliability policy, typed contracts, pipeline behaviour |
+| The AI provider | Transport to the model runtime |
 
-## AI capabilities
+Ollama is the default local provider (`qwen2.5` for chat, `bge-m3` for embeddings). An HTTP JSON
+gateway provider is the documented alternative (`QWENBRIDGE_AI_PROVIDER=http-json`).
 
-The provider boundary supports chat, embeddings, and streaming chat. Higher-level services use those capabilities for query analysis, rewrite, intent, semantic analysis, and decisions.
+## Capabilities
 
-Provider failures are converted into application-level failures with request correlation and safe diagnostics.
+The provider boundary supports chat, embeddings and streaming chat. They are used for:
+- **Analysis:** one structured analysis per query (`analysis.SearchAnalysisService`, cached in
+  Redis when it is available).
+- **Embeddings:** query and catalog embeddings for vector retrieval.
+- **Translation:** model translation for multilingual expansion (`translation.ModelTranslationProvider`).
+- **Reranking:** optional, through a reranker plugin.
+
+Provider failures become typed application failures, with request correlation and safe
+diagnostics. See [AI providers](ai-providers.md) and [provider reliability](provider-reliability.md).

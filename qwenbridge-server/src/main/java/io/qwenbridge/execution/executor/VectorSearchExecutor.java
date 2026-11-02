@@ -2,10 +2,10 @@ package io.qwenbridge.execution.executor;
 
 import io.qwenbridge.execution.ExecutionOperation;
 import io.qwenbridge.execution.ExecutionStep;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
-import org.springframework.stereotype.Component;
 
-@Component
+@ApplicationScoped
 public class VectorSearchExecutor implements ExecutionOperationExecutor {
 
   @Override

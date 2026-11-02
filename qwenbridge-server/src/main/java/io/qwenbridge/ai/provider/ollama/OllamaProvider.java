@@ -14,11 +14,12 @@ import io.qwenbridge.ai.provider.ollama.dto.OllamaEmbeddingRequest;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaEmbeddingResponse;
 import io.qwenbridge.ai.provider.support.AbstractAIProvider;
 import io.qwenbridge.ai.value.ProviderId;
+import io.smallrye.mutiny.Multi;
+import jakarta.inject.Singleton;
 import java.util.List;
-import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-@Component
+@Singleton
 public class OllamaProvider extends AbstractAIProvider {
 
   private static final ProviderId PROVIDER_ID = new ProviderId("ollama");
@@ -38,7 +39,9 @@ public class OllamaProvider extends AbstractAIProvider {
         new OllamaChatRequest(
             properties.chatModel(),
             List.of(new OllamaChatRequest.Message("user", request.prompt())),
-            false);
+            false,
+            request.outputSchema(),
+            request.outputSchema() == null ? null : java.util.Map.of("temperature", 0));
 
     OllamaChatResponse response = client.chat(ollamaRequest);
 
@@ -46,17 +49,32 @@ public class OllamaProvider extends AbstractAIProvider {
   }
 
   @Override
-  public Flux<StreamingChatChunk> streamChat(StreamingChatRequest request) {
+  public Multi<StreamingChatChunk> streamChat(StreamingChatRequest request) {
     OllamaChatRequest ollamaRequest =
         new OllamaChatRequest(
             properties.chatModel(),
             List.of(new OllamaChatRequest.Message("user", request.prompt())),
-            true);
+            true,
+            request.outputSchema(),
+            request.outputSchema() == null ? null : java.util.Map.of("temperature", 0));
+
+    // Inclusive take-until: emit chunks up to and including the terminal done chunk, then stop.
+    AtomicBoolean doneEmitted = new AtomicBoolean(false);
 
     return client
         .streamChat(ollamaRequest)
         .map(response -> new StreamingChatChunk(response.content(), response.done()))
-        .takeUntil(StreamingChatChunk::done);
+        .select()
+        .first(
+            chunk -> {
+              if (doneEmitted.get()) {
+                return false;
+              }
+              if (chunk.done()) {
+                doneEmitted.set(true);
+              }
+              return true;
+            });
   }
 
   @Override

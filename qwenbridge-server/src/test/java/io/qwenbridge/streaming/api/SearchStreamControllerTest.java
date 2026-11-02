@@ -9,7 +9,6 @@ import io.qwenbridge.streaming.api.validation.StreamRequestIdValidator;
 import io.qwenbridge.streaming.config.StreamingProperties;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 class SearchStreamControllerTest {
 
@@ -18,14 +17,14 @@ class SearchStreamControllerTest {
           new StreamingProperties(300_000L, java.time.Duration.ofSeconds(30), 1_000L, 1_100L),
           mock(OperationsMetrics.class));
 
-  private final SearchStreamController controller =
-      new SearchStreamController(registry, new StreamRequestIdValidator());
+  private final StreamRequestIdValidator requestIdValidator = new StreamRequestIdValidator();
 
   @Test
-  void shouldRegisterStreamingSessionForValidRequestIdAndReturnEmitter() {
-    SseEmitter emitter = controller.stream("client-request-1");
+  void shouldRegisterStreamingSessionForValidRequestId() {
+    requestIdValidator.validate("client-request-1");
+    var session = registry.register("client-request-1");
 
-    assertThat(emitter).isNotNull();
+    assertThat(session).isNotNull();
     assertThat(registry.size()).isEqualTo(1);
     assertThat(registry.findByRequestId("client-request-1")).hasSize(1);
 
@@ -34,16 +33,17 @@ class SearchStreamControllerTest {
 
   @Test
   void shouldAcceptSafeRequestIdCharacters() {
-    SseEmitter emitter = controller.stream("request_1:trace.2026-07-03");
+    requestIdValidator.validate("request_1:trace.2026-07-03");
+    var session = registry.register("request_1:trace.2026-07-03");
 
-    assertThat(emitter).isNotNull();
+    assertThat(session).isNotNull();
 
     registry.clear();
   }
 
   @Test
   void shouldRejectBlankRequestId() {
-    assertThatThrownBy(() -> controller.stream(" "))
+    assertThatThrownBy(() -> requestIdValidator.validate(" "))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("requestId must not be blank");
 
@@ -52,7 +52,7 @@ class SearchStreamControllerTest {
 
   @Test
   void shouldRejectRequestIdWithUnsupportedCharacters() {
-    assertThatThrownBy(() -> controller.stream("../request-1"))
+    assertThatThrownBy(() -> requestIdValidator.validate("../request-1"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("requestId contains unsupported characters");
 
@@ -63,7 +63,7 @@ class SearchStreamControllerTest {
   void shouldRejectRequestIdLongerThanMaximumLength() {
     String requestId = "a".repeat(129);
 
-    assertThatThrownBy(() -> controller.stream(requestId))
+    assertThatThrownBy(() -> requestIdValidator.validate(requestId))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("requestId must not exceed 128 characters");
 

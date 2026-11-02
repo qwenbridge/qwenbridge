@@ -1,0 +1,6 @@
+rules:
+  - id: bad
+    regex: "x"
+    severity: SEVERE
+    score: 0.5
+    confidence: 0.5

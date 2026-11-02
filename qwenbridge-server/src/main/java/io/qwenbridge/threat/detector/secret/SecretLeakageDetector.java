@@ -3,9 +3,9 @@ package io.qwenbridge.threat.detector.secret;
 import io.qwenbridge.threat.detector.support.PatternBasedThreatDetector;
 import io.qwenbridge.threat.model.ThreatType;
 import io.qwenbridge.threat.rule.ThreatRuleLoader;
-import org.springframework.stereotype.Component;
+import jakarta.inject.Singleton;
 
-@Component
+@Singleton
 public class SecretLeakageDetector extends PatternBasedThreatDetector {
 
   public SecretLeakageDetector(ThreatRuleLoader ruleLoader) {

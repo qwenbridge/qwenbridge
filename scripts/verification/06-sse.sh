@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+# Sourced by scripts/verify-release.sh (not executed directly).
 wait_for_file_pattern() {
   local file="$1"
   local pattern="$2"
@@ -120,7 +122,7 @@ sse_streaming_lifecycle_validation() {
 
   info "Opening primary SSE stream: ${request_id}"
 
-  curl --silent --show-error --no-buffer \
+  command curl --silent --show-error --no-buffer \
     --connect-timeout "${SSE_CONNECT_TIMEOUT_SECONDS}" \
     --max-time "$((SSE_EVENT_WAIT_SECONDS + 30))" \
     -D "${primary_headers}" \
@@ -133,7 +135,7 @@ sse_streaming_lifecycle_validation() {
 
   info "Opening unrelated SSE stream: ${unrelated_request_id}"
 
-  curl --silent --show-error --no-buffer \
+  command curl --silent --show-error --no-buffer \
     --connect-timeout "${SSE_CONNECT_TIMEOUT_SECONDS}" \
     --max-time "$((SSE_EVENT_WAIT_SECONDS + 30))" \
     -D "${unrelated_headers}" \
@@ -322,9 +324,10 @@ sse_ai_token_streaming_validation() {
   request_id="verify-release-v8-ai-sse-${suffix}"
 
   rm -f "${headers}" "${stream_log}" "${analyze_headers}" "${analyze_body}"
-  docker exec "${REDIS_CONTAINER}" redis-cli flushdb >/dev/null || true
+  # Scoped cleanup: remove only this run's analysis-cache keys (never flushdb the shared Redis).
+  clear_verification_cache || return 1
 
-  curl --silent --show-error --no-buffer \
+  command curl --silent --show-error --no-buffer \
     --connect-timeout "${SSE_CONNECT_TIMEOUT_SECONDS}" \
     --max-time "$((SSE_EVENT_WAIT_SECONDS + 30))" \
     -D "${headers}" \

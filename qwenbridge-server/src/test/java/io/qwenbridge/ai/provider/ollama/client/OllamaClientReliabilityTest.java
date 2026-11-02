@@ -2,135 +2,100 @@ package io.qwenbridge.ai.provider.ollama.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import io.qwenbridge.ai.exception.AIException;
 import io.qwenbridge.ai.provider.ollama.config.OllamaProperties;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaChatRequest;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaChatResponse;
 import io.qwenbridge.operations.metrics.OperationsMetrics;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.ExchangeFunction;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 class OllamaClientReliabilityTest {
 
+  private final OllamaApiClient api = mock(OllamaApiClient.class);
+
   @Test
   void shouldRetryFailedChatRequestWithinConfiguredBound() {
-    AtomicInteger attempts = new AtomicInteger();
+    WebApplicationException error = httpError(503, "temporary failure");
+    when(api.chat(any()))
+        .thenThrow(error)
+        .thenReturn(
+            new OllamaChatResponse(
+                "qwen2.5", new OllamaChatResponse.Message("assistant", "ok"), true));
 
-    OllamaClient client =
-        client(
-            webClient(
-                request -> {
-                  if (attempts.incrementAndGet() == 1) {
-                    return Mono.just(
-                        ClientResponse.create(HttpStatus.SERVICE_UNAVAILABLE)
-                            .body("temporary failure")
-                            .build());
-                  }
-
-                  return Mono.just(
-                      ClientResponse.create(HttpStatus.OK)
-                          .header("Content-Type", "application/json")
-                          .body(
-                              """
-                              {
-                                "model": "qwen2.5",
-                                "message": {
-                                  "role": "assistant",
-                                  "content": "ok"
-                                },
-                                "done": true
-                              }
-                              """)
-                          .build());
-                }),
-            properties(1, Duration.ofSeconds(2)));
+    OllamaClient client = client(properties(1));
 
     OllamaChatResponse response = client.chat(chatRequest());
 
     assertThat(response.message().content()).isEqualTo("ok");
-    assertThat(attempts).hasValue(2);
+    verify(api, times(2)).chat(any());
   }
 
   @Test
   void shouldStopRetryingAfterConfiguredRetryCount() {
-    AtomicInteger attempts = new AtomicInteger();
+    WebApplicationException error = httpError(502, "provider unavailable");
+    when(api.chat(any())).thenThrow(error);
 
-    OllamaClient client =
-        client(
-            webClient(
-                request -> {
-                  attempts.incrementAndGet();
-                  return Mono.just(
-                      ClientResponse.create(HttpStatus.BAD_GATEWAY)
-                          .body("provider unavailable")
-                          .build());
-                }),
-            properties(2, Duration.ofSeconds(2)));
-
-    assertThatThrownBy(() -> client.chat(chatRequest()))
-        .isInstanceOf(AIException.class)
-        .hasMessageContaining("failed after 2 retry attempt");
-
-    assertThat(attempts).hasValue(3);
-  }
-
-  @Test
-  void shouldFailDeterministicallyWhenReadTimeoutIsExceeded() {
-    OllamaClient client =
-        client(webClient(request -> Mono.never()), properties(0, Duration.ofMillis(50)));
-
-    assertThatThrownBy(() -> client.chat(chatRequest()))
-        .isInstanceOf(AIException.class)
-        .hasMessageContaining("Ollama chat request failed");
-  }
-
-  @Test
-  void shouldDisableRetryWhenRetryCountIsZero() {
-    AtomicInteger attempts = new AtomicInteger();
-
-    OllamaClient client =
-        client(
-            webClient(
-                request -> {
-                  attempts.incrementAndGet();
-                  return Mono.just(
-                      ClientResponse.create(HttpStatus.SERVICE_UNAVAILABLE)
-                          .body("temporary failure")
-                          .build());
-                }),
-            properties(0, Duration.ofSeconds(2)));
+    OllamaClient client = client(properties(2));
 
     assertThatThrownBy(() -> client.chat(chatRequest()))
         .isInstanceOf(AIException.class)
         .hasMessageContaining("Ollama request failed");
 
-    assertThat(attempts).hasValue(1);
+    verify(api, times(3)).chat(any());
   }
 
-  private WebClient webClient(ExchangeFunction exchangeFunction) {
-    return WebClient.builder()
-        .baseUrl("http://localhost:11434")
-        .exchangeFunction(exchangeFunction)
-        .build();
+  @Test
+  void shouldFailDeterministicallyWhenReadTimeoutIsExceeded() {
+    when(api.chat(any())).thenThrow(new ProcessingException("read timed out"));
+
+    OllamaClient client = client(properties(0));
+
+    assertThatThrownBy(() -> client.chat(chatRequest()))
+        .isInstanceOf(AIException.class)
+        .hasMessageContaining("Ollama request failed");
   }
 
-  private OllamaProperties properties(int retryCount, Duration readTimeout) {
+  @Test
+  void shouldDisableRetryWhenRetryCountIsZero() {
+    WebApplicationException error = httpError(503, "temporary failure");
+    when(api.chat(any())).thenThrow(error);
+
+    OllamaClient client = client(properties(0));
+
+    assertThatThrownBy(() -> client.chat(chatRequest()))
+        .isInstanceOf(AIException.class)
+        .hasMessageContaining("Ollama request failed");
+
+    verify(api, times(1)).chat(any());
+  }
+
+  private WebApplicationException httpError(int status, String body) {
+    Response response = mock(Response.class);
+    when(response.getStatus()).thenReturn(status);
+    when(response.hasEntity()).thenReturn(true);
+    when(response.readEntity(String.class)).thenReturn(body);
+    return new WebApplicationException("http " + status, response);
+  }
+
+  private OllamaProperties properties(int retryCount) {
     return new OllamaProperties(
-        URI.create("http://localhost:11434"),
+        URI.create("http://localhost:0"),
         "qwen2.5",
         "bge-m3",
         Duration.ofSeconds(1),
-        readTimeout,
+        Duration.ofSeconds(2),
         retryCount,
         false);
   }
@@ -140,7 +105,7 @@ class OllamaClientReliabilityTest {
         "qwen2.5", List.of(new OllamaChatRequest.Message("user", "hello")), false);
   }
 
-  private OllamaClient client(WebClient webClient, OllamaProperties properties) {
-    return new OllamaClient(webClient, properties, mock(OperationsMetrics.class));
+  private OllamaClient client(OllamaProperties properties) {
+    return new OllamaClient(api, properties, mock(OperationsMetrics.class));
   }
 }

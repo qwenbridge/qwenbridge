@@ -1,0 +1,11 @@
+# Test fixture (QB-291): English word list for the dictionary provider.
+black	900
+shoes	800
+shoe	500
+size	700
+under	900
+red	800
+jacket	400
+example	300
+and	999
+black shoes

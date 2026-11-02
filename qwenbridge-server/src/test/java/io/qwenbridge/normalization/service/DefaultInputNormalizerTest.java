@@ -38,6 +38,20 @@ class DefaultInputNormalizerTest {
   }
 
   @Test
+  void shouldNormalizeEncodedUnicodeIndependentlyOfInjectionOrder() {
+    var normalizer =
+        new DefaultInputNormalizer(
+            List.of(
+                new WhitespaceNormalizer(),
+                new UnicodeNormalizer(),
+                new UrlDecodeNormalizer(),
+                new HtmlEntityNormalizer(),
+                new ControlCharacterNormalizer()));
+    assertThat(normalizer.normalize("%EF%BC%9Cscript%EF%BC%9E C++").normalizedQuery())
+        .isEqualTo("<script> C++");
+  }
+
+  @Test
   void shouldHandleNullInput() {
     DefaultInputNormalizer normalizer = new DefaultInputNormalizer(List.of());
 

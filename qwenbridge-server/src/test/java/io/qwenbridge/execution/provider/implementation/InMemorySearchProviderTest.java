@@ -9,6 +9,20 @@ import org.junit.jupiter.api.Test;
 class InMemorySearchProviderTest {
 
   @Test
+  void unsupportedFiltersAndVectorModesAreRejectedInsteadOfIgnored() {
+    var provider = new InMemorySearchProvider();
+    org.assertj.core.api.Assertions.assertThatThrownBy(
+            () ->
+                provider.search(
+                    new SearchRequest(
+                        "iphone", java.util.Map.of("price", 100), java.util.Map.of())))
+        .hasMessageContaining("unconstrained keyword");
+    org.assertj.core.api.Assertions.assertThatThrownBy(
+            () -> provider.search(SearchRequest.vector("iphone", java.util.List.of(0.1, 0.2))))
+        .hasMessageContaining("unconstrained keyword");
+  }
+
+  @Test
   void shouldExposeProviderName() {
     InMemorySearchProvider provider = new InMemorySearchProvider();
 

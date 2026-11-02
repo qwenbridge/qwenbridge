@@ -36,7 +36,10 @@ public record SearchAnalysis(
     boolean rewriteAgain,
     boolean answer,
     double decisionConfidence,
-    String decisionReason) {
+    String decisionReason,
+    List<io.qwenbridge.analysis.model.Grounded.Constraint> constraints,
+    List<String> ambiguities,
+    String modelThreatDecision) {
   public SearchAnalysis {
     language = blankToDefault(language, "unknown");
     intent = intent == null ? IntentType.UNKNOWN : intent;
@@ -44,6 +47,9 @@ public record SearchAnalysis(
     rewrites = rewrites == null ? List.of() : List.copyOf(rewrites);
     semanticMeaning = blankToDefault(semanticMeaning, "No semantic meaning provided.");
     entities = entities == null ? List.of() : List.copyOf(entities);
+    constraints = constraints == null ? List.of() : List.copyOf(constraints);
+    ambiguities = ambiguities == null ? List.of() : List.copyOf(ambiguities);
+    modelThreatDecision = blankToDefault(modelThreatDecision, "UNAVAILABLE");
     searchMode = searchMode == null ? SearchMode.KEYWORD : searchMode;
     backend = backend == null ? SearchBackend.OPENSEARCH : backend;
     decisionReason = blankToDefault(decisionReason, "No decision reason provided.");

@@ -4,9 +4,9 @@ import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.event.model.PipelineStage;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.result.RewriteResult;
-import org.springframework.stereotype.Component;
+import jakarta.enterprise.context.ApplicationScoped;
 
-@Component
+@ApplicationScoped
 public class RewriteStep implements PipelineStep<RewriteResult> {
 
   @Override
@@ -35,6 +35,11 @@ public class RewriteStep implements PipelineStep<RewriteResult> {
 
     if (analysis == null) {
       return RewriteResult.none();
+    }
+
+    if (analysis.rewrites().isEmpty()) {
+      return new RewriteResult(
+          false, "original-query-fallback", java.util.List.of(context.request().originalQuery()));
     }
 
     return analysis.toRewriteResult();

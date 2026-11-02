@@ -19,7 +19,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-public class QwenBridgeClient {
+public final class QwenBridgeClient {
 
   private static final String REQUEST_ID_HEADER = "X-Request-Id";
 

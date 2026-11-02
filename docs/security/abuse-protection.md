@@ -6,8 +6,9 @@ QwenBridge includes abuse-protection controls to reduce accidental overload, scr
 
 QwenBridge protects the public API through:
 
-- request-size limits
-- fixed-window rate limiting
+- request-size and content-type limits (always on, independent of `qwenbridge.abuse.enabled`;
+  see `qwenbridge.request.limits.*` and ADR 0021)
+- fixed-window rate limiting (API-key buckets keyed by a SHA-256 fingerprint)
 - optional Redis-backed distributed rate limiting
 - input normalization
 - threat detection

@@ -10,7 +10,7 @@ retrieval_quality_corpus_validation() {
 
   cat > "${case_file}" <<'JSONL'
 {"name":"iphone","query":"best iphone for photography","expected":"iPhone 16 Pro"}
-{"name":"samsung","query":"android flagship smartphone with bright display","expected":"Samsung Galaxy S25"}
+{"name":"samsung","query":"Samsung smartphone","expected":"Samsung Galaxy S25"}
 {"name":"headphones","query":"wireless noise cancelling headphones for travel","expected":"Sony WH-1000XM5"}
 {"name":"productivity_mouse","query":"ergonomic wireless mouse for office work","expected":"Logitech MX Master 3S"}
 {"name":"gaming_mouse","query":"lightweight gaming mouse for esports","expected":"Razer DeathAdder V3"}

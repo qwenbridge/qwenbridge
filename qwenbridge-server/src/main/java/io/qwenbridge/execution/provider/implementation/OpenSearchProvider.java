@@ -9,11 +9,18 @@ import io.qwenbridge.execution.provider.opensearch.dto.OpenSearchSearchRequest;
 import io.qwenbridge.execution.provider.opensearch.mapper.OpenSearchResponseMapper;
 import io.qwenbridge.execution.provider.opensearch.query.OpenSearchQueryFactory;
 import io.qwenbridge.execution.provider.support.AbstractSearchProvider;
+import io.qwenbridge.intelligence.planning.LogicalQueryPlan;
+import jakarta.inject.Singleton;
 import java.util.Map;
-import org.springframework.stereotype.Component;
+import java.util.Objects;
 
-@Component
+@Singleton
 public class OpenSearchProvider extends AbstractSearchProvider {
+
+  @org.eclipse.microprofile.config.inject.ConfigProperty(
+      name = "qwenbridge.search.opensearch.include-embeddings-in-results",
+      defaultValue = "false")
+  boolean includeEmbeddingsInResults;
 
   private final OpenSearchProperties properties;
   private final OpenSearchClient client;
@@ -34,15 +41,26 @@ public class OpenSearchProvider extends AbstractSearchProvider {
 
   @Override
   protected SearchResponse doSearch(SearchRequest request) {
-    OpenSearchSearchRequest searchRequest = queryFactory.from(request);
+    return execute(queryFactory.from(request));
+  }
 
+  /** Opt-in execution of validated structured filters; legacy search remains unchanged. */
+  public SearchResponse searchStructured(
+      SearchRequest request, LogicalQueryPlan plan, String priceField, String currencyField) {
+    Objects.requireNonNull(request, "request");
+    Objects.requireNonNull(plan, "plan");
+    return execute(queryFactory.from(request, plan, priceField, currencyField));
+  }
+
+  private SearchResponse execute(OpenSearchSearchRequest searchRequest) {
     try {
-      Map<String, Object> rawResponse =
-          client.search(
-              properties.index(),
-              Map.of(
-                  "query", searchRequest.query(),
-                  "size", searchRequest.size()));
+      Map<String, Object> payload = new java.util.LinkedHashMap<>();
+      payload.put("query", searchRequest.query());
+      payload.put("size", searchRequest.size());
+      if (!includeEmbeddingsInResults) {
+        payload.put("_source", Map.of("excludes", java.util.List.of("embedding")));
+      }
+      Map<String, Object> rawResponse = client.search(properties.index(), payload);
 
       return responseMapper.from(rawResponse);
     } catch (RuntimeException ex) {

@@ -2,11 +2,11 @@ package io.qwenbridge.evaluation.policy;
 
 import io.qwenbridge.evaluation.model.EvaluationGateResult;
 import io.qwenbridge.evaluation.model.EvaluationResult;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.stereotype.Component;
 
-@Component
+@ApplicationScoped
 public class DefaultEvaluationThresholdPolicy implements EvaluationThresholdPolicy {
 
   private static final double MIN_PRECISION_AT_K = 0.60;

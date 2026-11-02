@@ -1,0 +1,167 @@
+{
+  "expansion" : {
+    "status" : "PARTIAL",
+    "policy" : "ALL_TARGETS",
+    "original" : "I need a red winter jacket under 100 euros",
+    "originalRef" : "sha256:ca12d78eb03ad798",
+    "sourceText" : "I need a red winter jacket under 100 euros",
+    "source" : {
+      "language" : "en",
+      "basis" : "VOCABULARY",
+      "mixed" : false,
+      "mixedLanguages" : [ ],
+      "confidence" : "HEURISTIC"
+    },
+    "configured" : [ {
+      "configured" : "en",
+      "language" : "en",
+      "resolution" : "VALID",
+      "note" : "valid"
+    }, {
+      "configured" : "FA",
+      "language" : "fa",
+      "resolution" : "NORMALIZED",
+      "note" : "normalized FA -> fa"
+    }, {
+      "configured" : "sv",
+      "language" : "sv",
+      "resolution" : "VALID",
+      "note" : "valid"
+    }, {
+      "configured" : "nb",
+      "language" : "nb",
+      "resolution" : "VALID",
+      "note" : "valid"
+    }, {
+      "configured" : "nn",
+      "language" : "nn",
+      "resolution" : "VALID",
+      "note" : "valid"
+    }, {
+      "configured" : "SE",
+      "language" : "sv",
+      "resolution" : "DUPLICATE",
+      "note" : "compatibility alias SE -> sv; duplicate of sv (sv)"
+    }, {
+      "configured" : "ja",
+      "language" : "ja",
+      "resolution" : "VALID",
+      "note" : "valid"
+    }, {
+      "configured" : "DK",
+      "resolution" : "INVALID",
+      "note" : "DK is a region code, not a language code"
+    }, {
+      "configured" : "fa",
+      "language" : "fa",
+      "resolution" : "DUPLICATE",
+      "note" : "duplicate of FA (fa)"
+    } ],
+    "requestedLanguages" : [ "en", "FA", "sv", "nb", "nn", "ja", "DK" ],
+    "successfulLanguages" : [ "en", "fa", "sv", "nb", "nn" ],
+    "unsupportedLanguages" : [ "ja", "DK" ],
+    "targets" : [ {
+      "requested" : "en",
+      "language" : "en",
+      "sourceLanguage" : "en",
+      "originalRef" : "sha256:ca12d78eb03ad798",
+      "status" : "UNCHANGED",
+      "text" : "I need a red winter jacket under 100 euros",
+      "confidence" : "DETERMINISTIC",
+      "identifiersPreserved" : true,
+      "retrieval" : false,
+      "elapsedMillis" : 0
+    }, {
+      "requested" : "FA",
+      "language" : "fa",
+      "sourceLanguage" : "en",
+      "originalRef" : "sha256:ca12d78eb03ad798",
+      "status" : "SUCCESS",
+      "text" : "من نیاز دارم به یک ژاکت زمستانی قرمز زیر 100 یورو",
+      "provider" : "glossary",
+      "confidence" : "HEURISTIC",
+      "preservation" : {
+        "status" : "PRESERVED",
+        "issues" : [ ],
+        "unverified" : [ ]
+      },
+      "identifiersPreserved" : true,
+      "retrieval" : true,
+      "elapsedMillis" : 3
+    }, {
+      "requested" : "sv",
+      "language" : "sv",
+      "sourceLanguage" : "en",
+      "originalRef" : "sha256:ca12d78eb03ad798",
+      "status" : "SUCCESS",
+      "text" : "jag behöver en röd vinterjacka under 100 euro",
+      "provider" : "glossary",
+      "confidence" : "HEURISTIC",
+      "preservation" : {
+        "status" : "PRESERVED",
+        "issues" : [ ],
+        "unverified" : [ ]
+      },
+      "identifiersPreserved" : true,
+      "retrieval" : true,
+      "elapsedMillis" : 3
+    }, {
+      "requested" : "nb",
+      "language" : "nb",
+      "sourceLanguage" : "en",
+      "originalRef" : "sha256:ca12d78eb03ad798",
+      "status" : "SUCCESS",
+      "text" : "jeg trenger en rød vinterjakke under 100 euro",
+      "provider" : "glossary",
+      "confidence" : "HEURISTIC",
+      "preservation" : {
+        "status" : "PARTIALLY_VERIFIED",
+        "issues" : [ ],
+        "unverified" : [ "CURRENCY", "ENTITY", "NEGATION", "NUMBER", "OPERATOR" ]
+      },
+      "identifiersPreserved" : true,
+      "retrieval" : true,
+      "elapsedMillis" : 3
+    }, {
+      "requested" : "nn",
+      "language" : "nn",
+      "sourceLanguage" : "en",
+      "originalRef" : "sha256:ca12d78eb03ad798",
+      "status" : "SUCCESS",
+      "text" : "eg treng ein raud vinterjakke under 100 euro",
+      "provider" : "glossary",
+      "confidence" : "HEURISTIC",
+      "preservation" : {
+        "status" : "PARTIALLY_VERIFIED",
+        "issues" : [ ],
+        "unverified" : [ "CURRENCY", "ENTITY", "NEGATION", "NUMBER", "OPERATOR" ]
+      },
+      "identifiersPreserved" : true,
+      "retrieval" : true,
+      "elapsedMillis" : 3
+    }, {
+      "requested" : "ja",
+      "language" : "ja",
+      "sourceLanguage" : "en",
+      "originalRef" : "sha256:ca12d78eb03ad798",
+      "status" : "UNSUPPORTED_LANGUAGE",
+      "confidence" : "UNKNOWN",
+      "reason" : "no installed provider produces ja",
+      "identifiersPreserved" : true,
+      "retrieval" : false,
+      "elapsedMillis" : 0
+    }, {
+      "requested" : "DK",
+      "originalRef" : "sha256:ca12d78eb03ad798",
+      "status" : "INVALID_LANGUAGE",
+      "confidence" : "UNKNOWN",
+      "reason" : "INVALID: DK is a region code, not a language code",
+      "identifiersPreserved" : true,
+      "retrieval" : false,
+      "elapsedMillis" : 0
+    } ],
+    "retrievalTexts" : [ "I need a red winter jacket under 100 euros", "من نیاز دارم به یک ژاکت زمستانی قرمز زیر 100 یورو", "jag behöver en röd vinterjacka under 100 euro", "jeg trenger en rød vinterjakke under 100 euro", "eg treng ein raud vinterjakke under 100 euro" ],
+    "explanations" : [ "source language en from provider vocabulary (100% of words known); the detector said sv without a score" ],
+    "elapsedMillis" : 3
+  }
+}

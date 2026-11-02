@@ -1,0 +1,21 @@
+[
+  {"id": "en-sv-price", "source": "black shoes under 100 EUR", "from": "en", "translation": "svarta skor under 100 EUR", "to": "sv", "expected": "PRESERVED"},
+  {"id": "sv-en-exclusion-price", "source": "skor utan läder under 1200 SEK", "from": "sv", "translation": "shoes without leather under 1200 SEK", "to": "en", "expected": "PRESERVED"},
+  {"id": "fa-en-price-brand", "source": "Lenovo زیر ۱۵۰۰ یورو", "from": "fa", "translation": "Lenovo under 1500 euros", "to": "en", "expected": "PRESERVED"},
+  {"id": "fa-en-exclusion", "source": "کفش بدون چرم حداکثر ۲۰۰ یورو", "from": "fa", "translation": "shoes without leather at most 200 EUR", "to": "en", "expected": "PRESERVED"},
+  {"id": "en-sv-range-unit", "source": "laptops between 1.5 and 2 kg", "from": "en", "translation": "bärbara datorer mellan 1,5 och 2 kg", "to": "sv", "expected": "PRESERVED"},
+  {"id": "en-fa-at-least-unit", "source": "phones with at least 128 GB", "from": "en", "translation": "گوشی با حداقل ۱۲۸ GB", "to": "fa", "expected": "PRESERVED"},
+  {"id": "en-sv-identifier", "source": "errors on 10.0.0.12 for SKU-4471", "from": "en", "translation": "fel på 10.0.0.12 för SKU-4471", "to": "sv", "expected": "PRESERVED"},
+  {"id": "mul-en-code-switch", "source": "Nike shoes برای winter زیر ۱۰۰ EUR", "from": "mul", "translation": "Nike winter shoes under 100 EUR", "to": "en", "expected": "PARTIALLY_VERIFIED"},
+  {"id": "de-en-uncovered", "source": "schwarze Nike Schuhe unter 100 Euro", "from": "de", "translation": "black Nike shoes under 100 EUR", "to": "en", "expected": "PARTIALLY_VERIFIED"},
+  {"id": "lost-number", "source": "Lenovo زیر ۱۵۰۰ یورو", "from": "fa", "translation": "Lenovo under 1000 EUR", "to": "en", "expected": "NOT_PRESERVED", "kinds": ["NUMBER"]},
+  {"id": "lost-brand", "source": "Nike skor under 100 EUR", "from": "sv", "translation": "shoes under 100 EUR", "to": "en", "expected": "NOT_PRESERVED", "kinds": ["ENTITY"]},
+  {"id": "lost-exclusion", "source": "skor utan läder", "from": "sv", "translation": "leather shoes", "to": "en", "expected": "NOT_PRESERVED", "kinds": ["NEGATION"]},
+  {"id": "flipped-operator", "source": "phones under 300 EUR", "from": "en", "translation": "telefoner över 300 EUR", "to": "sv", "expected": "NOT_PRESERVED", "kinds": ["OPERATOR"]},
+  {"id": "invented-currency", "source": "کفش زیر ۱۲۰۰ کرون", "from": "fa", "translation": "shoes under 1200 SEK", "to": "en", "expected": "NOT_PRESERVED", "kinds": ["CURRENCY"]},
+  {"id": "changed-unit", "source": "cable 2 m", "from": "en", "translation": "kabel 2 cm", "to": "sv", "expected": "NOT_PRESERVED", "kinds": ["UNIT"]},
+  {"id": "changed-identifier", "source": "logs for pod-7f9c2", "from": "en", "translation": "loggar för pod-7f9c3", "to": "sv", "expected": "NOT_PRESERVED", "kinds": ["IDENTIFIER", "NUMBER"]},
+  {"id": "lost-number-uncovered", "source": "Schuhe unter 100 Euro", "from": "de", "translation": "shoes", "to": "en", "expected": "NOT_PRESERVED", "kinds": ["NUMBER"]},
+  {"id": "sv-en-krona-word-kept", "source": "skor under 500 kronor", "from": "sv", "translation": "shoes under 500 kronor", "to": "en", "expected": "PRESERVED"},
+  {"id": "ja-en-cjk-word-with-digits", "source": "Nikeの黒い靴 サイズ42 100ユーロ未満", "from": "ja", "translation": "black Nike shoes size 42 under 100 EUR", "to": "en", "expected": "PARTIALLY_VERIFIED"}
+]

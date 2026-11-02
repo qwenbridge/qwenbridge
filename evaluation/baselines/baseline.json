@@ -1,0 +1,221 @@
+{
+  "version": 1,
+  "approved": "2026-11-01",
+  "description": "Approved benchmark baselines (QB-224). Every value is a recorded measurement; 'source' names the run. Gates compare the current run with these values using the stated tolerance. Performance gates apply only to the same workload (requests and VUs); other workloads are reported as not gated, never as passing.",
+  "environment": "Apple M4 Pro, macOS, Docker (8 CPUs, 1 GiB app container, MaxRAMPercentage=55), Java 25, Quarkus 3.40.1, Ollama qwen2.5 + bge-m3",
+  "gates": [
+    {
+      "id": "quality.keyword.ndcg5",
+      "kind": "file",
+      "file": "qwenbridge-core/target/evaluation/keyword-core.json",
+      "path": "overall.ndcgAtK",
+      "baseline": 0.809,
+      "direction": "higher",
+      "max_regression_abs": 0.02,
+      "source": "batch30a-master-20261101-185217 KeywordQualityBaselineTest"
+    },
+    {
+      "id": "quality.vector.ndcg5",
+      "kind": "file",
+      "file": "qwenbridge-server/target/evaluation/quality-vector_only.json",
+      "path": "overall.ndcgAtK",
+      "baseline": 0.984,
+      "direction": "higher",
+      "max_regression_abs": 0.02,
+      "source": "batch30a-master-20261101-185217 RetrievalQualityEvaluationTest"
+    },
+    {
+      "id": "quality.hybrid.ndcg5",
+      "kind": "file",
+      "file": "qwenbridge-server/target/evaluation/quality-hybrid.json",
+      "path": "overall.ndcgAtK",
+      "baseline": 0.935,
+      "direction": "higher",
+      "max_regression_abs": 0.02,
+      "source": "batch30a-master-20261101-185217 RetrievalQualityEvaluationTest"
+    },
+    {
+      "id": "core.keyword.10k.c8.p95",
+      "kind": "core",
+      "file": "qwenbridge-core/target/benchmarks/core-retrieval.json",
+      "select": {
+        "workload": "keyword",
+        "documents": 10000,
+        "concurrency": 8
+      },
+      "field": "p95Ms",
+      "baseline": 3.029,
+      "direction": "lower",
+      "max_regression_pct": 50,
+      "source": "local quick profile 2026-11-01 RetrievalBenchmarkTest"
+    },
+    {
+      "id": "core.vector.10k.384.k20.c8.p95",
+      "kind": "core",
+      "file": "qwenbridge-core/target/benchmarks/core-retrieval.json",
+      "select": {
+        "workload": "vector",
+        "documents": 10000,
+        "dimensions": 384,
+        "topK": 20,
+        "concurrency": 8
+      },
+      "field": "p95Ms",
+      "baseline": 3.681,
+      "direction": "lower",
+      "max_regression_pct": 50,
+      "source": "bench-full-20261101-202339 RetrievalBenchmarkTest (full profile)"
+    },
+    {
+      "id": "core.hybrid.10k.c8.p95",
+      "kind": "core",
+      "file": "qwenbridge-core/target/benchmarks/core-retrieval.json",
+      "select": {
+        "workload": "hybrid",
+        "documents": 10000,
+        "concurrency": 8
+      },
+      "field": "p95Ms",
+      "baseline": 5.705,
+      "direction": "lower",
+      "max_regression_pct": 50,
+      "source": "local quick profile 2026-11-01 RetrievalBenchmarkTest"
+    },
+    {
+      "id": "perf.cached-load.p95",
+      "kind": "perf",
+      "phase": "cached-load",
+      "field": "p95_ms",
+      "workload": {
+        "completed_requests": 1000,
+        "vus": 10
+      },
+      "baseline": 24.3,
+      "direction": "lower",
+      "max_regression_pct": 100,
+      "source": "batch30a-master-20261101-185217"
+    },
+    {
+      "id": "perf.commerce-throughput.p95",
+      "kind": "perf",
+      "phase": "commerce-throughput",
+      "field": "p95_ms",
+      "workload": {
+        "completed_requests": 1000,
+        "vus": 10
+      },
+      "baseline": 29.2,
+      "direction": "lower",
+      "max_regression_pct": 100,
+      "source": "batch30a-master-20261101-185217"
+    },
+    {
+      "id": "perf.cached-load-1m.p95",
+      "kind": "perf",
+      "phase": "cached-load",
+      "field": "p95_ms",
+      "workload": {
+        "completed_requests": 1000000,
+        "vus": 250
+      },
+      "baseline": 118.3,
+      "direction": "lower",
+      "max_regression_pct": 50,
+      "source": "section2-final-20261101-132712"
+    },
+    {
+      "id": "perf.commerce-throughput-10k.p95",
+      "kind": "perf",
+      "phase": "commerce-throughput",
+      "field": "p95_ms",
+      "workload": {
+        "completed_requests": 10000,
+        "vus": 100
+      },
+      "baseline": 135.1,
+      "direction": "lower",
+      "max_regression_pct": 50,
+      "source": "section2-final-20261101-132712"
+    },
+    {
+      "id": "perf.errors",
+      "kind": "perf-all",
+      "field": "http_error_rate",
+      "baseline": 0.0,
+      "direction": "lower",
+      "max_regression_abs": 0.0,
+      "source": "every recorded run: 0 errors"
+    },
+    {
+      "id": "bench.keyword-20vu.rps",
+      "kind": "bench",
+      "phase": "strategy-keyword-20vu",
+      "field": "achieved_rps",
+      "baseline": 1589.8,
+      "direction": "higher",
+      "max_regression_pct": 30,
+      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)"
+    },
+    {
+      "id": "bench.keyword-20vu.p95",
+      "kind": "bench",
+      "phase": "strategy-keyword-20vu",
+      "field": "latency_ms.p(95)",
+      "baseline": 18.0,
+      "direction": "lower",
+      "max_regression_pct": 50,
+      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)"
+    },
+    {
+      "id": "bench.vector-5vu.p95",
+      "kind": "bench",
+      "phase": "strategy-vector-5vu",
+      "field": "latency_ms.p(95)",
+      "baseline": 139.9,
+      "direction": "lower",
+      "max_regression_pct": 50,
+      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)"
+    },
+    {
+      "id": "bench.hybrid-5vu.p95",
+      "kind": "bench",
+      "phase": "strategy-hybrid-5vu",
+      "field": "latency_ms.p(95)",
+      "baseline": 131.5,
+      "direction": "lower",
+      "max_regression_pct": 50,
+      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)"
+    },
+    {
+      "id": "bench.stress-1200.p95",
+      "kind": "bench",
+      "phase": "stress-1200",
+      "field": "latency_ms.p(95)",
+      "baseline": 19.1,
+      "direction": "lower",
+      "max_regression_pct": 100,
+      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)"
+    },
+    {
+      "id": "bench.soak.p95",
+      "kind": "bench",
+      "phase": "soak",
+      "field": "latency_ms.p(95)",
+      "baseline": 10.0,
+      "direction": "lower",
+      "max_regression_pct": 50,
+      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)"
+    },
+    {
+      "id": "bench.soak.errors",
+      "kind": "bench",
+      "phase": "soak",
+      "field": "http_error_rate",
+      "baseline": 0.0,
+      "direction": "lower",
+      "max_regression_abs": 0.0,
+      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)"
+    }
+  ],
+  "policy": "A gate FAILS when the current value is worse than baseline by more than the tolerance; the verification step then fails. Tolerances: quality 0.02 nDCG absolute; Core retrieval latency +50 % (measured run-to-run variance about 15 %); HTTP latency +100 % on 1000-request runs (few seconds, laptop noise), +50 % on the 1M-request gate; errors: none allowed. A FAIL needs either a fix or a new approved baseline with the reason recorded here. Benchmark-suite gates (kind 'bench') compare a run-benchmarks.py report (--bench) with the 2026-11-01 full run: throughput -30 %, latency +50 % (stress +100 %), soak errors none."
+}

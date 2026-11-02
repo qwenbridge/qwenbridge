@@ -1,0 +1,192 @@
+{
+  "version": "1.0",
+  "description": "Query capability test matrix (QB-208). Each entry is a test class#method; CapabilityMatrixTest fails if a referenced test does not exist. 'gaps' lists missing coverage explicitly.",
+  "capabilities": [
+    {
+      "id": "exact",
+      "description": "Exact terms and exact constraint values",
+      "positive": [
+        "RetrievalPrimitivesTest#comparisonsAreExactAndTyped",
+        "SyntheticCatalogSearchTest#returnsExactlyTheProductsThatSatisfyEveryConstraintWithinTheTenant",
+        "KeywordQualityBaselineTest#keywordQualityIsMeasuredReproduciblyAndWritten"
+      ],
+      "negative": [
+        "ConstraintExtractorTest#bareNumbersAreNeverInventedIntoConstraints",
+        "CommerceCompilerTest#rejectsUnsupportedFieldsCurrenciesOperatorsAndContradictions"
+      ],
+      "degradation": [
+        "ServiceFreeE2ETest#errorPathsFailClosedAndTyped"
+      ],
+      "gaps": []
+    },
+    {
+      "id": "structured",
+      "description": "Filters without free text, and hard constraints",
+      "positive": [
+        "PlanningTest#structuredOnlyQueriesBrowseByFilter",
+        "CommercePlanningTest#structuredOnlyQueriesBrowseByFilterWithoutEmbedding",
+        "LibraryDatasetTest#everyCaseReproducesItsExpectedResult"
+      ],
+      "negative": [
+        "PlanningTest#anUncompilableHardConstraintFailsTheWholeQueryNeverDropped",
+        "CommercePlanningTest#dateConstraintsAreRefusedAsUnsupportedNeverDropped"
+      ],
+      "degradation": [
+        "StructuredQueryCoordinatorTest#refusesUnfilteredStructuredExecution",
+        "OpenSearchTimeoutIntegrationTest#slowHttpBackendTimesOutBeforeItsResponseCompletes"
+      ],
+      "gaps": []
+    },
+    {
+      "id": "semantic",
+      "description": "Vector (embedding) retrieval",
+      "positive": [
+        "HybridRetrievalTest#vectorsRecoverWhatKeywordsMissAndFusionKeepsAgreement",
+        "RetrievalQualityEvaluationTest#keywordVectorAndHybridAreMeasuredOnTheSameHeldOutQueries"
+      ],
+      "negative": [
+        "RetrievalPrimitivesTest#vectorsFromAnotherSpaceAreNeverCompared",
+        "AIServiceEmbeddingProviderTest#aModelThatChangedItsDimensionsIsDetectedNotMixedIn"
+      ],
+      "degradation": [
+        "CommercePlanningTest#unavailableSemanticsDegradeVisiblyToKeyword",
+        "AIServiceEmbeddingProviderTest#anUnavailableModelIsATypedFailureAndDisabledMeansNoProvider"
+      ],
+      "gaps": []
+    },
+    {
+      "id": "hybrid",
+      "description": "Keyword and vector fused (RRF)",
+      "positive": [
+        "PlanningTest#hybridPlansExecuteWithVectors",
+        "RetrievalQualityEvaluationTest#keywordVectorAndHybridAreMeasuredOnTheSameHeldOutQueries"
+      ],
+      "negative": [
+        "OpenSearchStructuredQueryFactoryTest#rejectsVectorSearchRatherThanDroppingFilters",
+        "SyntheticCatalogSearchTest#backendsComeFromTheRegistryAndUnsupportedModesAreRefused"
+      ],
+      "degradation": [
+        "CommercePlanningTest#unavailableSemanticsDegradeVisiblyToKeyword"
+      ],
+      "gaps": []
+    },
+    {
+      "id": "multilingual",
+      "description": "English, Persian and Swedish input and content",
+      "positive": [
+        "RetrievalPrimitivesTest#multilingualTokensAndReplacementAndRemoval",
+        "CrossLanguageRetrievalTest#multilingualProviderNeedsNoTranslation",
+        "ConstraintExtractorTest#negationWorksInEveryLanguage",
+        "LibraryDatasetTest#everyCaseReproducesItsExpectedResult"
+      ],
+      "negative": [
+        "ThreatFailClosedTest#swedishAndPersianInjectionAreBlockedForUserInput",
+        "QueryIrPipelineTest#persianKronaIsReportedAsAmbiguousNotGuessed"
+      ],
+      "degradation": [
+        "CrossLanguageRetrievalTest#missingCapabilityIsExplicitlyUnsupported",
+        "TranslationPipelineTest#otherContentLanguageWithoutProviderIsExplicitlyUnsupported"
+      ],
+      "gaps": []
+    },
+    {
+      "id": "mixed-language",
+      "description": "Several languages in one query",
+      "positive": [
+        "LanguageServiceTest#mixedLanguageInputIsSegmentedNotForcedIntoOneLanguage",
+        "ConstraintExtractorTest#mixedLanguageNegationIsPreservedAsANegativeConstraint"
+      ],
+      "negative": [
+        "LanguageServiceTest#latinBrandInsideNonLatinSentenceDoesNotMakeItMixed"
+      ],
+      "degradation": [
+        "TranslationPipelineTest#otherContentLanguageWithoutProviderIsExplicitlyUnsupported"
+      ],
+      "gaps": []
+    },
+    {
+      "id": "multi-intent",
+      "description": "Several objectives or products in one query",
+      "positive": [
+        "IntentAnalyzerTest#multipleIntentsAreKeptInTextOrder",
+        "SyntheticCatalogSearchTest#multiProductQueriesAreAnsweredPerSubquery",
+        "CommercePlanningTest#multiProductQueriesAreScopedByWhereEachConstraintWasStated"
+      ],
+      "negative": [
+        "QueryIrJsonTest#decompositionKeepsParentConstraintsAndScopes"
+      ],
+      "degradation": [],
+      "gaps": [
+        "No test makes one sub-query's provider fail while others succeed; partial multi-intent degradation is untested."
+      ]
+    },
+    {
+      "id": "negative",
+      "description": "Exclusions (NOT / without) and queries with no answer",
+      "positive": [
+        "RetrievalPrimitivesTest#exclusionsMatchDocumentsWithoutTheField",
+        "ConstraintValidatorTest#exclusionsSurviveMappingWithOperatorAndValue",
+        "KeywordQualityBaselineTest#keywordQualityIsMeasuredReproduciblyAndWritten"
+      ],
+      "negative": [
+        "ConstraintValidatorTest#lostOrFlippedExclusionIsDetected",
+        "ModelTranslationPipelineTest#translationThatDropsAnExclusionIsRejected"
+      ],
+      "degradation": [
+        "ConstraintValidatorTest#negatedMoneyIsNeverSplitIntoAPositiveCurrencyFilter"
+      ],
+      "gaps": []
+    },
+    {
+      "id": "ambiguous",
+      "description": "Vague or conflicting requests",
+      "positive": [
+        "IntentAnalyzerTest#vagueRequestsNeedFocusedClarificationInsteadOfFabricatedDetail",
+        "CommerceApiTest#modelAmbiguityReturnsQuestionsWithoutExecutingSearch"
+      ],
+      "negative": [
+        "IntentAnalyzerTest#incompletePreferencesDoNotTriggerClarification"
+      ],
+      "degradation": [
+        "LanguageServiceTest#singleAmbiguousWordsStayUndetermined"
+      ],
+      "gaps": []
+    },
+    {
+      "id": "unsupported",
+      "description": "Capabilities a provider or schema lacks",
+      "positive": [
+        "PlanningTest#nothingUsableIsATypedUnsupportedOutcome",
+        "RetrievalPrimitivesTest#boundsAndUnsupportedRequestsAreTyped"
+      ],
+      "negative": [
+        "InMemorySearchProviderTest#unsupportedFiltersAndVectorModesAreRejectedInsteadOfIgnored",
+        "QueryIrJsonTest#unsupportedVersionsAreRejectedBeforeInterpretation"
+      ],
+      "degradation": [
+        "SyntheticCatalogSearchTest#backendsComeFromTheRegistryAndUnsupportedModesAreRefused"
+      ],
+      "gaps": []
+    },
+    {
+      "id": "provider-availability",
+      "description": "Connector, model, embedding and Redis outages; deadlines",
+      "positive": [
+        "OpenSearchConformanceLiveTest#openSearchReturnsExactlyWhatTheReferenceSemanticsSelect"
+      ],
+      "negative": [
+        "ConnectorPackOutageTest#aFailedConnectorPackIsReportedWhileTheCoreKeepsServing"
+      ],
+      "degradation": [
+        "BuiltInConnectorsTest#repeatedFailuresOpenTheCircuitAndTheBackendIsNoLongerCalled",
+        "ConnectorTest#theCircuitOpensFailsFastAndRecoversThroughAHalfOpenTrial",
+        "CommercePlanningTest#aFailedProviderIsReportedAsUnavailableNeverAsAnEmptyCatalog",
+        "ThreatEngineTest#anUnavailableModelIsADefinedDegradedModeNotAFailure",
+        "SearchAnalyzeCacheDegradationIntegrationTest#shouldDegradeSafelyWhenRedisCacheFails",
+        "CommerceApiTest#anExpiredRequestStopsTheBackendCallAndFailsAsTimeout",
+        "ServiceFreeE2ETest#errorPathsFailClosedAndTyped"
+      ],
+      "gaps": []
+    }
+  ]
+}

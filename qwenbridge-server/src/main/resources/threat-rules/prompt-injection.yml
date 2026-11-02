@@ -1,6 +1,6 @@
 rules:
   - id: prompt-ignore-instructions
-    regex: "(?i)\\b(ignore|disregard|forget)\\s+(all\\s+)?(previous|prior|above|system|developer)\\s+instructions?\\b"
+    regex: "(?i)\\b(ignore|disregard|forget)\\s+(all\\s+|the\\s+|any\\s+|your\\s+)?(previous|prior|above|system|developer)\\s+instructions?\\b"
     severity: HIGH
     score: 0.78
     confidence: 0.88
@@ -8,7 +8,7 @@ rules:
     reason: "Prompt injection instruction override pattern detected."
 
   - id: prompt-reveal-system-prompt
-    regex: "(?i)\\b(reveal|show|print|display|dump|repeat)\\s+(the\\s+)?(system|developer|hidden)\\s+(prompt|message|instructions?)\\b"
+    regex: "(?i)\\b(reveal|show|print|display|dump|repeat)\\s+(me\\s+)?(the\\s+|your\\s+)?(system|developer|hidden)\\s+(prompt|message|instructions?)\\b"
     severity: HIGH
     score: 0.82
     confidence: 0.90

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+<!-- CDI collaborators and the mutable startup configuration are intentionally shared, not copied. Exact fields/methods only. -->
+<Match><Class name="io.qwenbridge.abuse.AbuseProtectionFilter"/><Field name="streamingSessionRegistry"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.abuse.RedisBackedRateLimiter"/><Field name="redis"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.analysis.cache.config.AIAnalysisCacheProperties"/><Field name="redis"/><Bug pattern="EI_EXPOSE_REP"/></Match>
+<Match><Class name="io.qwenbridge.analysis.cache.redis.RedisAIAnalysisCache"/><Field name="objectMapper"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.analysis.cache.redis.RedisAIAnalysisCache"/><Field name="properties"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.analysis.cache.redis.RedisAIAnalysisCache"/><Field name="redis"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.operations.health.RedisDependencyHealthChecker"/><Field name="redisDataSource"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.operations.metrics.OperationsMetrics"/><Field name="registry"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.streaming.api.SearchStreamController"/><Field name="registry"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<!-- No native/finalizable resources are acquired by these validating constructors; CDI creates them from trusted application configuration. -->
+<Match><Class name="io.qwenbridge.evaluation.runner.DefaultBenchmarkEvaluationRunner"/><Bug pattern="CT_CONSTRUCTOR_THROW"/></Match>
+<Match><Class name="io.qwenbridge.evaluation.service.DefaultRetrievalEvaluationService"/><Bug pattern="CT_CONSTRUCTOR_THROW"/></Match>
+<Match><Class name="io.qwenbridge.execution.provider.support.AbstractSearchProvider"/><Bug pattern="CT_CONSTRUCTOR_THROW"/></Match>
+<Match><Class name="io.qwenbridge.intelligence.constraint.QueryConstraintValidator"/><Bug pattern="CT_CONSTRUCTOR_THROW"/></Match>
+<Match><Class name="io.qwenbridge.intelligence.planning.LogicalExecutionPlanner"/><Bug pattern="CT_CONSTRUCTOR_THROW"/></Match>
+<Match><Class name="io.qwenbridge.intelligence.planning.LogicalQueryPlanner"/><Bug pattern="CT_CONSTRUCTOR_THROW"/></Match>
+<Match><Class name="io.qwenbridge.intelligence.runtime.StructuredQueryCoordinator"/><Bug pattern="CT_CONSTRUCTOR_THROW"/></Match>
+<Match><Class name="io.qwenbridge.intelligence.runtime.StructuredSearchRuntimeGateway"/><Bug pattern="CT_CONSTRUCTOR_THROW"/></Match>
+<Match><Class name="io.qwenbridge.intelligence.schema.QuerySchemaValidator"/><Bug pattern="CT_CONSTRUCTOR_THROW"/></Match>
+<Match><Class name="io.qwenbridge.reranking.service.DefaultRerankingService"/><Bug pattern="CT_CONSTRUCTOR_THROW"/></Match>
+<!-- Prompt contracts intentionally use LF on every platform. -->
+<Match><Class name="io.qwenbridge.analysis.prompt.SearchAnalysisPromptBuilder"/><Bug pattern="VA_FORMAT_STRING_USES_NEWLINE"/></Match>
+<Match><Class name="io.qwenbridge.decision.ai.DecisionPromptBuilder"/><Bug pattern="VA_FORMAT_STRING_USES_NEWLINE"/></Match>
+<Match><Class name="io.qwenbridge.intent.ai.IntentPromptBuilder"/><Bug pattern="VA_FORMAT_STRING_USES_NEWLINE"/></Match>
+<Match><Class name="io.qwenbridge.rewrite.ai.QwenAIRewriteService"/><Bug pattern="VA_FORMAT_STRING_USES_NEWLINE"/></Match>
+<Match><Class name="io.qwenbridge.semantic.ai.SemanticPromptBuilder"/><Bug pattern="VA_FORMAT_STRING_USES_NEWLINE"/></Match>
+<!-- These compact constructors deliberately recompute redundant flags to preserve model invariants. -->
+<Match><Class name="io.qwenbridge.analysis.cache.trace.AIAnalysisCacheTrace"/><Bug pattern="IP_PARAMETER_IS_DEAD_BUT_OVERWRITTEN"/></Match>
+<Match><Class name="io.qwenbridge.threat.model.ThreatAnalysis"/><Bug pattern="IP_PARAMETER_IS_DEAD_BUT_OVERWRITTEN"/></Match>
+
+<!-- Shared CDI transport/service collaborators; copying these would disconnect runtime state. Exact fields only. -->
+<Match><Class name="io.qwenbridge.commerce.CatalogSynchronization"/><Field name="redis"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.commerce.CatalogSynchronization"/><Field name="sink"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.commerce.CommerceAnalytics"/><Field name="redis"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.commerce.CommerceSearchService"/><Field name="analytics"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.execution.provider.opensearch.client.OpenSearchClient"/><Field name="api"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<!-- These exact fields share CDI service instances; copies would split lifecycle, policy and tenant state. -->
+<Match><Class name="io.qwenbridge.commerce.CommerceSessions"/><Field name="backends"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.commerce.ZeroResultRecovery"/><Field name="analytics"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.connectors.OpenSearchBackend"/><Field name="api"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.platform.DomainExecution"/><Field name="backends"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.platform.DomainExecution"/><Field name="packs"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.platform.Marketplace"/><Field name="packs"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.platform.PackPolicies"/><Field name="packs"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.platform.PlatformStore"/><Field name="redis"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<!-- CDI collaborator: the search service holds the injected evidence store by design (it is the
+     shared store, not a value to copy). -->
+<Match><Class name="io.qwenbridge.commerce.CommerceSearchService"/><Field name="evidence"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<!-- CDI collaborators: the plugin host, tool executor and agent runtime hold the injected shared
+     extension registry by design (QB-225 - QB-230). -->
+<Match><Class name="io.qwenbridge.extensions.PluginHost"/><Field name="registry"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.extensions.ToolExecutor"/><Field name="registry"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<Match><Class name="io.qwenbridge.extensions.AgentRuntime"/><Field name="registry"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<!-- CDI collaborator: the typo service holds the injected shared typo configuration by design
+     (QB-291). -->
+<Match><Class name="io.qwenbridge.spelling.TypoService"/><Field name="configuration"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+<!-- CDI collaborator: the expansion service holds the injected shared expansion configuration by
+     design (QB-286). -->
+<Match><Class name="io.qwenbridge.multilingual.ExpansionService"/><Field name="configuration"/><Bug pattern="EI_EXPOSE_REP2"/></Match>
+</FindBugsFilter>

@@ -1,7 +1,7 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
 
-const baseUrl = __ENV.BASE_URL || "http://localhost:8080"\;
+const baseUrl = __ENV.BASE_URL || "http://localhost:8080";
 
 export const options = {
   scenarios: {
@@ -13,6 +13,7 @@ export const options = {
     }
   },
   thresholds: {
+    checks: ["rate==1"],
     http_req_failed: ["rate<0.05"],
     http_req_duration: ["p(95)<8000"]
   }
@@ -33,7 +34,7 @@ const cases = [
 ];
 
 export default function () {
-  const selected = cases[Math.floor(Math.random() * cases.length)];
+  const selected = cases[(__ITER + __VU - 1) % cases.length];
   const requestId = `k6-language-${selected.lang}-${Date.now()}-${Math.random()}`;
 
   const response = http.post(

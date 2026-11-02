@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+# Sourced by scripts/verify-release.sh (not executed directly).
 wait_for_docker() {
   local attempt=""
 
@@ -46,15 +48,6 @@ restart_docker_daemon() {
 }
 
 fresh_environment_reset() {
-  rm -f /tmp/qwenbridge-*.json
-  rm -f /tmp/qwenbridge-*.headers
-  rm -f /tmp/qwenbridge-*.body
-  rm -f /tmp/qwenbridge-*.log
-  rm -f /tmp/qwenbridge-singleflight-*.json
-  rm -f /tmp/qwenbridge-sse-*
-
-  : > "${APP_LOG}"
-
   if [[ "${FORCE_FRESH}" != "true" ]]; then
     info "FORCE_FRESH=false, keeping current Docker environment."
     return 0
@@ -105,7 +98,7 @@ docker_pull_build_up() {
     compose build || return 1
   fi
 
-  compose up -d --build --force-recreate --remove-orphans
+  compose up -d --build --force-recreate --remove-orphans || return 1
 
   echo ""
   echo "Compose services after up:"

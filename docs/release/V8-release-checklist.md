@@ -1,5 +1,7 @@
 # V8 Release Checklist
 
+> **Historical record.** It describes the repository at the time it was written. Modules and connectors it mentions may have been removed since: QB-287 removed the Elasticsearch, PostgreSQL, MongoDB and Shopify connector modules and `examples/` (ADR 0058). For the current state, start at [docs/README.md](../README.md).
+
 ## Security automation
 
 - [ ] Dependabot is enabled.

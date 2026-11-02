@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+# Sourced by scripts/verify-release.sh (not executed directly).
 app_public_health_up() {
   curl -fsS "${BASE_URL}${PUBLIC_HEALTH_ENDPOINT}" \
     | jq -e '.status == "UP"' >/dev/null 2>&1
@@ -41,10 +43,10 @@ json_payload() {
     '{requestId: $requestId, query: $query}'
 }
 
-actuator_health_endpoint() {
-  local body="/tmp/qwenbridge-actuator-health.json"
+quarkus_health_endpoint() {
+  local body="/tmp/qwenbridge-quarkus-health.json"
 
-  curl -fsS "${BASE_URL}/actuator/health" -o "${body}" || {
+  curl -fsS "${BASE_URL}/q/health" -o "${body}" || {
     cat "${body}" 2>/dev/null || true
     return 1
   }
@@ -226,6 +228,17 @@ cors_preflight_validation() {
     && grep -qi '^access-control-allow-methods:' "${headers}"
 }
 
+clear_verification_cache() {
+  local key=""
+  local prefix="${QWENBRIDGE_ANALYSIS_CACHE_KEY_PREFIX:-qwenbridge:analysis}"
+  local keys=""
+  keys="$(docker exec "${REDIS_CONTAINER}" redis-cli --scan --pattern "${prefix}:*")" || return 1
+  while IFS= read -r key; do
+    [[ -z "${key}" ]] && continue
+    docker exec "${REDIS_CONTAINER}" redis-cli UNLINK "${key}" >/dev/null || return 1
+  done <<< "${keys}"
+}
+
 cache_miss_hit_validation() {
   local first_request_id="verify-release-cache-first-$(date +%s)"
   local second_request_id="verify-release-cache-second-$(date +%s)"
@@ -235,7 +248,7 @@ cache_miss_hit_validation() {
   local second_hit=""
   local redis_dbsize=""
 
-  docker exec "${REDIS_CONTAINER}" redis-cli flushdb >/dev/null || return 1
+  clear_verification_cache || return 1
 
   first_status="$(
     curl -sS \
@@ -287,7 +300,7 @@ singleflight_validation() {
   local pids=()
 
   rm -f /tmp/qwenbridge-singleflight-*.json
-  docker exec "${REDIS_CONTAINER}" redis-cli flushdb >/dev/null || return 1
+  clear_verification_cache || return 1
 
   for i in $(seq 1 "${CONCURRENT_REQUESTS}"); do
     (
@@ -333,13 +346,13 @@ singleflight_validation() {
 }
 
 openapi_endpoint() {
-  curl -fsS "${BASE_URL}/v3/api-docs" | jq . >/dev/null
+  curl -fsS -H 'Accept: application/json' "${BASE_URL}/v3/api-docs" | jq . >/dev/null
 }
 
 openapi_contains_v8_endpoints() {
   local body="/tmp/qwenbridge-openapi.json"
 
-  curl -fsS "${BASE_URL}/v3/api-docs" -o "${body}" || return 1
+  curl -fsS -H 'Accept: application/json' "${BASE_URL}/v3/api-docs" -o "${body}" || return 1
 
   jq -e '
     .paths["/api/v1/search/analyze"] and

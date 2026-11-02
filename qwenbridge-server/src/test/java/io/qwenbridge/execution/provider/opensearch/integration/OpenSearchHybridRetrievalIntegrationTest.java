@@ -2,23 +2,23 @@ package io.qwenbridge.execution.provider.opensearch.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.quarkus.test.junit.QuarkusTest;
 import io.qwenbridge.ai.contract.EmbeddingRequest;
 import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.execution.provider.implementation.OpenSearchProvider;
 import io.qwenbridge.execution.provider.model.SearchRequest;
 import io.qwenbridge.execution.provider.model.SearchResponse;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@QuarkusTest
 @EnabledIfEnvironmentVariable(named = "QWENBRIDGE_RUN_OPENSEARCH_IT", matches = "true")
 class OpenSearchHybridRetrievalIntegrationTest {
 
-  @Autowired private AIService aiService;
+  @Inject AIService aiService;
 
-  @Autowired private OpenSearchProvider openSearchProvider;
+  @Inject OpenSearchProvider openSearchProvider;
 
   @Test
   void shouldRetrieveRazerFirstForGamingMouseHybridSearch() {

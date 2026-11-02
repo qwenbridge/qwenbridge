@@ -1,0 +1,134 @@
+{
+  "irVersion": "1.0",
+  "queryId": "q-commerce-1",
+  "originalText": "Find lightweight black running shoes under 1200 SEK, not leather.",
+  "language": "en",
+  "intents": [
+    {
+      "id": "i1",
+      "type": "search",
+      "confidence": {
+        "kind": "HEURISTIC"
+      },
+      "span": {
+        "start": 0,
+        "end": 4,
+        "text": "Find"
+      }
+    }
+  ],
+  "entities": [
+    {
+      "id": "e1",
+      "type": "category",
+      "value": "running shoes",
+      "normalizedValue": "running_shoes",
+      "span": {
+        "start": 23,
+        "end": 36,
+        "text": "running shoes"
+      },
+      "confidence": {
+        "kind": "DETERMINISTIC"
+      }
+    }
+  ],
+  "constraints": [
+    {
+      "id": "c1",
+      "field": "price",
+      "operator": "LT",
+      "value": {
+        "type": "money",
+        "amount": 1200,
+        "currency": "SEK"
+      },
+      "strength": "HARD",
+      "provenance": "USER_TEXT",
+      "reason": "explicit upper bound 'under'",
+      "span": {
+        "start": 37,
+        "end": 51,
+        "text": "under 1200 SEK"
+      },
+      "confidence": {
+        "kind": "DETERMINISTIC"
+      }
+    },
+    {
+      "id": "c2",
+      "field": "color",
+      "operator": "EQ",
+      "value": {
+        "type": "text",
+        "value": "black"
+      },
+      "strength": "HARD",
+      "provenance": "USER_TEXT",
+      "reason": "explicit attribute value",
+      "span": {
+        "start": 17,
+        "end": 22,
+        "text": "black"
+      },
+      "confidence": {
+        "kind": "DETERMINISTIC"
+      }
+    },
+    {
+      "id": "c3",
+      "field": "material",
+      "operator": "NE",
+      "value": {
+        "type": "text",
+        "value": "leather"
+      },
+      "strength": "HARD",
+      "provenance": "USER_TEXT",
+      "reason": "explicit exclusion 'not'",
+      "span": {
+        "start": 53,
+        "end": 64,
+        "text": "not leather"
+      },
+      "confidence": {
+        "kind": "DETERMINISTIC"
+      }
+    }
+  ],
+  "semanticSignals": [
+    {
+      "id": "g1",
+      "concept": "lightweight",
+      "polarity": "POSITIVE",
+      "target": "product",
+      "span": {
+        "start": 5,
+        "end": 16,
+        "text": "lightweight"
+      },
+      "confidence": {
+        "kind": "MODEL_DECISION"
+      }
+    }
+  ],
+  "retrievalHints": {
+    "modes": [
+      "LEXICAL",
+      "SEMANTIC",
+      "STRUCTURED"
+    ],
+    "crossLanguage": false
+  },
+  "extensions": {
+    "commerce": {
+      "version": "1.0",
+      "data": {
+        "catalog": "default",
+        "currencyPolicy": {
+          "convert": false
+        }
+      }
+    }
+  }
+}
