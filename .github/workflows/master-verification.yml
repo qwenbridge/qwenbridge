@@ -7,12 +7,20 @@ name: Master Verification
 # checks, the runtime steps (database-free runtime, multilingual expansion, Quarkus-only), the
 # dual-SDK end-to-end suite and the k6 workloads with a shortened load.
 #
+# The V9 load test (cold and cached k6 phases) is off by default: on a shared CPU-only runner it
+# measures the runner, not QwenBridge, and the small model occasionally returns no analysis under
+# load. Run it on demand with the run_performance input, or locally (docs/development/testing.md).
+#
 # It needs a large runner: about 10 GB of images and models, and a CPU-only model is slow. It runs
 # on demand, nightly and after every push to main; it is not a required pull-request check.
 
 on:
   workflow_dispatch:
     inputs:
+      run_performance:
+        description: "Run the V9 k6 load test (slow and noisy on GitHub runners)"
+        type: boolean
+        default: false
       perf_total_requests:
         description: "Total k6 requests for the staged load test"
         default: "1000"
@@ -48,6 +56,11 @@ jobs:
       VERIFY_RUN_ID: ci-${{ github.run_id }}-${{ github.run_attempt }}
       PERF_TOTAL_REQUESTS: ${{ inputs.perf_total_requests || '1000' }}
       PERF_VUS: ${{ inputs.perf_vus || '10' }}
+      RUN_V9_PERFORMANCE: ${{ inputs.run_performance && 'true' || 'false' }}
+      # Without the load test the application would get the default per-IP limit of 2000 requests;
+      # keep the budget the earlier runs had (1000 + 40000) so the other suites are not throttled.
+      QWENBRIDGE_ABUSE_PER_IP_LIMIT: "41000"
+      QWENBRIDGE_ABUSE_AI_REQUEST_QUOTA: "41000"
       # GitHub runners have no GPU: qwen2.5 answers several times slower than on a developer
       # machine, so the production time limits (analysis 10 s, reranking 3 s) would fail closed.
       # These apply to the live JUnit suite and the packaged runtime steps; tests that check
