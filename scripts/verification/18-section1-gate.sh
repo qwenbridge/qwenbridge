@@ -63,7 +63,9 @@ section1_spring_boot_elimination_validation() {
   # The console output lists every module's resolved artifacts (-DoutputFile does not accumulate
   # across the reactor); require one listing per module so a partial run cannot pass.
   local tree="${dir}/reactor-dependencies.txt"
-  mvn -B dependency:list >"${tree}" 2>&1 || return 1
+  # compile in the same run: the reactor modules then resolve from their build output, so the
+  # gate also works on a fresh machine where they are not installed yet (CI).
+  mvn -B -DskipTests compile dependency:list >"${tree}" 2>&1 || return 1
   local modules listings
   modules="$(grep -c '<module>' pom.xml)"
   listings="$(grep -c 'The following files have been resolved' "${tree}")"

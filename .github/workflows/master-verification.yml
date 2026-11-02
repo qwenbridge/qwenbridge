@@ -40,9 +40,19 @@ jobs:
       VERIFY_RUN_ID: ci-${{ github.run_id }}-${{ github.run_attempt }}
       PERF_TOTAL_REQUESTS: ${{ inputs.perf_total_requests || '1000' }}
       PERF_VUS: ${{ inputs.perf_vus || '10' }}
-      # The models answer slowly on a CPU-only runner.
+      # GitHub runners have no GPU: qwen2.5 answers several times slower than on a developer
+      # machine, so the production time limits (analysis 10 s, reranking 3 s) would fail closed.
+      # These apply to the live JUnit suite and the packaged runtime steps; tests that check
+      # timeout behaviour set their own values in test profiles, which take precedence.
       OLLAMA_NUM_PARALLEL: "1"
       QWENBRIDGE_AI_OLLAMA_READ_TIMEOUT: 300s
+      QUARKUS_REST_CLIENT_OLLAMA_READ_TIMEOUT: "300000"
+      QWENBRIDGE_ANALYSIS_CACHE_ANALYSIS_TIMEOUT: 180s
+      # The reranker accepts at most 30 000 ms.
+      QWENBRIDGE_COMMERCE_RERANK_TIMEOUT_MS: "30000"
+      QWENBRIDGE_EMBEDDING_TIMEOUT: 120s
+      QWENBRIDGE_MULTILINGUAL_TIMEOUT: 300s
+      QWENBRIDGE_MULTILINGUAL_PER_LANGUAGE_TIMEOUT: 180s
     steps:
       - name: Free runner disk space
         run: |
@@ -61,8 +71,17 @@ jobs:
           cache: npm
           cache-dependency-path: qwenbridge-typescript-sdk/package-lock.json
       - name: Local environment file
-        # The Compose stack reads .env; the template holds no credentials.
-        run: cp .env.example .env
+        # The Compose stack reads .env; the template holds no credentials. The Docker application
+        # gets the same CPU-runner time limits as the job.
+        run: |
+          cp .env.example .env
+          for name in QWENBRIDGE_AI_OLLAMA_READ_TIMEOUT QUARKUS_REST_CLIENT_OLLAMA_READ_TIMEOUT \
+            QWENBRIDGE_ANALYSIS_CACHE_ANALYSIS_TIMEOUT QWENBRIDGE_COMMERCE_RERANK_TIMEOUT_MS \
+            QWENBRIDGE_EMBEDDING_TIMEOUT QWENBRIDGE_MULTILINGUAL_TIMEOUT \
+            QWENBRIDGE_MULTILINGUAL_PER_LANGUAGE_TIMEOUT; do
+            sed -i "/^${name}=/d" .env
+            echo "${name}=${!name}" >> .env
+          done
       - name: TypeScript SDK dependencies and Chromium for the Web Component checks
         run: |
           npm --prefix qwenbridge-typescript-sdk ci
