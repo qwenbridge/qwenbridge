@@ -12,6 +12,14 @@ permissions:
   contents: read
   security-events: write
 
+env:
+  # Maven Central occasionally answers 502/504; by default Maven retries only 429 and 503, so a
+  # single bad gateway failed a whole job. Retry transient answers up to 5 times, 5 s apart.
+  MAVEN_ARGS: >-
+    -Daether.transport.http.retryHandler.count=5
+    -Daether.transport.http.retryHandler.interval=5000
+    -Daether.transport.http.retryHandler.serviceUnavailable=429,500,502,503,504
+
 jobs:
   analyze:
     name: CodeQL Analyze
