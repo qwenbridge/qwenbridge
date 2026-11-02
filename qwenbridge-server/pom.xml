@@ -19,7 +19,7 @@
     <lombok.version>1.18.48</lombok.version>
     <lingua.version>1.2.2</lingua.version>
     <archunit.version>1.5.0</archunit.version>
-    <assertj.version>3.27.6</assertj.version>
+    <assertj.version>3.27.7</assertj.version>
     <test.includes>**/*Test.java</test.includes>
     <test.excludes/>
   </properties>
