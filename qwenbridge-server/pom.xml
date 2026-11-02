@@ -18,8 +18,8 @@
     <maven.deploy.skip>true</maven.deploy.skip>
     <lombok.version>1.18.48</lombok.version>
     <lingua.version>1.2.2</lingua.version>
-    <archunit.version>1.5.0</archunit.version>
-    <assertj.version>3.27.6</assertj.version>
+    <archunit.version>1.5.1</archunit.version>
+    <assertj.version>3.27.7</assertj.version>
     <test.includes>**/*Test.java</test.includes>
     <test.excludes/>
   </properties>
@@ -115,7 +115,7 @@
     <dependency>
       <groupId>io.swagger.core.v3</groupId>
       <artifactId>swagger-annotations-jakarta</artifactId>
-      <version>2.2.36</version>
+      <version>2.2.55</version>
     </dependency>
 
     <dependency>
