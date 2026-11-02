@@ -16,7 +16,8 @@ if [[ "$#" -ne 0 ]]; then
   exit 2
 fi
 
-export RUN_V9_PERFORMANCE=true
+# The load test runs by default; RUN_V9_PERFORMANCE=false keeps everything else (CI on shared runners).
+export RUN_V9_PERFORMANCE="${RUN_V9_PERFORMANCE:-true}"
 export PERF_MANAGED=true
 export RELEASE_LIGHTWEIGHT=false
 export RUN_DOCKER_RUNTIME=true

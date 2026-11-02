@@ -47,6 +47,14 @@ English query. There were:
      measurement (never a silent pass). It reports other workloads as "not gated".
    - **Master steps:** the gate runs against the current run, and a Scenario J step proves the gate
      detects a real 5 ms-per-call slowdown injected into the Core benchmark.
+   - **Hardware-bound gates (2026-11-02):** latency and throughput gates are marked
+     `hardware_bound` and apply only on the hardware the baseline names (`hardware`). A run on other
+     hardware sets `QWENBRIDGE_PERF_HARDWARE`; its latency gates are reported as "not gated" with
+     the measured value, while quality and error gates still apply. The Master Verification
+     workflow on GitHub's 4-CPU runners does this. There, Scenario J injects 50 ms
+     (`QWENBRIDGE_BENCHMARK_INJECTED_DELAY_MS`) and compares the slowed run with the same run
+     (`--rebase`), and the cold k6 phase uses CPU-model latency limits (`PERF_COLD_P95_MS`,
+     `PERF_COLD_P99_MS`).
 
 ## Consequences
 

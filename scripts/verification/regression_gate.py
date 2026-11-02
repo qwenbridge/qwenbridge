@@ -1,13 +1,22 @@
 #!/usr/bin/env python3
 """Performance and quality regression gate (QB-224).
 
-    regression_gate.py BASELINE [--perf RESULTS_JSON] [--bench BENCH_REPORT_JSON] [--substitute FROM=TO ...] [--expect-fail GATE_ID]
+    regression_gate.py BASELINE [--perf RESULTS_JSON] [--bench BENCH_REPORT_JSON] [--substitute FROM=TO ...]
+                       [--rebase FILE=BASE_FILE ...] [--expect-fail GATE_ID]
 
 Compares current measurements with approved baselines and exits 1 if any gate fails. A gate whose
 input is missing is reported as NOT MEASURED and fails too (nothing passes silently); performance
 gates for another workload than the baseline's are reported as NOT GATED. --expect-fail inverts
 the result for one gate: used to prove the gate catches an injected slowdown (Scenario J).
+
+Latency and throughput depend on the machine. Gates marked "hardware_bound" in the baseline apply
+only on the hardware the baseline names ("hardware"); QWENBRIDGE_PERF_HARDWARE names the hardware
+of this run (unset: the baseline's). On other hardware those gates are reported as NOT GATED with
+the measured value, never as passing; quality and error gates apply everywhere. --rebase takes the
+baseline of the "core" gates reading FILE from BASE_FILE, a measurement of the same run, so an
+injected slowdown can be checked on any hardware.
 """
+import os
 import argparse
 import json
 import sys
@@ -31,21 +40,31 @@ def worse(gate, current):
     return pct > gate["max_regression_pct"], f"{pct:+.1f} % (limit {gate['max_regression_pct']} %)"
 
 
-def evaluate(baseline, perf_results, substitutes, bench=None):
+def core_value(path, gate):
+    data = json.loads((ROOT / path).read_text())
+    match = [r for r in data["results"] if all(r.get(k) == v for k, v in gate["select"].items())]
+    if not match:
+        raise KeyError("no result for " + json.dumps(gate["select"]))
+    return match[0][gate["field"]]
+
+
+def evaluate(baseline, perf_results, substitutes, bench=None, rebase=None, hardware=None):
+    rebase = rebase or {}
+    other_hardware = hardware is not None and hardware != baseline.get("hardware")
     rows = []
     for gate in baseline["gates"]:
         row = {"id": gate["id"], "baseline": gate["baseline"], "source": gate.get("source", "")}
+        rebased = gate["kind"] == "core" and gate["file"] in rebase
         try:
+            if rebased:
+                gate = dict(gate, baseline=core_value(rebase[gate["file"]], gate))
+                row.update(baseline=gate["baseline"], source="this run: " + rebase[gate["file"]])
             if gate["kind"] in ("file", "core"):
                 path = substitutes.get(gate["file"], gate["file"])
-                data = json.loads((ROOT / path).read_text())
                 if gate["kind"] == "file":
-                    current = dig(data, gate["path"])
+                    current = dig(json.loads((ROOT / path).read_text()), gate["path"])
                 else:
-                    match = [r for r in data["results"] if all(r.get(k) == v for k, v in gate["select"].items())]
-                    if not match:
-                        raise KeyError("no result for " + json.dumps(gate["select"]))
-                    current = match[0][gate["field"]]
+                    current = core_value(path, gate)
             elif gate["kind"] == "bench":
                 if bench is None:
                     row.update(status="NOT GATED", detail="no benchmark-suite report given (--bench)")
@@ -74,6 +93,11 @@ def evaluate(baseline, perf_results, substitutes, bench=None):
             row.update(status="NOT MEASURED", detail=str(e))
             rows.append(row)
             continue
+        if gate.get("hardware_bound") and other_hardware and not rebased:
+            row.update(current=current, status="NOT GATED",
+                       detail=f"baseline measured on {baseline.get('hardware')}; this run is on {hardware}")
+            rows.append(row)
+            continue
         failed, detail = worse(gate, current)
         row.update(current=current, status="FAIL" if failed else "PASS", detail=detail)
         rows.append(row)
@@ -86,13 +110,19 @@ def main():
     parser.add_argument("--perf")
     parser.add_argument("--bench")
     parser.add_argument("--substitute", action="append", default=[])
+    parser.add_argument("--rebase", action="append", default=[])
     parser.add_argument("--expect-fail")
     args = parser.parse_args()
     baseline = json.loads(Path(args.baseline).read_text())
     perf_results = json.loads(Path(args.perf).read_text()) if args.perf else None
     bench = json.loads(Path(args.bench).read_text()) if args.bench else None
     substitutes = dict(s.split("=", 1) for s in args.substitute)
-    rows = evaluate(baseline, perf_results, substitutes, bench)
+    rebase = dict(s.split("=", 1) for s in args.rebase)
+    hardware = os.environ.get("QWENBRIDGE_PERF_HARDWARE") or None
+    if hardware and hardware != baseline.get("hardware"):
+        print(f"Hardware: {hardware}; latency baselines were measured on {baseline.get('hardware')}"
+              " and are not applied to this run.")
+    rows = evaluate(baseline, perf_results, substitutes, bench, rebase, hardware)
     for r in rows:
         current = r.get("current")
         shown = f"{current:.4f}" if isinstance(current, float) else str(current)

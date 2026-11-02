@@ -46,14 +46,20 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
  * embedding generation (measured separately with the real model in AiTransformationBenchmarkTest
  * and the HTTP suite). Enabled by QWENBRIDGE_RUN_BENCHMARKS=true; QWENBRIDGE_BENCHMARK_PROFILE=full
  * runs every size, otherwise a quick subset for the regression gate. Results:
- * target/benchmarks/core-retrieval.json; a deliberately slowed copy (5 ms added to every keyword
- * call) goes to core-retrieval-slowed.json so the gate can be shown to catch a regression.
+ * target/benchmarks/core-retrieval.json; a deliberately slowed copy (a fixed delay added to every
+ * keyword call: 5 ms, or QWENBRIDGE_BENCHMARK_INJECTED_DELAY_MS) goes to core-retrieval-slowed.json
+ * so the gate can be shown to catch a regression. On a shared CI runner the keyword p95 itself is
+ * 10-15 ms and noisy, so the master workflow injects a larger delay.
  */
 @EnabledIfEnvironmentVariable(named = "QWENBRIDGE_RUN_BENCHMARKS", matches = "true")
 class RetrievalBenchmarkTest {
 
   static final boolean FULL = "full".equals(System.getenv("QWENBRIDGE_BENCHMARK_PROFILE"));
   static final int VOCABULARY = 5_000;
+  static final long INJECTED_DELAY_MS =
+      Long.parseLong(
+          java.util.Objects.requireNonNullElse(
+              System.getenv("QWENBRIDGE_BENCHMARK_INJECTED_DELAY_MS"), "5"));
 
   record Result(
       String workload,
@@ -333,7 +339,7 @@ class RetrievalBenchmarkTest {
                         10)));
 
     var slowed = new ArrayList<Result>();
-    var slowIndex = slowed(keyword, 5);
+    var slowIndex = slowed(keyword, INJECTED_DELAY_MS);
     slowed.add(
         measure(
             "keyword",
@@ -363,7 +369,13 @@ class RetrievalBenchmarkTest {
         Map.of("environment", env, "results", results));
     json.writeValue(
         out.resolve("core-retrieval-slowed.json").toFile(),
-        Map.of("environment", env, "results", slowed, "note", "5 ms added to every keyword call"));
+        Map.of(
+            "environment",
+            env,
+            "results",
+            slowed,
+            "note",
+            INJECTED_DELAY_MS + " ms added to every keyword call"));
     for (var r : results)
       System.out.printf(
           java.util.Locale.ROOT,

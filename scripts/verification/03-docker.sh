@@ -92,13 +92,20 @@ docker_pull_build_up() {
     info "PULL_DOCKER_IMAGES=false, skipping docker compose pull."
   fi
 
-  if [[ "${NO_CACHE_BUILD}" == "true" ]]; then
-    compose build --no-cache || return 1
+  if [[ "${APP_IMAGE_PREBUILT}" == "true" ]]; then
+    # The other services' images are still pulled when missing. The application image is never
+    # rebuilt here: if it is missing, Compose looks for it in a registry, where it does not exist,
+    # and the step fails.
+    info "APP_IMAGE_PREBUILT=true, starting the application image built before this run."
+    compose up -d --no-build --force-recreate --remove-orphans || return 1
   else
-    compose build || return 1
+    if [[ "${NO_CACHE_BUILD}" == "true" ]]; then
+      compose build --no-cache || return 1
+    else
+      compose build || return 1
+    fi
+    compose up -d --build --force-recreate --remove-orphans || return 1
   fi
-
-  compose up -d --build --force-recreate --remove-orphans || return 1
 
   echo ""
   echo "Compose services after up:"

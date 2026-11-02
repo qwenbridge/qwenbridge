@@ -3,6 +3,7 @@
   "approved": "2026-11-01",
   "description": "Approved benchmark baselines (QB-224). Every value is a recorded measurement; 'source' names the run. Gates compare the current run with these values using the stated tolerance. Performance gates apply only to the same workload (requests and VUs); other workloads are reported as not gated, never as passing.",
   "environment": "Apple M4 Pro, macOS, Docker (8 CPUs, 1 GiB app container, MaxRAMPercentage=55), Java 25, Quarkus 3.40.1, Ollama qwen2.5 + bge-m3",
+  "hardware": "apple-m4-pro-8cpu",
   "gates": [
     {
       "id": "quality.keyword.ndcg5",
@@ -47,7 +48,8 @@
       "baseline": 3.029,
       "direction": "lower",
       "max_regression_pct": 50,
-      "source": "local quick profile 2026-11-01 RetrievalBenchmarkTest"
+      "source": "local quick profile 2026-11-01 RetrievalBenchmarkTest",
+      "hardware_bound": true
     },
     {
       "id": "core.vector.10k.384.k20.c8.p95",
@@ -64,7 +66,8 @@
       "baseline": 3.681,
       "direction": "lower",
       "max_regression_pct": 50,
-      "source": "bench-full-20261101-202339 RetrievalBenchmarkTest (full profile)"
+      "source": "bench-full-20261101-202339 RetrievalBenchmarkTest (full profile)",
+      "hardware_bound": true
     },
     {
       "id": "core.hybrid.10k.c8.p95",
@@ -79,7 +82,8 @@
       "baseline": 5.705,
       "direction": "lower",
       "max_regression_pct": 50,
-      "source": "local quick profile 2026-11-01 RetrievalBenchmarkTest"
+      "source": "local quick profile 2026-11-01 RetrievalBenchmarkTest",
+      "hardware_bound": true
     },
     {
       "id": "perf.cached-load.p95",
@@ -93,7 +97,8 @@
       "baseline": 24.3,
       "direction": "lower",
       "max_regression_pct": 100,
-      "source": "batch30a-master-20261101-185217"
+      "source": "batch30a-master-20261101-185217",
+      "hardware_bound": true
     },
     {
       "id": "perf.commerce-throughput.p95",
@@ -107,7 +112,8 @@
       "baseline": 29.2,
       "direction": "lower",
       "max_regression_pct": 100,
-      "source": "batch30a-master-20261101-185217"
+      "source": "batch30a-master-20261101-185217",
+      "hardware_bound": true
     },
     {
       "id": "perf.cached-load-1m.p95",
@@ -121,7 +127,8 @@
       "baseline": 118.3,
       "direction": "lower",
       "max_regression_pct": 50,
-      "source": "section2-final-20261101-132712"
+      "source": "section2-final-20261101-132712",
+      "hardware_bound": true
     },
     {
       "id": "perf.commerce-throughput-10k.p95",
@@ -135,7 +142,8 @@
       "baseline": 135.1,
       "direction": "lower",
       "max_regression_pct": 50,
-      "source": "section2-final-20261101-132712"
+      "source": "section2-final-20261101-132712",
+      "hardware_bound": true
     },
     {
       "id": "perf.errors",
@@ -154,7 +162,8 @@
       "baseline": 1589.8,
       "direction": "higher",
       "max_regression_pct": 30,
-      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)"
+      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)",
+      "hardware_bound": true
     },
     {
       "id": "bench.keyword-20vu.p95",
@@ -164,7 +173,8 @@
       "baseline": 18.0,
       "direction": "lower",
       "max_regression_pct": 50,
-      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)"
+      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)",
+      "hardware_bound": true
     },
     {
       "id": "bench.vector-5vu.p95",
@@ -174,7 +184,8 @@
       "baseline": 139.9,
       "direction": "lower",
       "max_regression_pct": 50,
-      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)"
+      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)",
+      "hardware_bound": true
     },
     {
       "id": "bench.hybrid-5vu.p95",
@@ -184,7 +195,8 @@
       "baseline": 131.5,
       "direction": "lower",
       "max_regression_pct": 50,
-      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)"
+      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)",
+      "hardware_bound": true
     },
     {
       "id": "bench.stress-1200.p95",
@@ -194,7 +206,8 @@
       "baseline": 19.1,
       "direction": "lower",
       "max_regression_pct": 100,
-      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)"
+      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)",
+      "hardware_bound": true
     },
     {
       "id": "bench.soak.p95",
@@ -204,7 +217,8 @@
       "baseline": 10.0,
       "direction": "lower",
       "max_regression_pct": 50,
-      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)"
+      "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)",
+      "hardware_bound": true
     },
     {
       "id": "bench.soak.errors",
@@ -217,5 +231,5 @@
       "source": "bench-full-20261101-202339 (evaluation/benchmarks/2026-11-01/full-report.json)"
     }
   ],
-  "policy": "A gate FAILS when the current value is worse than baseline by more than the tolerance; the verification step then fails. Tolerances: quality 0.02 nDCG absolute; Core retrieval latency +50 % (measured run-to-run variance about 15 %); HTTP latency +100 % on 1000-request runs (few seconds, laptop noise), +50 % on the 1M-request gate; errors: none allowed. A FAIL needs either a fix or a new approved baseline with the reason recorded here. Benchmark-suite gates (kind 'bench') compare a run-benchmarks.py report (--bench) with the 2026-11-01 full run: throughput -30 %, latency +50 % (stress +100 %), soak errors none."
+  "policy": "A gate FAILS when the current value is worse than baseline by more than the tolerance; the verification step then fails. Tolerances: quality 0.02 nDCG absolute; Core retrieval latency +50 % (measured run-to-run variance about 15 %); HTTP latency +100 % on 1000-request runs (few seconds, laptop noise), +50 % on the 1M-request gate; errors: none allowed. A FAIL needs either a fix or a new approved baseline with the reason recorded here. Benchmark-suite gates (kind 'bench') compare a run-benchmarks.py report (--bench) with the 2026-11-01 full run: throughput -30 %, latency +50 % (stress +100 %), soak errors none. Latency and throughput gates are marked hardware_bound: they apply only on the hardware named in 'hardware'. Another machine (QWENBRIDGE_PERF_HARDWARE, e.g. github-hosted-4cpu in the Master Verification workflow) reports them as NOT GATED with the measured value; quality and error gates apply on every machine. Scenario J on other hardware compares the slowed run with the same run (--rebase)."
 }
