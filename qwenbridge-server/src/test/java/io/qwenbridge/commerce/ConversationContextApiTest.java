@@ -80,6 +80,7 @@ class ConversationContextApiTest {
   @InjectMock OpenSearchClient opensearch;
   @InjectMock CommerceEvidenceStore evidence;
   @InjectMock CommerceAnalytics analytics;
+  @InjectMock io.qwenbridge.ai.service.AIService ai;
   @Inject CommerceBackends backends;
   @Inject PlatformStore store;
 
@@ -104,8 +105,24 @@ class ConversationContextApiTest {
         .build();
   }
 
+  /**
+   * Deterministic stand-in for the model translation: the detector may label this English query as
+   * another language, and a faithful translation to English returns it unchanged. Without this the
+   * test depended on a live local model.
+   */
+  static void faithfulTranslation(io.qwenbridge.ai.service.AIService ai) {
+    when(ai.chat(org.mockito.ArgumentMatchers.any(io.qwenbridge.ai.contract.ChatRequest.class)))
+        .thenAnswer(
+            call -> {
+              String prompt = call.<io.qwenbridge.ai.contract.ChatRequest>getArgument(0).prompt();
+              String text = prompt.substring(prompt.lastIndexOf('\n') + 1);
+              return new io.qwenbridge.ai.contract.ChatResponse("{\"text\":" + text + "}");
+            });
+  }
+
   @BeforeEach
   void setup() {
+    faithfulTranslation(ai);
     var normalizer = new CatalogNormalizer();
     for (String tenant : List.of("shopA", "shopB"))
       SyntheticCatalogSearchTest.CATALOG.forEach(

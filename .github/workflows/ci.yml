@@ -1,8 +1,16 @@
 name: CI
 
+# QwenBridge 1.0 CI. The reactor is built as a whole, because qwenbridge-server depends on the
+# reactor modules qwenbridge-core, qwenbridge-plugin-sdk and the domain packs, which are not
+# published. Job names "Unit Tests", "Integration Tests", "Architecture Tests" and "API
+# Compatibility" are required status checks on main; keep them stable.
+#
+# Tests never reach a model or service by accident: the %test profile points the model client at an
+# unreachable address. Live integrations run in the Master Verification workflow.
+
 on:
   push:
-    branches: [ main ]
+    branches: [ main, quarkus-branch ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -12,31 +20,105 @@ permissions:
   security-events: write
   actions: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  MAVEN_OPTS: -Xmx3g
+
 jobs:
-  typescript-sdk:
-    name: TypeScript SDK
+  unit-test:
+    name: Unit Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: qwenbridge-typescript-sdk/package-lock.json
-      - run: python3 scripts/verification/check-versions.py
-      - run: npm ci
-        working-directory: qwenbridge-typescript-sdk
-      - run: npm test && npm run build && npm pack --dry-run
-        working-directory: qwenbridge-typescript-sdk
-      - run: npx playwright install --with-deps chromium
-        working-directory: qwenbridge-typescript-sdk
-      - run: npm run web:check && npm run test:browser
-        working-directory: qwenbridge-typescript-sdk
-      - run: bash scripts/tests/verification-test.sh
+          distribution: temurin
+          java-version: 25
+          cache: maven
+      - name: Versions, Java 25 and Quarkus contracts
+        run: python3 scripts/verification/check-versions.py
+      - name: Verification script regression tests
+        run: bash scripts/tests/verification-test.sh
+      - name: Shared multilingual corpus consistency
+        run: python3 scripts/verification/generate-language-corpus.py
+      - name: Unit tests (whole reactor)
+        run: mvn -B -Punit-tests install
+      - if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: unit-test-reports
+          path: "**/target/surefire-reports/**"
+          retention-days: 14
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: maven
+      - name: Integration tests (whole reactor; live-service tests skip without services)
+        run: mvn -B -Pintegration-tests install
+      - if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: integration-test-reports
+          path: "**/target/surefire-reports/**"
+          retention-days: 14
+
+  architecture-test:
+    name: Architecture Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: maven
+      - name: Architecture, neutrality and Quarkus-only guards
+        run: >
+          mvn -B -pl qwenbridge-server -am test
+          -Dtest='ArchitectureRulesTest,ArchitectureNeutralityTest,QuarkusOnlyArchitectureTest,DriverDependencyTest,ShopifyIsolationTest'
+          -Dsurefire.failIfNoSpecifiedTests=false
+      - name: Quarkus-only audit
+        run: python3 -I scripts/verification/quarkus_only_audit.py .
+
+  api-compatibility:
+    name: API Compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: maven
+      - name: Server API contract tests
+        run: >
+          mvn -B -pl qwenbridge-server -am install
+          -Dtest='ApiVersionControllerTest,ApiHealthControllerTest,ApiEndpointSnapshotTest,CommerceApiTest'
+          -Dsurefire.failIfNoSpecifiedTests=false
+      - name: Java SDK contract tests against the server fixtures
+        run: >
+          mvn -B -pl qwenbridge-java-sdk test
+          -Dtest='ServerContractCompatibilityTest,ApiContractFixturesTest'
+          -Dsurefire.failIfNoSpecifiedTests=false
 
   code-quality:
     name: Java formatting and static analysis
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
@@ -49,6 +131,7 @@ jobs:
   sdk-java-25:
     name: Java SDK on Java 25
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
@@ -58,49 +141,37 @@ jobs:
           cache: maven
       - run: mvn -B -pl qwenbridge-java-sdk verify
 
-  unit-test:
-    name: Unit Tests
+  typescript-sdk:
+    name: TypeScript SDK
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          distribution: temurin
-          java-version: 25
-          cache: maven
-      - run: bash scripts/tests/verification-test.sh
-      - run: mvn -B -Punit-tests test
-
-  integration-test:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
-        with:
-          distribution: temurin
-          java-version: 25
-          cache: maven
-      - run: mvn -B -Pintegration-tests test
-
-  architecture-test:
-    name: Architecture Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
-        with:
-          distribution: temurin
-          java-version: 25
-          cache: maven
-      - run: mvn -B -pl qwenbridge-server -Dtest=ArchitectureRulesTest test
+          node-version: 24
+          cache: npm
+          cache-dependency-path: qwenbridge-typescript-sdk/package-lock.json
+      - run: npm ci
+        working-directory: qwenbridge-typescript-sdk
+      - run: npm test && npm run build && npm run pack:check
+        working-directory: qwenbridge-typescript-sdk
+      - name: Production dependency audit
+        run: npm audit --omit=dev
+        working-directory: qwenbridge-typescript-sdk
+      - run: npx playwright install --with-deps chromium
+        working-directory: qwenbridge-typescript-sdk
+      - name: Browser assets and Web Component acceptance
+        run: npm run web:check && npm run test:browser
+        working-directory: qwenbridge-typescript-sdk
 
   dual-sdk-e2e:
-    # QB-295: the offline dual-SDK end-to-end baseline. Real Quarkus server, the Java and
-    # TypeScript SDKs as independent consumers, deterministic local fixtures; no credentials,
-    # no external service, no database.
+    # QB-295: the offline dual-SDK end-to-end baseline (also master step 24). Real Quarkus server,
+    # the Java and TypeScript SDKs as independent consumers, deterministic local fixtures; no
+    # credentials, no external service, no database.
     name: Dual-SDK E2E (offline baseline)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
@@ -108,7 +179,7 @@ jobs:
           distribution: temurin
           java-version: 25
           cache: maven
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           cache: npm
@@ -124,6 +195,9 @@ jobs:
             e2e-report/report.md
             e2e-report/report.json
             e2e-report/*-offline.json
+            e2e-report/*-v1.json
+            e2e-report/*.log
+          retention-days: 30
 
   dual-sdk-e2e-live:
     # Authorized live-provider checks only: manual runs, an explicit repository variable, and
@@ -131,6 +205,7 @@ jobs:
     name: Dual-SDK E2E (authorized live providers)
     if: github.event_name == 'workflow_dispatch' && vars.QWENBRIDGE_E2E_LIVE_AUTHORIZED == 'yes'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
@@ -146,9 +221,10 @@ jobs:
           QWENBRIDGE_E2E_REST_PROVIDER_URL: ${{ secrets.QWENBRIDGE_E2E_REST_PROVIDER_URL }}
           QWENBRIDGE_E2E_REST_PROVIDER_TOKEN: ${{ secrets.QWENBRIDGE_E2E_REST_PROVIDER_TOKEN }}
 
-  api-compatibility:
-    name: API Compatibility
+  benchmark-smoke:
+    name: Benchmark Smoke Test
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
@@ -156,9 +232,36 @@ jobs:
           distribution: temurin
           java-version: 25
           cache: maven
-      - run: mvn -B -DskipTests package
-      - name: Verify API compatibility tests
-        run: mvn -B -pl qwenbridge-server -Dtest=ApiVersionControllerTest,ApiHealthControllerTest test
+      - run: >
+          mvn -B -pl qwenbridge-server -am test
+          -Dtest=DefaultBenchmarkEvaluationRunnerTest
+          -Dsurefire.failIfNoSpecifiedTests=false
+
+  container-scan:
+    name: Container Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Build image
+        run: docker build -f qwenbridge-server/Dockerfile -t qwenbridge:${{ github.sha }} .
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: qwenbridge:${{ github.sha }}
+          format: table
+          output: trivy-results.txt
+          severity: CRITICAL,HIGH
+          exit-code: 1
+          ignore-unfixed: true
+          ignorefile: .trivyignore
+      - name: Upload Trivy report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: trivy-container-scan-report
+          path: trivy-results.txt
+          retention-days: 30
 
   dependency-scan:
     name: Dependency Scan
@@ -172,7 +275,6 @@ jobs:
           distribution: temurin
           java-version: 25
           cache: maven
-
       - name: Restore Dependency-Check data
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
@@ -180,7 +282,6 @@ jobs:
           key: dependency-check-data-${{ runner.os }}-v2
           restore-keys: |
             dependency-check-data-${{ runner.os }}-
-
       - name: Generate dependency vulnerability report
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
@@ -189,7 +290,6 @@ jobs:
           -DnvdApiKeyEnvironmentVariable=NVD_API_KEY
           -DfailBuildOnCVSS=11
           -Dformat=HTML
-
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
@@ -197,58 +297,33 @@ jobs:
           path: target/dependency-check-report.*
           retention-days: 30
 
-  container-scan:
-    name: Container Scan
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-      - name: Build image
-        run: docker build -f qwenbridge-server/Dockerfile -t qwenbridge:${{ github.sha }} .
-
-      - name: Scan image with Trivy
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
-        with:
-          image-ref: qwenbridge:${{ github.sha }}
-          format: table
-          output: trivy-results.txt
-          severity: CRITICAL,HIGH
-          exit-code: 1
-          ignore-unfixed: true
-          ignorefile: .trivyignore
-
-      - name: Upload Trivy report
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: always()
-        with:
-          name: trivy-container-scan-report
-          path: trivy-results.txt
-          retention-days: 30
-
-  benchmark-smoke:
-    name: Benchmark Smoke Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
-        with:
-          distribution: temurin
-          java-version: 25
-          cache: maven
-      - run: mvn -B -pl qwenbridge-server -Dtest=DefaultBenchmarkEvaluationRunnerTest test
-
   docker-release-verification:
     name: Docker Release Verification
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: [unit-test, integration-test, architecture-test, api-compatibility, typescript-sdk]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Build image
         run: docker build -f qwenbridge-server/Dockerfile -t qwenbridge:ci .
+      - name: Database-free container starts and is ready
+        run: |
+          docker run -d --name qwenbridge-ci -p 127.0.0.1:18080:8080 \
+            -e QWENBRIDGE_SECURITY_AUTHENTICATION_REQUIRED=false qwenbridge:ci
+          for i in $(seq 1 60); do
+            curl -fs http://127.0.0.1:18080/q/health/ready >/dev/null && break
+            sleep 2
+          done
+          curl -fs http://127.0.0.1:18080/q/health/ready
+          docker logs qwenbridge-ci > /tmp/qwenbridge-container.log 2>&1 || true
+          docker rm -f qwenbridge-ci
       - name: Verify image metadata
         run: docker image inspect qwenbridge:ci >/tmp/qwenbridge-image.json
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
         with:
           name: docker-release-evidence
-          path: /tmp/qwenbridge-image.json
+          path: |
+            /tmp/qwenbridge-image.json
+            /tmp/qwenbridge-container.log
           retention-days: 30

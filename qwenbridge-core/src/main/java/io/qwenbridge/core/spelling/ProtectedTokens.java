@@ -25,19 +25,23 @@ public final class ProtectedTokens {
 
   private static final Pattern URL = Pattern.compile("(?i)\\b(?:https?|ftp)://\\S+|\\bwww\\.\\S+");
   private static final Pattern EMAIL =
-      Pattern.compile("[\\p{L}\\p{N}._%+-]+@[\\p{L}\\p{N}.-]+\\.\\p{L}{2,}");
-  private static final Pattern HOST = Pattern.compile("[\\p{L}\\p{N}-]+(?:\\.[\\p{L}\\p{N}-]+)+");
+      Pattern.compile(
+          "(?<![\\p{L}\\p{N}._%+-])[\\p{L}\\p{N}._%+-]+@[\\p{L}\\p{N}.-]+\\.\\p{L}{2,}");
+  private static final Pattern HOST =
+      Pattern.compile("(?<![\\p{L}\\p{N}-])[\\p{L}\\p{N}-]++(?:\\.[\\p{L}\\p{N}-]++)++");
   private static final Pattern AMOUNT =
-      Pattern.compile("\\p{Sc}\\s?\\p{N}[\\p{N}.,\\s]*|\\p{N}[\\p{N}.,]*\\s?\\p{Sc}");
+      Pattern.compile(
+          "\\p{Sc}\\s?\\p{N}[\\p{N}.,\\s]*+|(?<![\\p{N}.,])\\p{N}[\\p{N}.,]*+\\s?\\p{Sc}");
   private static final Pattern WORD =
       Pattern.compile("[\\p{L}\\p{M}\\u200C\\u200D]+(?:['’][\\p{L}\\p{M}]+)*");
 
   /** Any run joined by hyphens, underscores or dots, or containing digits. */
   private static final Pattern JOINED =
-      Pattern.compile("[\\p{L}\\p{N}\\p{M}]+(?:[-_.][\\p{L}\\p{N}\\p{M}]+)+");
+      Pattern.compile(
+          "(?<![\\p{L}\\p{N}\\p{M}])[\\p{L}\\p{N}\\p{M}]++(?:[-_.][\\p{L}\\p{N}\\p{M}]++)++");
 
   private static final Pattern WITH_DIGITS =
-      Pattern.compile("[\\p{L}\\p{M}]*\\p{N}[\\p{L}\\p{N}\\p{M}]*");
+      Pattern.compile("(?<![\\p{L}\\p{N}\\p{M}])[\\p{L}\\p{M}]*+\\p{N}[\\p{L}\\p{N}\\p{M}]*+");
 
   private ProtectedTokens() {}
 

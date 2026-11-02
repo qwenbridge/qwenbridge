@@ -252,7 +252,7 @@ final class Lexicon {
   private static final Pattern COMPARATOR = Pattern.compile("[<>≤≥]=?|!=");
   private static final Pattern NUMBER_WITH_UNIT =
       Pattern.compile(
-          "[\\p{Nd}]+(?:[.,][\\p{Nd}]+)?\\s?(?:%|[\\p{Sc}]|kr|sek|eur|usd|kg|g|ms|s|h|gb|mb|mib|gib)(?![\\p{L}])",
+          "(?<![\\p{Nd}])[\\p{Nd}]++(?:[.,][\\p{Nd}]++)?\\s?(?:%|[\\p{Sc}]|kr|sek|eur|usd|kg|g|ms|s|h|gb|mb|mib|gib)(?![\\p{L}])",
           Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
   static boolean hasExactIdentifier(String text) {

@@ -137,9 +137,16 @@ public final class PlatformStore {
   private record FileEntry(String value, Long expiresAt) {}
 
   private java.nio.file.Path file(String key) {
-    // The key's parts are validated to [A-Za-z0-9._-], so the name cannot leave the directory.
-    return java.nio.file.Path.of(fileDir)
-        .resolve(key.substring("qwenbridge:platform:".length()).replace(':', '~') + ".json");
+    // The key's parts are validated to [A-Za-z0-9._-]; the resolved file must also be a direct
+    // child of the state directory, so no key can name a path outside it.
+    var dir = java.nio.file.Path.of(fileDir);
+    String name = key.substring("qwenbridge:platform:".length()).replace(':', '~') + ".json";
+    if (name.contains("/") || name.contains("\\") || name.startsWith("."))
+      throw new IllegalArgumentException("Invalid state identity");
+    var path = dir.resolve(name).normalize();
+    if (!path.startsWith(dir) || !dir.equals(path.getParent()))
+      throw new IllegalArgumentException("Invalid state identity");
+    return path;
   }
 
   private String loadFile(String key) {

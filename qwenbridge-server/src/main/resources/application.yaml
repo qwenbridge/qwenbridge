@@ -180,6 +180,11 @@ qwenbridge:
 
 "%test":
   qwenbridge:
+    ai:
+      ollama:
+        # Tests never reach a model by accident: a developer machine with a running Ollama behaves
+        # exactly like CI. Live tests set QWENBRIDGE_AI_OLLAMA_BASE_URL explicitly (verify-release).
+        base-url: http://127.0.0.1:9
     # The existing Commerce test suites are written against the OpenSearch connector path.
     commerce:
       backend: opensearch

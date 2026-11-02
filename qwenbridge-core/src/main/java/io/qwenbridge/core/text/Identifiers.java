@@ -19,7 +19,7 @@ public final class Identifiers {
   /** Mixed letters and digits with at least 2 digits, e.g. SKU-1234, XPS9320, pod-7f9c2. */
   public static final Pattern CODE =
       Pattern.compile(
-          "(?<![\\p{L}\\p{N}])(?=[\\p{L}\\p{N}_-]*\\p{L})(?=(?:[\\p{L}_-]*\\p{N}){2})[\\p{L}\\p{N}][\\p{L}\\p{N}_-]{2,63}(?![\\p{L}\\p{N}])");
+          "(?<![\\p{L}\\p{N}])(?=[\\p{L}\\p{N}])(?=[\\p{L}\\p{N}_-]{0,63}\\p{L})(?=(?:[\\p{L}_-]{0,63}\\p{N}){2})[\\p{L}\\p{N}][\\p{L}\\p{N}_-]{2,63}(?![\\p{L}\\p{N}])");
 
   private Identifiers() {}
 

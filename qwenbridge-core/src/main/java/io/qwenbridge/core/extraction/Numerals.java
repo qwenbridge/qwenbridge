@@ -18,7 +18,9 @@ import java.util.regex.Pattern;
 public final class Numerals {
 
   /** A number token: digits with optional internal separators. */
-  public static final String TOKEN = "\\p{Nd}+(?:[.,\\u066B\\u066C]\\p{Nd}+)*";
+  // Possessive: digits and separators are disjoint, so nothing is given back, and a long run of
+  // groups cannot recurse the regex engine into a StackOverflowError.
+  public static final String TOKEN = "\\p{Nd}++(?:[.,\\u066B\\u066C]\\p{Nd}++)*+";
 
   static final Pattern TOKEN_PATTERN = Pattern.compile(TOKEN);
 

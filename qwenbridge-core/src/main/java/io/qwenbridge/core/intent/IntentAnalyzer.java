@@ -42,12 +42,12 @@ public final class IntentAnalyzer {
 
   private static final Pattern SEQUENTIAL =
       Pattern.compile(
-          "(?i)(?:,?\\s+and\\s+then\\s+|,\\s*then\\s+|\\s+och\\s+sedan\\s+|\\s+و\\s+سپس\\s+|\\s+و\\s+بعد\\s+)");
+          "(?i)(?:,?(?<!\\s)\\s+and\\s+then\\s+|,\\s*then\\s+|(?<!\\s)\\s+och\\s+sedan\\s+|(?<!\\s)\\s+و\\s+سپس\\s+|(?<!\\s)\\s+و\\s+بعد\\s+)");
   private static final Pattern PARALLEL =
       Pattern.compile(
-          "(?i)(?:\\s+(?:and|och|plus)\\s+(?=(?:a|an|also|en|ett)\\s)|\\s+و\\s+(?=یک\\s))");
+          "(?i)(?:(?<!\\s)\\s+(?:and|och|plus)\\s+(?=(?:a|an|also|en|ett)\\s)|(?<!\\s)\\s+و\\s+(?=یک\\s))");
   private static final Pattern SHARED_TAIL =
-      Pattern.compile("(?i),\\s*(?:both|båda|هر\\s+دو)\\s+.*$");
+      Pattern.compile("(?i),\\s*(?:both|båda|هر\\s+دو)\\s.*$");
 
   private final IntentTaxonomy taxonomy;
 

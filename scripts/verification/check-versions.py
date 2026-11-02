@@ -48,6 +48,10 @@ def check(root):
         for java in re.findall(r"java-version:\s*[\"']?([0-9]+)", workflow.read_text()):
             if java != "25":
                 errors.append(f"{workflow.name}: CI Java must be 25")
+        # The repository's Actions policy only allows actions pinned to a full commit SHA.
+        for action, ref in re.findall(r"uses:\s*([\w./-]+)@([^\s#]+)", workflow.read_text()):
+            if not action.startswith("./") and not re.fullmatch(r"[0-9a-f]{40}", ref):
+                errors.append(f"{workflow.name}: {action} must be pinned to a full commit SHA")
     return version, errors
 
 

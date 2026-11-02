@@ -34,7 +34,8 @@ public final class Redactor {
               + "|xox[abprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35})");
 
   private static final Pattern URL_USERINFO =
-      Pattern.compile("(?i)\\b([a-z][a-z0-9+.-]*://)[^/\\s:@]+:[^/\\s@]+@");
+      // The scheme is bounded (real schemes are short) so the scan is linear on long dotted runs.
+      Pattern.compile("(?i)\\b([a-z][a-z0-9+.-]{0,63}://)[^/\\s:@]++:[^/\\s@]++@");
 
   private static final Pattern SECRET_PAIR =
       Pattern.compile(

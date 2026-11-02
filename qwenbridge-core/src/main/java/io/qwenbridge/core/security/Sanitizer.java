@@ -47,7 +47,7 @@ public final class Sanitizer {
 
   private static final Pattern CLASS_NAME =
       Pattern.compile(
-          "\\b(?:[a-z_][a-z0-9_]*\\.){2,}[A-Z][A-Za-z0-9_$]*(?:\\.[A-Za-z_][A-Za-z0-9_$]*)*");
+          "\\b(?:[a-z_][a-z0-9_]*+\\.){2,}+[A-Z][A-Za-z0-9_$]*+(?:\\.[A-Za-z_][A-Za-z0-9_$]*+)*+");
 
   private Sanitizer() {}
 

@@ -171,6 +171,57 @@ the mandatory dual-SDK E2E verification both pass.
 
 The REST, SSE and SDK contracts are unchanged. The compatibility matrix lists the migrations.
 
+## CI rebuilt for this branch and CodeQL findings fixed (after PR #68)
+
+The first pull-request run (PR #68) failed:
+- **Architecture Tests, API Compatibility, Benchmark Smoke.** The jobs built only
+  `qwenbridge-server` (`-pl qwenbridge-server`), so its reactor dependencies were never built.
+- **TypeScript SDK, Dual-SDK E2E.** `actions/setup-node` was not pinned to a commit SHA, which the
+  repository's Actions policy requires.
+- **Unit Tests.** `ConversationContextApiTest` and `SuggestionsOnLocalCatalogTest` returned
+  `CLARIFICATION_REQUIRED`. The language detector labels their English query as another
+  language, so the search asks the model to translate it. The tests passed locally only because a
+  real Ollama was running.
+- **CodeQL.** 9 new high-severity alerts: 5 × `java/path-injection` in `PlatformStore`, 4 ×
+  `java/polynomial-redos`.
+
+**Fixes:**
+- **`.github/workflows/ci.yml`, rewritten for the 1.0 reactor:**
+  - every job builds the whole reactor (`-am`);
+  - `setup-node` is pinned;
+  - the four required check names are unchanged;
+  - Architecture Tests runs all guard tests plus the Quarkus-only audit;
+  - API Compatibility runs the server contract tests and the Java SDK fixture tests;
+  - the TypeScript job adds `npm audit --omit=dev`;
+  - Docker Release Verification starts the database-free container and waits for readiness.
+- **`.github/workflows/master-verification.yml`, new.** It runs
+  `scripts/qwenbridge-final-verification.sh`, the same master script as every task, on demand,
+  nightly and after every push to `main`. It is not a required pull-request check: it needs the
+  model stack and runs for a long time.
+- **`check-versions.py`.** It now rejects any workflow action that is not pinned to a full commit
+  SHA, and `verification-test.sh` has a self-test for that.
+- **The `%test` profile.** It points the model client at an unreachable address, so tests behave
+  the same with or without a local Ollama. The two tests now use a deterministic stand-in for
+  the model translation.
+- **`PlatformStore.file`.** The resolved file must be a direct child of the state directory.
+- **Linear, non-recursive regular expressions on user text:**
+  - `ProtectedTokens` (`EMAIL`, `HOST`, `JOINED`, `AMOUNT`, `WITH_DIGITS`);
+  - `Identifiers.CODE`;
+  - `IntentAnalyzer` (`SEQUENTIAL`, `PARALLEL`, `SHARED_TAIL`);
+  - `Numerals.TOKEN`, `Sanitizer.CLASS_NAME`, `Lexicon.NUMBER_WITH_UNIT`, `Redactor.URL_USERINFO`.
+
+  A probe of every static pattern in the core and server found more problems than CodeQL
+  reported. Several patterns threw `StackOverflowError` on a few thousand characters of
+  `1.1.1…` or `x.x.x…`, and others took up to 20 s or 61 s on long runs. All are now linear: a
+  few milliseconds on 200,000 characters. `RegexLinearityTest` guards this.
+- **Not changed:** `ModelDescriptor.SECRET_KEY`. It only checks configuration metadata keys.
+
+**Local verification of the fixes:**
+- full build with all tests and no model reachable: core 648, packs 17 + 5, server 970, Java SDK
+  76;
+- every CI job command, Spotless, the code-quality profile and the Quarkus-only audit: PASS;
+- dual-SDK E2E in all modes: 90/90, 0 divergent.
+
 ## Findings not fixed (outside QB-287 scope)
 
 - **The `prod` profile does not fail at startup without API principals.** `ApiIdentity` checks
