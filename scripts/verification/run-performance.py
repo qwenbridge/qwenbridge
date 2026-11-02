@@ -243,6 +243,11 @@ def main():
                    K6_SUMMARY_TREND_STATS="avg,min,med,max,p(90),p(95),p(99)")
         env["BASE_URL"] = os.environ.get("BASE_URL", "http://localhost:" + os.environ.get("APP_PORT", "8080"))
         if name == "commerce-throughput": env["COMMERCE_THROUGHPUT"] = "true"
+        # Cold requests each run the model; on a CPU-only runner the limits are set per host.
+        if name == "cold":
+            for limit in ("P95", "P99"):
+                if os.environ.get(f"PERF_COLD_{limit}_MS"):
+                    env[f"PERF_{limit}_MS"] = os.environ[f"PERF_COLD_{limit}_MS"]
         before_pool = pool_metrics(env["BASE_URL"])
         host_base = os.environ.get("BASE_URL", "http://localhost:" + os.environ.get("APP_PORT", "8080"))
         before_server = prometheus(host_base)
@@ -256,7 +261,7 @@ def main():
             env["BASE_URL"] = "http://qwenbridge-app:8080"
             cmd = compose() + ["run", "--rm", "--no-deps", "-T", "--user", f"{os.getuid()}:{os.getgid()}",
                 "-v", str(folder) + ":/reports"]
-            for key in ["BASE_URL", "PERF_TOTAL_REQUESTS", "PERF_VUS", "PERF_MAX_DURATION", "PERF_CACHE_EXPECTATION", "K6_SUMMARY_TREND_STATS", "COMMERCE_THROUGHPUT", "QWENBRIDGE_TEST_API_TOKEN"]:
+            for key in ["BASE_URL", "PERF_TOTAL_REQUESTS", "PERF_VUS", "PERF_MAX_DURATION", "PERF_CACHE_EXPECTATION", "K6_SUMMARY_TREND_STATS", "COMMERCE_THROUGHPUT", "QWENBRIDGE_TEST_API_TOKEN", "PERF_P95_MS", "PERF_P99_MS"]:
                 if key in env:
                     cmd += ["-e", key]
             cmd += ["qwenbridge-k6", "run", "--summary-export", "/reports/" + summary.name,
@@ -290,6 +295,7 @@ def main():
         phase.update({key: value - before_pool[key] for key, value in after_pool.items()})
         phase["passed"] = phase["passed"] and all(phase[key] == 0 for key in before_pool)
         phase["vus"] = users
+        phase["latency_limits_ms"] = {"p95": int(env.get("PERF_P95_MS", "5000")), "p99": int(env.get("PERF_P99_MS", "15000"))}
         results["phases"][name] = phase
         (folder / "results.json").write_text(json.dumps(results, indent=2) + "\n")
         print(json.dumps({"phase": name, **phase}), flush=True)

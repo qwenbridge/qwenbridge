@@ -19,11 +19,15 @@ if (!Number.isSafeInteger(totalRequests) || totalRequests < 1 ||
   throw new Error("PERF_TOTAL_REQUESTS and PERF_VUS must be positive integers; VUs cannot exceed requests");
 }
 const cacheExpectation = __ENV.PERF_CACHE_EXPECTATION || "any";
+// Latency limits; run-performance.py lowers or raises them per phase (PERF_COLD_P95_MS, for a
+// cold phase on a CPU-only model).
+const p95Limit = Number(__ENV.PERF_P95_MS || "5000");
+const p99Limit = Number(__ENV.PERF_P99_MS || "15000");
 const thresholds = {
   checks: ["rate==1"],
   iterations: [`count==${totalRequests}`],
   http_req_failed: ["rate<0.05"],
-  http_req_duration: ["p(95)<5000", "p(99)<15000"]
+  http_req_duration: [`p(95)<${p95Limit}`, `p(99)<${p99Limit}`]
 };
 if (cacheExpectation === "miss") thresholds.cache_hit_rate = ["rate==0"];
 if (cacheExpectation === "hit") thresholds.cache_hit_rate = ["rate>0.99"];
@@ -84,12 +88,24 @@ export default function () {
     if (step.step === "AIAnalysisStep") aiAnalysisTime.add(step.durationMs);
     if (step.step === "DecisionStep") executionTime.add(step.durationMs);
   }
+  const analysed = data !== null && data.semanticValidated === true &&
+    data.confidenceAssessment && data.confidenceAssessment.method === "model-signal-min-v1";
+  if (!analysed || !(data && data.search && data.search.available === true)) {
+    // Evidence for a failed check: which query, and what the server reported instead.
+    console.warn(JSON.stringify({
+      requestId, lang: selected.lang, query: selected.query, status: response.status,
+      semanticValidated: data && data.semanticValidated,
+      confidenceMethod: data && data.confidenceAssessment && data.confidenceAssessment.method,
+      search: data && data.search, degraded: data && data.degraded,
+      warnings: data && data.warnings,
+      steps: ((data && data.pipelineTrace) || []).map(s => `${s.step}:${s.status || ""}:${s.durationMs}`)
+    }));
+  }
   check(response, {
     "status is 200": r => r.status === 200,
     "has request id": () => data !== null && data.requestId === requestId,
     "has pipeline trace": () => data !== null && Array.isArray(data.pipelineTrace),
-    "has model analysis": () => data !== null && data.semanticValidated === true &&
-      data.confidenceAssessment && data.confidenceAssessment.method === "model-signal-min-v1",
+    "has model analysis": () => Boolean(analysed),
     "has search execution": () => data !== null && data.search && data.search.available === true,
     "cache contract": () => data !== null && data.cache && data.cache.enabled === true &&
       (cacheExpectation !== "miss" || miss)

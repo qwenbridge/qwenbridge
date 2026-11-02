@@ -64,6 +64,16 @@ jobs:
       # The test HTTP client gives up after 30 s by default; the first model call (loading the
       # model into memory on CPU) can take longer.
       QUARKUS_HTTP_TEST_TIMEOUT: 300s
+      # Latency depends on the machine. The approved latency baselines (evaluation/baselines) were
+      # measured on an 8-CPU developer machine; on this 4-CPU shared runner they are reported, not
+      # gated. Quality and error gates still apply. Scenario J injects a 50 ms delay, larger than the
+      # runner's own keyword p95 (10-15 ms) and its noise, and compares it with the same run.
+      QWENBRIDGE_PERF_HARDWARE: github-hosted-4cpu
+      QWENBRIDGE_BENCHMARK_INJECTED_DELAY_MS: "50"
+      # Each cold request runs qwen2.5 on the CPU (about 30 s); the 5 s / 15 s limits are for a
+      # machine with a GPU or Apple silicon. Cached phases keep the default limits.
+      PERF_COLD_P95_MS: "60000"
+      PERF_COLD_P99_MS: "90000"
     steps:
       - name: Free runner disk space
         run: |
@@ -97,7 +107,21 @@ jobs:
         run: |
           npm --prefix qwenbridge-typescript-sdk ci
           npm --prefix qwenbridge-typescript-sdk exec -- playwright install --with-deps chromium
+      # The script builds the application image with Docker Compose. Compose uses this Buildx
+      # builder, whose layers come from the GitHub Actions cache shared with CI (scope
+      # qwenbridge-image), so the Maven dependency layer is not downloaded again on every run.
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        id: buildx
+      - name: Warm the application image cache
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: qwenbridge-server/Dockerfile
+          cache-from: type=gha,scope=qwenbridge-image
+          cache-to: type=gha,scope=qwenbridge-image,mode=max
       - name: Master verification
+        env:
+          BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}
         run: bash scripts/qwenbridge-final-verification.sh
       - name: Collect logs
         if: always()
@@ -106,6 +130,8 @@ jobs:
           cp -R logs master-evidence/ 2>/dev/null || true
           docker compose ps > master-evidence/compose-ps.txt 2>&1 || true
           docker compose logs --no-color > master-evidence/compose.log 2>&1 || true
+          # TLS material generated for the secure OpenSearch checks: keep certificates, drop keys.
+          find master-evidence -name '*key*.pem' -delete
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
