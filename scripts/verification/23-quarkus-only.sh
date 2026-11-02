@@ -27,7 +27,8 @@ qb294_quarkus_only_validation() {
 
   find . -path ./node_modules -prune -o -name 'qb294-*.txt' -path '*/target/*' -print0 \
     | xargs -0 rm -f
-  mvn -B -q dependency:tree -DoutputFile=target/qb294-tree.txt >"${work}/tree.log" 2>&1 || {
+  # compile first in the same run, so the reactor modules resolve on a fresh machine (CI).
+  mvn -B -q -DskipTests compile dependency:tree -DoutputFile=target/qb294-tree.txt >"${work}/tree.log" 2>&1 || {
     tail -20 "${work}/tree.log" >&2
     return 1
   }
