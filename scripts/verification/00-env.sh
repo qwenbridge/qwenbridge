@@ -49,6 +49,9 @@ FORCE_FRESH="${FORCE_FRESH:-false}"
 RESTART_DOCKER="${RESTART_DOCKER:-false}"
 PULL_DOCKER_IMAGES="${PULL_DOCKER_IMAGES:-true}"
 NO_CACHE_BUILD="${NO_CACHE_BUILD:-false}"
+# CI builds the application image beforehand (from its layer cache) and sets this to true; Compose
+# then starts that image instead of building it again.
+APP_IMAGE_PREBUILT="${APP_IMAGE_PREBUILT:-false}"
 
 PASSED=0
 FAILED=0

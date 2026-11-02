@@ -129,16 +129,29 @@ jobs:
       # qwenbridge-image), so the Maven dependency layer is not downloaded again on every run.
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         id: buildx
-      - name: Warm the application image cache
+      - name: Application image name
+        # The name Compose gives the built qwenbridge-app image (<project>-qwenbridge-app).
+        id: appimage
+        run: |
+          name="$(docker compose --profile production --profile opensearch config --images | grep -- '-qwenbridge-app$')"
+          test -n "${name}"
+          echo "name=${name}" >> "${GITHUB_OUTPUT}"
+      - name: Build the application image from the layer cache
+        # Compose's own build cannot read the GitHub Actions cache and downloaded every Maven
+        # dependency again (about 1,800 files). This build uses the cache and loads the image under
+        # the Compose name; the verification starts it with APP_IMAGE_PREBUILT=true.
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           file: qwenbridge-server/Dockerfile
+          load: true
+          tags: ${{ steps.appimage.outputs.name }}
           cache-from: type=gha,scope=qwenbridge-image
           cache-to: type=gha,scope=qwenbridge-image,mode=max
       - name: Master verification
         env:
           BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}
+          APP_IMAGE_PREBUILT: "true"
         run: bash scripts/qwenbridge-final-verification.sh
       - name: Collect logs
         if: always()
