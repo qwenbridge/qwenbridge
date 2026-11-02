@@ -43,4 +43,14 @@ class IntentAnalysisTest {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("confidence must be between 0.0 and 1.0");
   }
+
+  @Test
+  void shouldRejectNonFiniteConfidence() {
+    for (double confidence :
+        new double[] {Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY}) {
+      assertThatThrownBy(() -> new IntentAnalysis(IntentType.PRODUCT_SEARCH, "reason", confidence))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage("confidence must be between 0.0 and 1.0");
+    }
+  }
 }

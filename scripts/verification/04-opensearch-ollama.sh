@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+# Sourced by scripts/verify-release.sh (not executed directly).
 verify_ollama_models() {
   local attempt=""
   local models=""
@@ -30,7 +32,7 @@ seed_opensearch() {
   OPENSEARCH_INDEX="${OPENSEARCH_INDEX}" \
   OLLAMA_URL="${OLLAMA_URL:-http://localhost:11434}" \
   QWENBRIDGE_EMBEDDING_MODEL="${EMBEDDING_MODEL}" \
-  ./scripts/opensearch-seed.sh || return 1
+  bash ./scripts/opensearch-seed.sh || return 1
 
   curl -fsS "${OPENSEARCH_URL}/${OPENSEARCH_INDEX}/_count" -o "${body}" || return 1
   jq . "${body}"

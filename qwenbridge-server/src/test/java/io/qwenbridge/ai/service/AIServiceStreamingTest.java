@@ -9,10 +9,10 @@ import io.qwenbridge.ai.contract.StreamingChatRequest;
 import io.qwenbridge.ai.provider.spi.AIProvider;
 import io.qwenbridge.ai.provider.spi.AIProviderResolver;
 import io.qwenbridge.testsupport.MutinyUnitTestExtension;
+import io.smallrye.mutiny.Multi;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import io.smallrye.mutiny.Multi;
 
 @ExtendWith(MutinyUnitTestExtension.class)
 class AIServiceStreamingTest {

@@ -49,7 +49,12 @@ Provider-specific code must stay behind the AI Provider SPI.
 
 QwenBridge supports pluggable search providers through the Search Provider SPI.
 
-The default production-oriented search backend is OpenSearch.
+The default search backend is in process (QB-293): `qwenbridge.search.backend=in-memory` for the
+v1 pipeline and `qwenbridge.commerce.backend=memory` for Commerce search. OpenSearch is the only
+built-in optional backend, selected explicitly (`qwenbridge.search.backend=opensearch`,
+`qwenbridge.commerce.backend=opensearch`); it is never contacted, not even by the readiness check,
+unless selected (QB-287). See
+[database-free runtime](../architecture/database-free-runtime.md).
 
 Typical values include:
 

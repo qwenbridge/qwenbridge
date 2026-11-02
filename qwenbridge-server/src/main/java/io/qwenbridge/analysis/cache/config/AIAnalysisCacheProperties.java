@@ -9,7 +9,7 @@ public class AIAnalysisCacheProperties {
   private String keyPrefix = "qwenbridge:analysis";
   private String provider = "ollama";
   private String model = "qwen2.5";
-  private String version = "v4";
+  private String version = "v10";
   private Duration analysisTimeout = Duration.ofSeconds(10);
   private Duration ttl = Duration.ofMinutes(10);
   private Redis redis = new Redis();
@@ -67,7 +67,7 @@ public class AIAnalysisCacheProperties {
   }
 
   public void setVersion(String version) {
-    this.version = safe(version, "v4");
+    this.version = safe(version, "v10");
   }
 
   public Duration ttl() {

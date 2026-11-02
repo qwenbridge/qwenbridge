@@ -17,11 +17,11 @@ import io.qwenbridge.analysis.service.SearchAnalysisService;
 import io.qwenbridge.streaming.ai.AIStreamingEventPublisher;
 import io.qwenbridge.streaming.config.StreamingProperties;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.RequiredArgsConstructor;
-import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 @RequiredArgsConstructor
@@ -114,7 +114,8 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
     String prompt = promptBuilder.build(query);
 
     if (requestId == null || requestId.isBlank()) {
-      String content = aiService.chat(new ChatRequest(prompt)).content();
+      String content =
+          aiService.chat(new ChatRequest(prompt, promptBuilder.outputSchema())).content();
       return parser.parse(content, query);
     }
 
@@ -123,7 +124,7 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
 
     try {
       aiService
-          .streamChat(new StreamingChatRequest(prompt))
+          .streamChat(new StreamingChatRequest(prompt, promptBuilder.outputSchema()))
           .ifNoItem()
           .after(streamingProperties.maxAiStreamDuration())
           .fail()
@@ -134,7 +135,7 @@ public class QwenSearchAnalysisService implements SearchAnalysisService {
               chunk -> {
                 if (!streamingSessionRegistry.isRequestCancelled(requestId)
                     && chunk.content() != null
-                    && !chunk.content().isBlank()) {
+                    && !chunk.content().isEmpty()) {
                   long index = tokenIndex.incrementAndGet();
 
                   if (index > streamingProperties.maxAiTokenCount()

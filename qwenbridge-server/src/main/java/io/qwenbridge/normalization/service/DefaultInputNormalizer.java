@@ -1,12 +1,13 @@
 package io.qwenbridge.normalization.service;
 
+import io.quarkus.arc.All;
 import io.qwenbridge.normalization.model.NormalizationTraceItem;
 import io.qwenbridge.normalization.model.NormalizedInput;
 import io.qwenbridge.normalization.rule.InputNormalizationRule;
-import io.quarkus.arc.All;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @ApplicationScoped
@@ -16,7 +17,12 @@ public class DefaultInputNormalizer implements InputNormalizer {
 
   @Inject
   public DefaultInputNormalizer(@All List<InputNormalizationRule> rules) {
-    this.rules = rules;
+    this.rules =
+        rules.stream()
+            .sorted(
+                Comparator.comparingInt(InputNormalizationRule::order)
+                    .thenComparing(InputNormalizationRule::name))
+            .toList();
   }
 
   @Override

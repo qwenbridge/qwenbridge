@@ -1,5 +1,9 @@
 # Retrieval Quality Benchmark
 
+> QwenBridge 1.0: the multilingual, multi-domain evaluation (keyword, vector and hybrid on the same
+> held-out queries) is described in [quality-evaluation.md](quality-evaluation.md), and metric
+> definitions are in [metrics.md](metrics.md). This page describes the earlier v1 benchmark.
+
 QwenBridge includes a reproducible retrieval-quality evaluation foundation.
 
 ## Goal

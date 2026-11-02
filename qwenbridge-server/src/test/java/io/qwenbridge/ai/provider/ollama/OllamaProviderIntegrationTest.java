@@ -2,10 +2,10 @@ package io.qwenbridge.ai.provider.ollama;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.quarkus.test.junit.QuarkusTest;
 import io.qwenbridge.ai.contract.ChatRequest;
 import io.qwenbridge.ai.contract.ChatResponse;
 import io.qwenbridge.ai.service.AIService;
-import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;

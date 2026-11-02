@@ -2,11 +2,11 @@ package io.qwenbridge.analysis.cache.coalescing;
 
 import io.qwenbridge.analysis.cache.CacheKey;
 import io.qwenbridge.analysis.model.SearchAnalysis;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
-import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class AIAnalysisSingleFlight {

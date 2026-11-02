@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+# Sourced by scripts/verify-release.sh (not executed directly).
 v8_release_docs_validation() {
   [[ -f "docs/roadmap/V8.md" ]] \
     && [[ -f "docs/release/V8-release-checklist.md" ]] \
@@ -83,7 +85,9 @@ v8_docker_runtime_hardening_validation() {
     dockerfile="${SERVER_DIR}/Dockerfile"
   fi
 
-  grep -q "gcr.io/distroless/java21-debian12:nonroot" "${dockerfile}" \
+  grep -q 'FROM eclipse-temurin:25-jre' "${dockerfile}" \
+    && grep -q 'USER 65532:65532' "${dockerfile}" \
+    && grep -q 'quarkus-run.jar' "${dockerfile}" \
     && grep -q "MaxRAMPercentage" "${dockerfile}" \
     && grep -q "ExitOnOutOfMemoryError" "${dockerfile}" \
     && docker_runtime_user_validation \

@@ -1,12 +1,13 @@
 package io.qwenbridge.pipeline.step;
 
+import io.qwenbridge.analysis.model.SearchAnalysis;
+import io.qwenbridge.confidence.ConfidenceAssessment;
 import io.qwenbridge.confidence.ConfidenceService;
 import io.qwenbridge.event.model.PipelineStage;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.result.ConfidenceResult;
-import io.qwenbridge.pipeline.result.RewriteResult;
-import lombok.RequiredArgsConstructor;
 import jakarta.enterprise.context.ApplicationScoped;
+import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
 @RequiredArgsConstructor
@@ -37,8 +38,9 @@ public class ConfidenceStep implements PipelineStep<ConfidenceResult> {
   @Override
   public ConfidenceResult execute(ExecutionContext context) {
 
-    return new ConfidenceResult(
-        confidenceService.calculate(
-            context.request().originalQuery(), context.get(RewriteResult.class).rewrites()));
+    SearchAnalysis analysis = context.get(SearchAnalysis.class);
+    ConfidenceAssessment assessment = confidenceService.assess(analysis);
+    context.store(ConfidenceAssessment.class, assessment);
+    return new ConfidenceResult(assessment.value());
   }
 }

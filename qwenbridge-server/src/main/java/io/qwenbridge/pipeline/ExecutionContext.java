@@ -80,6 +80,9 @@ public class ExecutionContext {
     PolicyResult policy = get(PolicyResult.class);
     DecisionResult decision = get(DecisionResult.class);
 
-    return !threat.safe() || !policy.passed() || decision.type() == DecisionType.BLOCK;
+    return !threat.safe()
+        || !policy.passed()
+        || decision.type() == DecisionType.BLOCK
+        || decision.type() == DecisionType.CLARIFY;
   }
 }

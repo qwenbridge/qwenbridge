@@ -28,18 +28,21 @@
     </developer>
   </developers>
 
+  <modules>
+    <module>qwenbridge-core</module>
+    <module>qwenbridge-plugin-sdk</module>
+    <module>qwenbridge-commerce-pack</module>
+    <module>qwenbridge-library-pack</module>
+    <module>qwenbridge-server</module>
+    <module>qwenbridge-java-sdk</module>
+  </modules>
+
   <scm>
     <connection>scm:git:https://github.com/qwenbridge/qwenbridge.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/qwenbridge/qwenbridge.git</developerConnection>
-    <url>https://github.com/qwenbridge/qwenbridge</url>
     <tag>HEAD</tag>
+    <url>https://github.com/qwenbridge/qwenbridge</url>
   </scm>
-
-  <modules>
-    <module>qwenbridge-server</module>
-    <module>qwenbridge-java-sdk</module>
-    <module>examples/java-sdk-example</module>
-  </modules>
 
   <properties>
     <java.version>25</java.version>
@@ -90,6 +93,18 @@
         </plugin>
 
         <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>${spotless-maven-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <version>${spotbugs-maven-plugin.version}</version>
+        </plugin>
+
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${compiler-plugin.version}</version>
@@ -97,6 +112,11 @@
             <release>${maven.compiler.release}</release>
             <parameters>true</parameters>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>${maven-enforcer-plugin.version}</version>
         </plugin>
 
         <plugin>
@@ -110,23 +130,6 @@
             </systemPropertyVariables>
           </configuration>
         </plugin>
-
-        <plugin>
-          <groupId>com.diffplug.spotless</groupId>
-          <artifactId>spotless-maven-plugin</artifactId>
-          <version>${spotless-maven-plugin.version}</version>
-        </plugin>
-
-        <plugin>
-          <groupId>com.github.spotbugs</groupId>
-          <artifactId>spotbugs-maven-plugin</artifactId>
-          <version>${spotbugs-maven-plugin.version}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-enforcer-plugin</artifactId>
-          <version>${maven-enforcer-plugin.version}</version>
-        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -137,7 +140,7 @@
         <configuration>
           <java>
             <googleJavaFormat>
-              <version>1.24.0</version>
+              <version>1.30.0</version>
               <style>GOOGLE</style>
               <reflowLongStrings>true</reflowLongStrings>
             </googleJavaFormat>
@@ -153,6 +156,28 @@
             </sortPom>
           </pom>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-java25</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>[25,26)</version>
+                </requireJavaVersion>
+                <requireMavenVersion>
+                  <version>[${maven.version},)</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
@@ -184,6 +209,7 @@
               <threshold>${spotbugs.threshold}</threshold>
               <failOnError>true</failOnError>
               <xmlOutput>true</xmlOutput>
+              <excludeFilterFile>${maven.multiModuleProjectDirectory}/spotbugs-exclude.xml</excludeFilterFile>
             </configuration>
             <executions>
               <execution>
@@ -225,16 +251,18 @@
       <id>central-release</id>
       <build>
         <plugins>
+
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-source-plugin</artifactId>
-            <version>${maven-source-plugin.version}</version>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>${maven-gpg-plugin.version}</version>
             <executions>
               <execution>
-                <id>attach-sources</id>
+                <id>sign-artifacts</id>
                 <goals>
-                  <goal>jar-no-fork</goal>
+                  <goal>sign</goal>
                 </goals>
+                <phase>verify</phase>
               </execution>
             </executions>
           </plugin>
@@ -257,17 +285,15 @@
               </execution>
             </executions>
           </plugin>
-
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-gpg-plugin</artifactId>
-            <version>${maven-gpg-plugin.version}</version>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>${maven-source-plugin.version}</version>
             <executions>
               <execution>
-                <id>sign-artifacts</id>
-                <phase>verify</phase>
+                <id>attach-sources</id>
                 <goals>
-                  <goal>sign</goal>
+                  <goal>jar-no-fork</goal>
                 </goals>
               </execution>
             </executions>

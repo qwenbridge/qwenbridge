@@ -26,3 +26,16 @@ logs/
 
 # Docker
 docker-data/
+
+# JavaScript dependencies and generated packages
+node_modules/
+dist/
+*.tgz
+__pycache__/
+
+# Local verification bundles
+qwenbridge-verification-*/
+qwenbridge-verification-*.zip
+
+# Local assistant settings
+.claude/

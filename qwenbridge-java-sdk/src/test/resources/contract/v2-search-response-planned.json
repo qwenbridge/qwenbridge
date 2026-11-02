@@ -1,0 +1,470 @@
+{
+  "apiVersion": 2,
+  "requestId": "70f2aca4-2ae1-400a-9574-5daaf9f0500f",
+  "status": "UNAVAILABLE",
+  "translation": {
+    "version": 1,
+    "original": "black Nike shoes size 42 under 100 EUR not refurbished in stock",
+    "sourceLanguage": "en",
+    "targetLanguage": "en",
+    "translated": "black Nike shoes size 42 under 100 EUR not refurbished in stock",
+    "constraintsPreserved": true,
+    "issues": []
+  },
+  "intent": "PRODUCT_SEARCH",
+  "queryIR": {
+    "version": 1,
+    "schemaId": "commerce",
+    "schemaVersion": 1,
+    "tenant": "shopA",
+    "constraints": [
+      {
+        "field": "brand",
+        "operator": "EQ",
+        "value": "Nike",
+        "evidence": {
+          "source": "original",
+          "start": 6,
+          "end": 10,
+          "quote": "Nike"
+        }
+      },
+      {
+        "field": "color",
+        "operator": "EQ",
+        "value": "black",
+        "evidence": {
+          "source": "original",
+          "start": 0,
+          "end": 5,
+          "quote": "black"
+        }
+      },
+      {
+        "field": "size",
+        "operator": "EQ",
+        "value": "42",
+        "evidence": {
+          "source": "original",
+          "start": 22,
+          "end": 24,
+          "quote": "42"
+        }
+      },
+      {
+        "field": "price",
+        "operator": "LT",
+        "value": "100",
+        "evidence": {
+          "source": "original",
+          "start": 25,
+          "end": 38,
+          "quote": "under 100 EUR"
+        }
+      },
+      {
+        "field": "currency",
+        "operator": "EQ",
+        "value": "EUR",
+        "evidence": {
+          "source": "original",
+          "start": 35,
+          "end": 38,
+          "quote": "EUR"
+        }
+      },
+      {
+        "field": "condition",
+        "operator": "NE",
+        "value": "refurbished",
+        "evidence": {
+          "source": "original",
+          "start": 39,
+          "end": 54,
+          "quote": "not refurbished"
+        }
+      },
+      {
+        "field": "inStock",
+        "operator": "EQ",
+        "value": "true",
+        "evidence": {
+          "source": "original",
+          "start": 55,
+          "end": 63,
+          "quote": "in stock"
+        }
+      }
+    ],
+    "fields": {
+      "size": {
+        "type": "TEXT",
+        "operators": [
+          "EQ",
+          "NE"
+        ],
+        "indexField": "size.keyword",
+        "normalization": "LOWERCASE"
+      },
+      "inStock": {
+        "type": "BOOLEAN",
+        "operators": [
+          "EQ",
+          "NE"
+        ],
+        "indexField": "inStock",
+        "normalization": "NONE"
+      },
+      "price": {
+        "type": "DECIMAL",
+        "operators": [
+          "NE",
+          "LTE",
+          "LT",
+          "GTE",
+          "EQ",
+          "GT"
+        ],
+        "indexField": "price",
+        "normalization": "NONE"
+      },
+      "brand": {
+        "type": "TEXT",
+        "operators": [
+          "EQ",
+          "NE"
+        ],
+        "indexField": "brand.keyword",
+        "normalization": "LOWERCASE"
+      },
+      "currency": {
+        "type": "TEXT",
+        "operators": [
+          "EQ"
+        ],
+        "indexField": "currency",
+        "normalization": "UPPERCASE"
+      },
+      "location": {
+        "type": "TEXT",
+        "operators": [
+          "EQ",
+          "NE"
+        ],
+        "indexField": "location.keyword",
+        "normalization": "LOWERCASE"
+      },
+      "condition": {
+        "type": "TEXT",
+        "operators": [
+          "EQ",
+          "NE"
+        ],
+        "indexField": "condition.keyword",
+        "normalization": "LOWERCASE"
+      },
+      "availableAt": {
+        "type": "DATE",
+        "operators": [
+          "NE",
+          "LTE",
+          "LT",
+          "GTE",
+          "EQ",
+          "GT"
+        ],
+        "indexField": "availableAt",
+        "normalization": "NONE"
+      },
+      "category": {
+        "type": "TEXT",
+        "operators": [
+          "EQ",
+          "NE"
+        ],
+        "indexField": "category",
+        "normalization": "LOWERCASE"
+      },
+      "color": {
+        "type": "TEXT",
+        "operators": [
+          "EQ",
+          "NE"
+        ],
+        "indexField": "color.keyword",
+        "normalization": "LOWERCASE"
+      },
+      "weightKg": {
+        "type": "DECIMAL",
+        "operators": [
+          "NE",
+          "LTE",
+          "LT",
+          "GTE",
+          "EQ",
+          "GT"
+        ],
+        "indexField": "weightKg",
+        "normalization": "NONE"
+      }
+    }
+  },
+  "clarificationQuestions": [],
+  "results": {
+    "hits": [],
+    "totalHits": 0,
+    "tookMillis": 73,
+    "empty": true
+  },
+  "confidence": {
+    "value": 0.0,
+    "method": "model-signal-min-v1",
+    "calibrated": false,
+    "signals": {
+      "intent": 0.95,
+      "decision": 0.9,
+      "semantic": 0.95
+    }
+  },
+  "evidence": [
+    {
+      "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "tenant": "shopA",
+      "requestId": "",
+      "source": "70f2aca4-2ae1-400a-9574-5daaf9f0500f",
+      "occurredAt": "2026-11-01T15:45:13.968585Z",
+      "observedAt": "2026-11-01T15:45:13.968585Z",
+      "claim": "Search constraints",
+      "spans": [
+        {
+          "source": "original",
+          "start": 6,
+          "end": 10,
+          "quote": "Nike"
+        },
+        {
+          "source": "original",
+          "start": 0,
+          "end": 5,
+          "quote": "black"
+        },
+        {
+          "source": "original",
+          "start": 22,
+          "end": 24,
+          "quote": "42"
+        },
+        {
+          "source": "original",
+          "start": 25,
+          "end": 38,
+          "quote": "under 100 EUR"
+        },
+        {
+          "source": "original",
+          "start": 35,
+          "end": 38,
+          "quote": "EUR"
+        },
+        {
+          "source": "original",
+          "start": 39,
+          "end": 54,
+          "quote": "not refurbished"
+        },
+        {
+          "source": "original",
+          "start": 55,
+          "end": 63,
+          "quote": "in stock"
+        }
+      ],
+      "parentId": null
+    },
+    {
+      "id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "tenant": "shopA",
+      "requestId": "",
+      "source": "opensearch:qwenbridge-products",
+      "occurredAt": "2026-11-01T15:45:13.968863Z",
+      "observedAt": "2026-11-01T15:45:13.968863Z",
+      "claim": "UNAVAILABLE:[]",
+      "spans": [],
+      "parentId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ],
+  "suggestions": [],
+  "reranking": "qwenbridge-baseline@1.0+none",
+  "tookMs": 573,
+  "nextCursor": null,
+  "timings": {
+    "translation": 325,
+    "execution": 119,
+    "interpretation": 53,
+    "analysis": 0,
+    "input-validation": 29
+  },
+  "policies": [
+    {
+      "pack": "platform-authorization",
+      "version": "1.0.0",
+      "rule": "scope",
+      "effect": "ALLOW",
+      "reason": "Allowed by the caller's scope; no domain pack policy applies"
+    }
+  ],
+  "lockedFields": [],
+  "contract": "commerce-search/1.0",
+  "retrieval": {
+    "requested": "KEYWORD_ONLY",
+    "executed": "NONE",
+    "reasons": [
+      "LEXICAL_NEED"
+    ],
+    "degradations": [
+      "opensearch:PROVIDER_FAILED:UNAVAILABLE"
+    ],
+    "degraded": true,
+    "removedByValidation": 0,
+    "providers": [
+      "opensearch",
+      "opensearch-vector"
+    ],
+    "warnings": [],
+    "rankingPolicy": "qwenbridge-baseline@1.0",
+    "reranking": "none",
+    "outcome": "PROVIDER_FAILED"
+  },
+  "interpretation": {
+    "queryIrVersion": "1.0",
+    "intents": [
+      "search"
+    ],
+    "retrievalNeeds": [
+      "LEXICAL",
+      "STRUCTURED"
+    ],
+    "semanticSignals": [],
+    "constraints": [
+      {
+        "id": "m1",
+        "field": "brand",
+        "operator": "EQ",
+        "status": "EXECUTABLE",
+        "note": "filter",
+        "scope": null
+      },
+      {
+        "id": "m2",
+        "field": "color",
+        "operator": "EQ",
+        "status": "EXECUTABLE",
+        "note": "filter",
+        "scope": null
+      },
+      {
+        "id": "m3",
+        "field": "size",
+        "operator": "EQ",
+        "status": "EXECUTABLE",
+        "note": "filter",
+        "scope": null
+      },
+      {
+        "id": "m4",
+        "field": "price",
+        "operator": "LT",
+        "status": "EXECUTABLE",
+        "note": "filter",
+        "scope": null
+      },
+      {
+        "id": "m5",
+        "field": "currency",
+        "operator": "EQ",
+        "status": "EXECUTABLE",
+        "note": "filter",
+        "scope": null
+      },
+      {
+        "id": "m6",
+        "field": "condition",
+        "operator": "NE",
+        "status": "EXECUTABLE",
+        "note": "filter",
+        "scope": null
+      },
+      {
+        "id": "m7",
+        "field": "inStock",
+        "operator": "EQ",
+        "status": "EXECUTABLE",
+        "note": "filter",
+        "scope": null
+      }
+    ],
+    "commerce": {
+      "schema": "commerce@1",
+      "catalogLanguage": "en",
+      "currencies": [
+        "EUR"
+      ]
+    }
+  },
+  "subqueries": [
+    {
+      "id": "q1",
+      "objective": "black Nike shoes",
+      "status": "OK",
+      "constraints": [
+        {
+          "field": "brand",
+          "operator": "EQ",
+          "value": "Nike",
+          "evidence": {
+            "source": "original",
+            "start": 6,
+            "end": 10,
+            "quote": "Nike"
+          }
+        }
+      ],
+      "retrieval": {
+        "requested": "KEYWORD_ONLY",
+        "executed": "NONE",
+        "reasons": [
+          "LEXICAL_NEED"
+        ],
+        "degradations": [
+          "opensearch:PROVIDER_FAILED:UNAVAILABLE"
+        ],
+        "degraded": true,
+        "removedByValidation": 0,
+        "providers": [
+          "opensearch",
+          "opensearch-vector"
+        ],
+        "warnings": [],
+        "rankingPolicy": "qwenbridge-baseline@1.0",
+        "reranking": "none",
+        "outcome": "PROVIDER_FAILED"
+      },
+      "results": {
+        "hits": [],
+        "totalHits": 0,
+        "tookMillis": 0
+      }
+    }
+  ],
+  "clarifications": [
+    {
+      "kind": "MISSING_VALUE",
+      "field": "size",
+      "question": "Which size?",
+      "options": [
+        "41",
+        "42"
+      ]
+    }
+  ]
+}

@@ -1,9 +1,9 @@
 package io.qwenbridge.analysis.cache;
 
-import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.quarkus.arc.DefaultBean;
-import java.util.Optional;
+import io.qwenbridge.analysis.model.SearchAnalysis;
 import jakarta.enterprise.context.ApplicationScoped;
+import java.util.Optional;
 
 @ApplicationScoped
 @DefaultBean

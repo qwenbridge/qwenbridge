@@ -1,0 +1,11 @@
+.git
+.idea
+.env
+.env.*
+**/target
+**/node_modules
+**/dist
+logs
+qwenbridge-verification-*
+*.zip
+*.log

@@ -37,6 +37,14 @@ public class QwenBridgeConfigProducer {
 
   @Produces
   @Singleton
+  public io.qwenbridge.reranking.Reranker reranker() {
+    return bool("qwenbridge.reranking.enabled", true)
+        ? new io.qwenbridge.reranking.QueryTermReranker()
+        : new io.qwenbridge.reranking.NoOpReranker();
+  }
+
+  @Produces
+  @Singleton
   public OllamaProperties ollamaProperties() {
     return new OllamaProperties(
         opt("qwenbridge.ai.ollama.base-url", URI.class, null),
@@ -94,7 +102,7 @@ public class QwenBridgeConfigProducer {
     properties.setKeyPrefix(str("qwenbridge.analysis.cache.key-prefix", "qwenbridge:analysis"));
     properties.setProvider(str("qwenbridge.analysis.cache.provider", "ollama"));
     properties.setModel(str("qwenbridge.analysis.cache.model", "qwen2.5"));
-    properties.setVersion(str("qwenbridge.analysis.cache.version", "v4"));
+    properties.setVersion(str("qwenbridge.analysis.cache.version", "v10"));
     properties.setAnalysisTimeout(
         opt("qwenbridge.analysis.cache.analysis-timeout", Duration.class, Duration.ofSeconds(10)));
     properties.setTtl(opt("qwenbridge.analysis.cache.ttl", Duration.class, Duration.ofMinutes(10)));
@@ -103,9 +111,15 @@ public class QwenBridgeConfigProducer {
     redis.setHost(str("qwenbridge.analysis.cache.redis.host", "localhost"));
     redis.setPort(integer("qwenbridge.analysis.cache.redis.port", 6379));
     redis.setConnectTimeout(
-        opt("qwenbridge.analysis.cache.redis.connect-timeout", Duration.class, Duration.ofSeconds(2)));
+        opt(
+            "qwenbridge.analysis.cache.redis.connect-timeout",
+            Duration.class,
+            Duration.ofSeconds(2)));
     redis.setCommandTimeout(
-        opt("qwenbridge.analysis.cache.redis.command-timeout", Duration.class, Duration.ofSeconds(2)));
+        opt(
+            "qwenbridge.analysis.cache.redis.command-timeout",
+            Duration.class,
+            Duration.ofSeconds(2)));
     properties.setRedis(redis);
 
     return properties;

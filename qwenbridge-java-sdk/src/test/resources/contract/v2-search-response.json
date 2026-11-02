@@ -1,0 +1,336 @@
+{
+    "apiVersion": 2,
+    "requestId": "69019337-0d09-4103-8a52-f18c3e21b1ef",
+    "status": "OK",
+    "translation": {
+        "version": 1,
+        "original": "black Nike shoes size 42 under 100 EUR not refurbished in stock",
+        "sourceLanguage": "en",
+        "targetLanguage": "en",
+        "translated": "black Nike shoes size 42 under 100 EUR not refurbished in stock",
+        "constraintsPreserved": true,
+        "issues": []
+    },
+    "intent": "PRODUCT_SEARCH",
+    "queryIR": {
+        "version": 1,
+        "schemaId": "commerce",
+        "schemaVersion": 1,
+        "tenant": "shopA",
+        "constraints": [
+            {
+                "field": "brand",
+                "operator": "EQ",
+                "value": "Nike",
+                "evidence": {
+                    "source": "original",
+                    "start": 6,
+                    "end": 10,
+                    "quote": "Nike"
+                }
+            },
+            {
+                "field": "color",
+                "operator": "EQ",
+                "value": "black",
+                "evidence": {
+                    "source": "original",
+                    "start": 0,
+                    "end": 5,
+                    "quote": "black"
+                }
+            },
+            {
+                "field": "size",
+                "operator": "EQ",
+                "value": "42",
+                "evidence": {
+                    "source": "original",
+                    "start": 22,
+                    "end": 24,
+                    "quote": "42"
+                }
+            },
+            {
+                "field": "price",
+                "operator": "LT",
+                "value": "100",
+                "evidence": {
+                    "source": "original",
+                    "start": 25,
+                    "end": 38,
+                    "quote": "under 100 EUR"
+                }
+            },
+            {
+                "field": "currency",
+                "operator": "EQ",
+                "value": "EUR",
+                "evidence": {
+                    "source": "original",
+                    "start": 35,
+                    "end": 38,
+                    "quote": "EUR"
+                }
+            },
+            {
+                "field": "condition",
+                "operator": "NE",
+                "value": "refurbished",
+                "evidence": {
+                    "source": "original",
+                    "start": 39,
+                    "end": 54,
+                    "quote": "not refurbished"
+                }
+            },
+            {
+                "field": "inStock",
+                "operator": "EQ",
+                "value": "true",
+                "evidence": {
+                    "source": "original",
+                    "start": 55,
+                    "end": 63,
+                    "quote": "in stock"
+                }
+            }
+        ],
+        "fields": {
+            "size": {
+                "type": "TEXT",
+                "operators": [
+                    "EQ",
+                    "NE"
+                ],
+                "indexField": "size.keyword",
+                "normalization": "LOWERCASE"
+            },
+            "weightKg": {
+                "type": "DECIMAL",
+                "operators": [
+                    "EQ",
+                    "LT",
+                    "LTE",
+                    "GT",
+                    "NE",
+                    "GTE"
+                ],
+                "indexField": "weightKg",
+                "normalization": "NONE"
+            },
+            "color": {
+                "type": "TEXT",
+                "operators": [
+                    "EQ",
+                    "NE"
+                ],
+                "indexField": "color.keyword",
+                "normalization": "LOWERCASE"
+            },
+            "category": {
+                "type": "TEXT",
+                "operators": [
+                    "EQ",
+                    "NE"
+                ],
+                "indexField": "category",
+                "normalization": "LOWERCASE"
+            },
+            "availableAt": {
+                "type": "DATE",
+                "operators": [
+                    "EQ",
+                    "LT",
+                    "LTE",
+                    "GT",
+                    "NE",
+                    "GTE"
+                ],
+                "indexField": "availableAt",
+                "normalization": "NONE"
+            },
+            "condition": {
+                "type": "TEXT",
+                "operators": [
+                    "EQ",
+                    "NE"
+                ],
+                "indexField": "condition.keyword",
+                "normalization": "LOWERCASE"
+            },
+            "currency": {
+                "type": "TEXT",
+                "operators": [
+                    "EQ"
+                ],
+                "indexField": "currency",
+                "normalization": "UPPERCASE"
+            },
+            "location": {
+                "type": "TEXT",
+                "operators": [
+                    "EQ",
+                    "NE"
+                ],
+                "indexField": "location.keyword",
+                "normalization": "LOWERCASE"
+            },
+            "brand": {
+                "type": "TEXT",
+                "operators": [
+                    "EQ",
+                    "NE"
+                ],
+                "indexField": "brand.keyword",
+                "normalization": "LOWERCASE"
+            },
+            "price": {
+                "type": "DECIMAL",
+                "operators": [
+                    "EQ",
+                    "LT",
+                    "LTE",
+                    "GT",
+                    "NE",
+                    "GTE"
+                ],
+                "indexField": "price",
+                "normalization": "NONE"
+            },
+            "inStock": {
+                "type": "BOOLEAN",
+                "operators": [
+                    "EQ",
+                    "NE"
+                ],
+                "indexField": "inStock",
+                "normalization": "NONE"
+            }
+        }
+    },
+    "clarificationQuestions": [],
+    "results": {
+        "hits": [
+            {
+                "id": "good",
+                "score": 1.0,
+                "document": {
+                    "inStock": true,
+                    "brand": "Nike",
+                    "currency": "EUR",
+                    "size": "42",
+                    "condition": "new",
+                    "color": "black",
+                    "price": 99,
+                    "title": "Nike shoes",
+                    "tenantId": "shopA"
+                },
+                "metadata": {}
+            }
+        ],
+        "totalHits": 1,
+        "tookMillis": 1,
+        "empty": false
+    },
+    "confidence": {
+        "value": 0.9,
+        "method": "model-signal-min-v1",
+        "calibrated": false,
+        "signals": {
+            "decision": 0.9,
+            "intent": 0.95,
+            "semantic": 0.95
+        }
+    },
+    "evidence": [
+        {
+            "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "tenant": "shopA",
+            "requestId": "",
+            "source": "69019337-0d09-4103-8a52-f18c3e21b1ef",
+            "occurredAt": "2026-11-01T15:44:52.812482Z",
+            "observedAt": "2026-11-01T15:44:52.812484Z",
+            "claim": "Search constraints",
+            "spans": [
+                {
+                    "source": "original",
+                    "start": 6,
+                    "end": 10,
+                    "quote": "Nike"
+                },
+                {
+                    "source": "original",
+                    "start": 0,
+                    "end": 5,
+                    "quote": "black"
+                },
+                {
+                    "source": "original",
+                    "start": 22,
+                    "end": 24,
+                    "quote": "42"
+                },
+                {
+                    "source": "original",
+                    "start": 25,
+                    "end": 38,
+                    "quote": "under 100 EUR"
+                },
+                {
+                    "source": "original",
+                    "start": 35,
+                    "end": 38,
+                    "quote": "EUR"
+                },
+                {
+                    "source": "original",
+                    "start": 39,
+                    "end": 54,
+                    "quote": "not refurbished"
+                },
+                {
+                    "source": "original",
+                    "start": 55,
+                    "end": 63,
+                    "quote": "in stock"
+                }
+            ],
+            "parentId": null
+        },
+        {
+            "id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "tenant": "shopA",
+            "requestId": "",
+            "source": "opensearch:qwenbridge-products",
+            "occurredAt": "2026-11-01T15:44:52.812710Z",
+            "observedAt": "2026-11-01T15:44:52.812710Z",
+            "claim": "OK:[good]",
+            "spans": [],
+            "parentId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+    ],
+    "suggestions": [],
+    "reranking": "backend-baseline",
+    "tookMs": 416,
+    "nextCursor": null,
+    "timings": {
+        "analysis": 0,
+        "ranking": 0,
+        "embedding": 30,
+        "translation": 321,
+        "constraint-validation": 3,
+        "input-validation": 35,
+        "execution": 11
+    },
+    "policies": [
+        {
+            "pack": "platform-authorization",
+            "version": "1.0.0",
+            "rule": "scope",
+            "effect": "ALLOW",
+            "reason": "Allowed by the caller's scope; no domain pack policy applies"
+        }
+    ],
+    "lockedFields": []
+}

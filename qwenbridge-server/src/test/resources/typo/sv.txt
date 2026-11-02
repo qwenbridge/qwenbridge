@@ -1,0 +1,8 @@
+# Test fixture (QB-291): Swedish word list.
+röd	500
+jacka	400
+svart	500
+skor	400
+och	900
+röd jacka
+svarta skor

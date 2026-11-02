@@ -39,7 +39,9 @@ public class OllamaProvider extends AbstractAIProvider {
         new OllamaChatRequest(
             properties.chatModel(),
             List.of(new OllamaChatRequest.Message("user", request.prompt())),
-            false);
+            false,
+            request.outputSchema(),
+            request.outputSchema() == null ? null : java.util.Map.of("temperature", 0));
 
     OllamaChatResponse response = client.chat(ollamaRequest);
 
@@ -52,7 +54,9 @@ public class OllamaProvider extends AbstractAIProvider {
         new OllamaChatRequest(
             properties.chatModel(),
             List.of(new OllamaChatRequest.Message("user", request.prompt())),
-            true);
+            true,
+            request.outputSchema(),
+            request.outputSchema() == null ? null : java.util.Map.of("temperature", 0));
 
     // Inclusive take-until: emit chunks up to and including the terminal done chunk, then stop.
     AtomicBoolean doneEmitted = new AtomicBoolean(false);

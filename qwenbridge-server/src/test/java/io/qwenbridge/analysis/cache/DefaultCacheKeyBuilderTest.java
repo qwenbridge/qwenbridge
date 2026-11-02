@@ -31,10 +31,12 @@ class DefaultCacheKeyBuilderTest {
   }
 
   @Test
-  void shouldNormalizeWhitespaceAndCaseForKeyInput() {
-    CacheKey first = builder.build(" Desk ", " Ollama ", " Qwen2.5 ", " V4 ");
+  void preservesExactAnalysisTextForSourceEvidenceAndNormalizesProviderMetadata() {
+    CacheKey first = builder.build("desk", " Ollama ", " Qwen2.5 ", " V4 ");
     CacheKey second = builder.build("desk", "ollama", "qwen2.5", "v4");
 
     assertThat(first).isEqualTo(second);
+    assertThat(builder.build(" Desk ", "ollama", "qwen2.5", "v4")).isNotEqualTo(second);
+    assertThat(builder.build("Desk", "ollama", "qwen2.5", "v4")).isNotEqualTo(second);
   }
 }

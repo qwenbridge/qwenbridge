@@ -29,9 +29,7 @@ public class SearchStreamController {
   @Path("/stream/{requestId}")
   @Produces(MediaType.SERVER_SENT_EVENTS)
   public void stream(
-      @PathParam("requestId") String requestId,
-      @Context SseEventSink eventSink,
-      @Context Sse sse) {
+      @PathParam("requestId") String requestId, @Context SseEventSink eventSink, @Context Sse sse) {
     requestIdValidator.validate(requestId);
 
     StreamingSession session = registry.register(requestId, eventSink, sse);

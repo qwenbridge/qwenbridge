@@ -1,12 +1,12 @@
 package io.qwenbridge.pipeline;
 
+import io.quarkus.arc.All;
 import io.qwenbridge.event.model.PipelineEventMetadata;
 import io.qwenbridge.event.model.PipelineEvents;
 import io.qwenbridge.event.snapshot.PipelineContextSnapshotFactory;
 import io.qwenbridge.event.spi.PipelineEventPublisher;
 import io.qwenbridge.pipeline.result.PipelineTraceItem;
 import io.qwenbridge.pipeline.step.PipelineStep;
-import io.quarkus.arc.All;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.time.Duration;
 import java.time.Instant;
@@ -27,7 +27,7 @@ public class PipelineEngine {
       @All List<PipelineStep<?>> steps,
       PipelineEventPublisher publisher,
       PipelineContextSnapshotFactory snapshotFactory) {
-    this.steps = steps;
+    this.steps = List.copyOf(steps);
     this.publisher = publisher;
     this.snapshotFactory = snapshotFactory;
   }

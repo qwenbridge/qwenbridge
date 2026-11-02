@@ -1,15 +1,24 @@
+# QwenBridge local stack (QB-293).
+#
+# Default `docker compose up` starts no database and no search engine: only the optional model
+# server (Ollama) and the optional short-lived cache (Redis). Profiles add the rest:
+#   production   the QwenBridge application (database-free by default: in-memory Commerce backend)
+#   opensearch   the optional OpenSearch connector backend (set QWENBRIDGE_COMMERCE_BACKEND=opensearch)
+#   performance  the k6 load generator
+# OpenSearch is the only optional search engine (profile "opensearch"); secure OpenSearch for the
+# TLS/authentication tests is in docker-compose.security-tests.yml.
 services:
   qwenbridge-ollama:
     image: ollama/ollama:latest
     container_name: qwenbridge-ollama
     restart: unless-stopped
-    mem_limit: 8g
+    mem_limit: ${OLLAMA_MEMORY_LIMIT:-12g}
     environment:
-      OLLAMA_NUM_PARALLEL: "1"
-      OLLAMA_MAX_LOADED_MODELS: "1"
-      OLLAMA_KEEP_ALIVE: "0"
+      OLLAMA_NUM_PARALLEL: ${OLLAMA_NUM_PARALLEL:-1}
+      OLLAMA_MAX_LOADED_MODELS: ${OLLAMA_MAX_LOADED_MODELS:-2}
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-10m}
     ports:
-      - "11434:11434"
+      - "127.0.0.1:${OLLAMA_PORT:-11434}:11434"
     volumes:
       - ollama-data:/root/.ollama
     healthcheck:
@@ -39,7 +48,7 @@ services:
     restart: unless-stopped
     mem_limit: 256m
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -49,15 +58,18 @@ services:
   qwenbridge-opensearch:
     image: opensearchproject/opensearch:2.15.0
     container_name: qwenbridge-opensearch
+    # Optional connector backend: started only with --profile opensearch.
+    profiles: ["opensearch"]
     restart: unless-stopped
-    mem_limit: 1g
+    mem_limit: ${OPENSEARCH_MEMORY_LIMIT:-2g}
     environment:
       discovery.type: single-node
       DISABLE_SECURITY_PLUGIN: "true"
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
       OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
     ports:
-      - "9200:9200"
-      - "9600:9600"
+      - "127.0.0.1:9200:9200"
+      - "127.0.0.1:9600:9600"
     volumes:
       - opensearch-data:/usr/share/opensearch/data
     healthcheck:
@@ -77,28 +89,40 @@ services:
         condition: service_completed_successfully
       qwenbridge-redis:
         condition: service_healthy
+        # QB-287: Redis is an optional cache and catalog-sync store; the app starts without it.
+        required: false
       qwenbridge-opensearch:
         condition: service_healthy
+        # Waited for only when the opensearch profile is enabled.
+        required: false
     ports:
-      - "8080:8080"
+      - "127.0.0.1:${APP_PORT:-8080}:8080"
+    volumes:
+      - qwenbridge-state:/app/state
     env_file:
       - .env
     environment:
-      JAVA_OPTS: ${JAVA_OPTS:-"-XX:MaxRAMPercentage=55 -XX:InitialRAMPercentage=25 -XX:+ExitOnOutOfMemoryError"}
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--XX:MaxRAMPercentage=55 -XX:InitialRAMPercentage=25 -XX:+ExitOnOutOfMemoryError}
+      QUARKUS_PROFILE: docker
       QWENBRIDGE_AI_PROVIDER: ollama
-      QWENBRIDGE_AI_OLLAMA_BASE_URL: http://qwenbridge-ollama:11434
+      QWENBRIDGE_AI_OLLAMA_BASE_URL: ${QWENBRIDGE_AI_OLLAMA_BASE_URL:-http://qwenbridge-ollama:11434}
       QWENBRIDGE_AI_OLLAMA_CHAT_MODEL: qwen2.5
       QWENBRIDGE_AI_OLLAMA_EMBEDDING_MODEL: bge-m3
+      QWENBRIDGE_AI_OLLAMA_STREAMING_ENABLED: "true"
+      # Database-free by default; the verification and benchmark runs select opensearch.
+      QWENBRIDGE_COMMERCE_BACKEND: ${QWENBRIDGE_COMMERCE_BACKEND:-memory}
+      QWENBRIDGE_SEARCH_BACKEND: ${QWENBRIDGE_SEARCH_BACKEND:-in-memory}
+      # Durable platform state (licences, packs, sessions) on a local volume; Redis is only a cache.
+      QWENBRIDGE_PLATFORM_STORE: ${QWENBRIDGE_PLATFORM_STORE:-file}
+      QWENBRIDGE_PLATFORM_FILE_DIR: /app/state
       QWENBRIDGE_SEARCH_OPENSEARCH_BASE_URL: http://qwenbridge-opensearch:9200
+      QWENBRIDGE_SEARCH_OPENSEARCH_INDEX: ${OPENSEARCH_INDEX:-qwenbridge-products}
       QWENBRIDGE_ANALYSIS_CACHE_REDIS_HOST: qwenbridge-redis
       QWENBRIDGE_ANALYSIS_CACHE_REDIS_PORT: 6379
-      QWENBRIDGE_ANALYSIS_CACHE_ANALYSIS_TIMEOUT: 10s
-
-      QWENBRIDGE_ABUSE_PER_IP_LIMIT: "20000000"
-      QWENBRIDGE_ABUSE_PER_API_KEY_LIMIT: "20000000"
-      QWENBRIDGE_ABUSE_AI_REQUEST_QUOTA: "20000000"
-      QWENBRIDGE_ABUSE_TOKEN_QUOTA: "2000000000"
-      QWENBRIDGE_ABUSE_CONCURRENT_STREAM_LIMIT: "100000"
+      QWENBRIDGE_ANALYSIS_CACHE_ANALYSIS_TIMEOUT: 120s
+      QWENBRIDGE_ANALYSIS_CACHE_KEY_PREFIX: ${QWENBRIDGE_ANALYSIS_CACHE_KEY_PREFIX:-qwenbridge:analysis}
+      QWENBRIDGE_ABUSE_PER_IP_LIMIT: ${QWENBRIDGE_ABUSE_PER_IP_LIMIT:-60}
+      QWENBRIDGE_ABUSE_AI_REQUEST_QUOTA: ${QWENBRIDGE_ABUSE_AI_REQUEST_QUOTA:-120}
       
     profiles: ["production"]
     deploy:
@@ -109,7 +133,7 @@ services:
           memory: 512m
     labels:
       org.opencontainers.image.title: "QwenBridge"
-      org.opencontainers.image.version: "0.8.1"
+      org.opencontainers.image.version: "0.9.1"
     healthcheck:
       test: ["CMD-SHELL", "curl -fs http://localhost:8080/api/v1/health/ready >/dev/null || exit 1"]
       interval: 30s
@@ -141,3 +165,4 @@ services:
 volumes:
   ollama-data:
   opensearch-data:
+  qwenbridge-state:

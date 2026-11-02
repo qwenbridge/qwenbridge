@@ -1,8 +1,8 @@
 package io.qwenbridge.analysis.cache;
 
 import io.qwenbridge.analysis.cache.config.AIAnalysisCacheProperties;
-import lombok.RequiredArgsConstructor;
 import jakarta.enterprise.context.ApplicationScoped;
+import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
 @RequiredArgsConstructor

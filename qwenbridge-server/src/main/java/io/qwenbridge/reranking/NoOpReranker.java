@@ -2,9 +2,7 @@ package io.qwenbridge.reranking;
 
 import io.qwenbridge.execution.provider.model.SearchResultSet;
 import java.util.Objects;
-import jakarta.enterprise.context.ApplicationScoped;
 
-@ApplicationScoped
 public class NoOpReranker implements Reranker {
 
   @Override

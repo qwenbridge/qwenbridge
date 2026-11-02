@@ -4,14 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.qwenbridge.analysis.cache.CacheKey;
-import io.qwenbridge.analysis.cache.config.AIAnalysisCacheProperties;
-import io.qwenbridge.analysis.model.SearchAnalysis;
-import io.qwenbridge.operations.metrics.OperationsMetrics;
 import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.redis.datasource.keys.KeyCommands;
 import io.quarkus.redis.datasource.value.SetArgs;
 import io.quarkus.redis.datasource.value.ValueCommands;
+import io.qwenbridge.analysis.cache.CacheKey;
+import io.qwenbridge.analysis.cache.config.AIAnalysisCacheProperties;
+import io.qwenbridge.analysis.model.SearchAnalysis;
+import io.qwenbridge.operations.metrics.OperationsMetrics;
 import org.junit.jupiter.api.Test;
 
 class RedisAIAnalysisCacheTest {
@@ -66,7 +66,11 @@ class RedisAIAnalysisCacheTest {
     RedisAIAnalysisCache cache =
         new RedisAIAnalysisCache(redis, mapper, properties, mock(OperationsMetrics.class));
 
-    SearchAnalysis analysis = SearchAnalysis.fallback("desk");
+    SearchAnalysis analysis =
+        SearchAnalysis.builder()
+            .semanticValidated(true)
+            .rewrites(java.util.List.of("desk"))
+            .build();
 
     cache.put(new CacheKey("key"), analysis);
 
@@ -87,7 +91,12 @@ class RedisAIAnalysisCacheTest {
     RedisAIAnalysisCache cache =
         new RedisAIAnalysisCache(redis, mapper, properties, mock(OperationsMetrics.class));
 
-    cache.put(new CacheKey("key"), SearchAnalysis.fallback("desk"));
+    cache.put(
+        new CacheKey("key"),
+        SearchAnalysis.builder()
+            .semanticValidated(true)
+            .rewrites(java.util.List.of("desk"))
+            .build());
 
     verify(ops).set(anyString(), anyString(), any(SetArgs.class));
   }

@@ -8,6 +8,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
 import io.qwenbridge.ai.contract.ChatRequest;
 import io.qwenbridge.ai.contract.ChatResponse;
 import io.qwenbridge.ai.service.AIService;
@@ -20,8 +22,6 @@ import io.qwenbridge.intent.IntentType;
 import io.qwenbridge.streaming.ai.AIStreamingEventPublisher;
 import io.qwenbridge.streaming.session.SessionSink;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
-import io.quarkus.test.InjectMock;
-import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
 import java.util.ArrayList;
@@ -117,7 +117,8 @@ class SearchStreamingPipelineIntegrationTest {
             "ai.completed",
             "pipeline.completed");
 
-    assertThat(sink.events().indexOf("pipeline.started")).isLessThan(sink.events().indexOf("ai.token"));
+    assertThat(sink.events().indexOf("pipeline.started"))
+        .isLessThan(sink.events().indexOf("ai.token"));
     assertThat(sink.events().indexOf("ai.token")).isLessThan(sink.events().indexOf("ai.completed"));
     assertThat(sink.events().indexOf("ai.completed"))
         .isLessThan(sink.events().indexOf("pipeline.completed"));
@@ -168,29 +169,29 @@ class SearchStreamingPipelineIntegrationTest {
 
   private String analysisJson() {
     return """
-           {
-             "language": "en",
-             "intent": "PRODUCT_SEARCH",
-             "intentConfidence": 0.85,
-             "intentReason": "Product search.",
-             "rewrites": ["table"],
-             "semanticValidated": true,
-             "semanticScore": 0.90,
-             "semanticMeaning": "Product search.",
-             "entities": ["table"],
-             "searchMode": "KEYWORD",
-             "backend": "OPENSEARCH",
-             "keywordSearch": true,
-             "vectorSearch": false,
-             "hybridSearch": false,
-             "facets": true,
-             "rerank": false,
-             "rewriteAgain": false,
-             "answer": false,
-             "decisionConfidence": 0.80,
-             "decisionReason": "Keyword search is enough."
-           }
-           """;
+    {
+      "language": "en",
+      "intent": "PRODUCT_SEARCH",
+      "intentConfidence": 0.85,
+      "intentReason": "Product search.",
+      "rewrites": ["table"],
+      "semanticValidated": true,
+      "semanticScore": 0.90,
+      "semanticMeaning": "Product search.",
+      "entities": ["table"],
+      "searchMode": "KEYWORD",
+      "backend": "OPENSEARCH",
+      "keywordSearch": true,
+      "vectorSearch": false,
+      "hybridSearch": false,
+      "facets": true,
+      "rerank": false,
+      "rewriteAgain": false,
+      "answer": false,
+      "decisionConfidence": 0.80,
+      "decisionReason": "Keyword search is enough."
+    }
+    """;
   }
 
   private Map<String, Object> emptyOpenSearchResponse() {

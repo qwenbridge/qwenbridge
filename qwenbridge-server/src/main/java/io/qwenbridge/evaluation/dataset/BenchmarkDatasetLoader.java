@@ -2,6 +2,7 @@ package io.qwenbridge.evaluation.dataset;
 
 import io.qwenbridge.evaluation.model.EvaluationQuery;
 import io.qwenbridge.evaluation.model.RelevanceLabel;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -9,7 +10,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class BenchmarkDatasetLoader {

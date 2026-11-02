@@ -6,10 +6,10 @@ import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.decision.SearchBackend;
 import io.qwenbridge.decision.SearchMode;
 import io.qwenbridge.intent.IntentType;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 @RequiredArgsConstructor
@@ -20,6 +20,13 @@ public class SearchAnalysisJsonParser {
   public SearchAnalysis parse(String content, String originalQuery) {
     try {
       JsonNode root = objectMapper.readTree(extractJson(content));
+
+      if (root == null || !root.isObject()) {
+        return SearchAnalysis.fallback(originalQuery);
+      }
+      if (root.has("v")) {
+        return CompactAnalysisParser.parse(root, originalQuery);
+      }
 
       return SearchAnalysis.builder()
           .language(text(root, "language", "unknown"))
@@ -48,7 +55,8 @@ public class SearchAnalysisJsonParser {
           .decisionConfidence(decimal(root, "decisionConfidence", 0.5))
           .decisionReason(text(root, "decisionReason", "AI search analysis decision."))
           .build();
-    } catch (Exception ignored) {
+    } catch (com.fasterxml.jackson.core.JsonProcessingException
+        | IllegalArgumentException ignored) {
       return SearchAnalysis.fallback(originalQuery);
     }
   }
@@ -102,7 +110,7 @@ public class SearchAnalysisJsonParser {
   private <E extends Enum<E>> E enumValue(Class<E> type, String value, E fallback) {
     try {
       return Enum.valueOf(type, value.trim().toUpperCase());
-    } catch (Exception ignored) {
+    } catch (IllegalArgumentException ignored) {
       return fallback;
     }
   }

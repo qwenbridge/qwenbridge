@@ -1,9 +1,9 @@
 package io.qwenbridge.ai.provider.registry;
 
+import io.quarkus.arc.All;
 import io.qwenbridge.ai.provider.spi.AIProvider;
 import io.qwenbridge.ai.provider.spi.AIProviderRegistry;
 import io.qwenbridge.ai.value.ProviderId;
-import io.quarkus.arc.All;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.HashMap;

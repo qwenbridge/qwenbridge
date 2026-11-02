@@ -6,6 +6,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 public class WhitespaceNormalizer implements InputNormalizationRule {
 
   @Override
+  public int order() {
+    return 50;
+  }
+
+  @Override
   public String name() {
     return "whitespace";
   }

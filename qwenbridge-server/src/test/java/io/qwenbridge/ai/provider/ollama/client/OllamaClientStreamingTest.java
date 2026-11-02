@@ -14,8 +14,8 @@ import io.qwenbridge.ai.provider.ollama.dto.OllamaChatRequest;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaChatResponse;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaStreamingChatResponse;
 import io.qwenbridge.operations.metrics.OperationsMetrics;
-import io.smallrye.mutiny.Multi;
 import io.qwenbridge.testsupport.MutinyUnitTestExtension;
+import io.smallrye.mutiny.Multi;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import java.net.URI;
@@ -33,8 +33,7 @@ class OllamaClientStreamingTest {
   void shouldReadStreamingChatChunksInOrder() {
     when(api.streamChat(any()))
         .thenReturn(
-            Multi.createFrom()
-                .items(chunk("hel", false), chunk("lo", false), chunk("", true)));
+            Multi.createFrom().items(chunk("hel", false), chunk("lo", false), chunk("", true)));
 
     OllamaClient client = client(properties(0));
 

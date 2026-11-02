@@ -149,17 +149,16 @@ npm test
 
 ## Examples
 
-Runnable examples are available in:
+The repository's independent TypeScript consumer,
+[`e2e/dual-sdk/typescript-consumer`](../e2e/dual-sdk/typescript-consumer), installs this package
+from its packed tarball and imports it by name only. It covers:
+- v2 search;
+- streaming and `AbortController` cancellation;
+- typed errors;
+- the v1 analyze client;
+- typed v1 streaming.
 
-```text
-examples/typescript-sdk-example
-```
-
-Example guide:
-
-```text
-docs/examples/typescript-sdk-example.md
-```
+The repository README has a short quick start.
 
 ## Publishing
 
@@ -169,3 +168,41 @@ Publishing documentation is available in:
 PUBLISHING.md
 docs/publishing/npm.md
 ```
+
+### Persistent commerce and Web Component
+
+`CommerceClient` also exposes `createSession`, `session`, `turn`, `streamTurn`,
+`proposals` and `accept`. Pass the current session revision on turns/acceptance.
+No condition changes until the owner explicitly accepts an alternative.
+
+```javascript
+import '@qwenbridge/sdk/web-component';
+const element = document.querySelector('qwenbridge-search');
+element.configure({ baseUrl: 'https://your-search-api.example', transport: 'sse' });
+```
+
+Add `<qwenbridge-search></qwenbridge-search>` to the page. Set a bearer token from
+trusted session code when authentication is enabled; credentials stay in memory.
+The component includes RTL, keyboard access, results, clarifications and errors.
+See [Table 1 contracts](../docs/platform/table-1-api.md) for backend selection,
+locked conditions, signed packs, licensing and the Developer Playground.
+
+### v2 client: errors, timeouts, retries and cancellation (1.0)
+
+```typescript
+import { CommerceClient, COMMERCE_CONTRACT_V1, QwenBridgeApiError, RetryPolicy } from "@qwenbridge/sdk";
+
+const client = new CommerceClient({
+  baseUrl: "https://search.example.com", bearerToken: apiKey,
+  timeoutMs: 30_000,                        // per call; also sent as X-Request-Timeout-Ms
+  retry: new RetryPolicy({ maxAttempts: 3 }) // safe operations only
+});
+await client.requireCompatibleServer();
+const controller = new AbortController();
+const pending = client.search({ query: "black shoes under 100 EUR", contract: COMMERCE_CONTRACT_V1 }, controller.signal);
+controller.abort();                          // aborts the call and asks the server to cancel
+try { await pending; } catch (e) { if (e instanceof QwenBridgeApiError) console.log(e.code, e.category, e.retryable); }
+```
+
+The client depends neither on the Web Component nor on any framework, and runs on Node.js 20+ and
+in browsers. See [docs/sdk](../docs/sdk/README.md) for the full behaviour and compatibility tests.

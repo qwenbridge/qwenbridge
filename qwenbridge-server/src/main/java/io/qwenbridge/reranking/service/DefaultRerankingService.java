@@ -2,12 +2,12 @@ package io.qwenbridge.reranking.service;
 
 import io.qwenbridge.execution.provider.model.SearchResultSet;
 import io.qwenbridge.reranking.Reranker;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import jakarta.inject.Inject;
-import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class DefaultRerankingService implements RerankingService {
@@ -40,14 +40,21 @@ public class DefaultRerankingService implements RerankingService {
       return resultSet;
     }
 
+    CompletableFuture<SearchResultSet> task =
+        CompletableFuture.supplyAsync(() -> reranker.rerank(query, resultSet));
     try {
-      SearchResultSet reranked =
-          CompletableFuture.supplyAsync(() -> reranker.rerank(query, resultSet))
-              .get(timeout.toMillis(), TimeUnit.MILLISECONDS);
+      SearchResultSet reranked = task.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
 
       return reranked == null ? resultSet : reranked;
-    } catch (Exception ignored) {
+    } catch (InterruptedException interrupted) {
+      Thread.currentThread().interrupt();
       return resultSet;
+    } catch (java.util.concurrent.ExecutionException
+        | java.util.concurrent.TimeoutException
+        | RuntimeException ignored) {
+      return resultSet;
+    } finally {
+      task.cancel(true);
     }
   }
 }

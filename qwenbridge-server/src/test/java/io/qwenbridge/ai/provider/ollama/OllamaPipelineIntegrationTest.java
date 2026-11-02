@@ -11,21 +11,50 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 @QuarkusTest
-@EnabledIfEnvironmentVariable(named = "QWENBRIDGE_RUN_OLLAMA_IT", matches = "true")
+@org.junit.jupiter.api.condition.EnabledIfEnvironmentVariables({
+  @EnabledIfEnvironmentVariable(named = "QWENBRIDGE_RUN_OLLAMA_IT", matches = "true"),
+  @EnabledIfEnvironmentVariable(named = "QWENBRIDGE_RUN_OPENSEARCH_IT", matches = "true")
+})
 class OllamaPipelineIntegrationTest {
 
   @Test
   void shouldAnalyzeSearchQueryUsingRealOllamaRewrite() {
     given()
         .contentType(ContentType.JSON)
-        .body("{\"query\":\"tabel\"}")
+        .body("{\"query\":\"wooden dining table\"}")
         .when()
         .post("/api/v1/search/analyze")
         .then()
         .statusCode(200)
-        .body("originalQuery", equalTo("tabel"))
+        .body("originalQuery", equalTo("wooden dining table"))
         .body("decision", equalTo("ALLOW"))
         .body("rewrites[0]", not(blankOrNullString()))
         .body("policyPassed", equalTo(true));
+  }
+
+  @Test
+  void contradictorySafeInputRequiresClarificationInsteadOfExecutingAnArbitrarySearch() {
+    given()
+        .contentType(ContentType.JSON)
+        .body("{\"query\":\"Nike shoes size 41 and size 42\"}")
+        .post("/api/v1/search/analyze")
+        .then()
+        .statusCode(200)
+        .body("decision", equalTo("CLARIFY"))
+        .body("clarificationQuestions", not(org.hamcrest.Matchers.empty()))
+        .body("executionResult.executed", equalTo(false));
+  }
+
+  @Test
+  void unsupportedModelOperatorAsksForClarificationWithoutBackendExecution() {
+    given()
+        .contentType(ContentType.JSON)
+        .body("{\"query\":\"android flagship smartphone with bright display\"}")
+        .post("/api/v1/search/analyze")
+        .then()
+        .statusCode(200)
+        .body("decision", equalTo("CLARIFY"))
+        .body("clarificationQuestions", not(org.hamcrest.Matchers.empty()))
+        .body("executionResult.executed", equalTo(false));
   }
 }

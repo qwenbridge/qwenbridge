@@ -19,13 +19,14 @@ public class OperationalHealthService {
       @All List<DependencyHealthChecker> checkers,
       @ConfigProperty(name = "quarkus.application.name", defaultValue = "qwenbridge")
           String applicationName) {
-    this.checkers = checkers;
+    this.checkers = List.copyOf(checkers);
     this.applicationName = applicationName;
   }
 
   public ReadinessHealthResponse readiness() {
     List<DependencyHealth> dependencies =
         checkers.stream()
+            .filter(DependencyHealthChecker::active)
             .map(DependencyHealthChecker::check)
             .sorted(Comparator.comparing(DependencyHealth::name))
             .toList();

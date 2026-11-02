@@ -3,6 +3,9 @@ package io.qwenbridge.execution.provider.model;
 import java.util.List;
 import java.util.Objects;
 
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties(
+    value = {"empty"},
+    allowGetters = true)
 public record SearchResultSet(List<SearchHit> hits, long totalHits, long tookMillis) {
 
   public SearchResultSet {

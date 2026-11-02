@@ -1,0 +1,7 @@
+# E2E typo dictionary (QB-295 fixture): Swedish
+röd	500
+vinterjacka	400
+jacka	400
+under	500
+euro	300
+röd vinterjacka

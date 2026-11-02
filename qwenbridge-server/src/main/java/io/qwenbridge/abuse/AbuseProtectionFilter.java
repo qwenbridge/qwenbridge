@@ -23,7 +23,7 @@ import java.util.HexFormat;
 import java.util.UUID;
 
 @Provider
-@Priority(4)
+@Priority(5)
 public class AbuseProtectionFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
   public static final String API_KEY_HEADER = "X-API-Key";
@@ -38,6 +38,11 @@ public class AbuseProtectionFilter implements ContainerRequestFilter, ContainerR
   private final OperationsMetrics metrics;
 
   @Context RoutingContext routingContext;
+
+  @org.eclipse.microprofile.config.inject.ConfigProperty(
+      name = "qwenbridge.security.trusted-proxy.forwarded-headers-enabled",
+      defaultValue = "false")
+  boolean trustedForwardedHeaders;
 
   public AbuseProtectionFilter(
       AbuseProtectionProperties properties,
@@ -61,6 +66,17 @@ public class AbuseProtectionFilter implements ContainerRequestFilter, ContainerR
 
     metrics.incrementRateLimit(decision.policy(), decision.allowed() ? "allowed" : "rejected");
 
+    if (routingContext != null) {
+      routingContext.response().putHeader("X-RateLimit-Limit", String.valueOf(decision.limit()));
+      routingContext
+          .response()
+          .putHeader("X-RateLimit-Remaining", String.valueOf(decision.remaining()));
+      routingContext
+          .response()
+          .putHeader("X-RateLimit-Reset", String.valueOf(decision.resetAt().getEpochSecond()));
+      routingContext.response().putHeader(RATE_LIMIT_POLICY_HEADER, decision.policy());
+    }
+
     if (!decision.allowed()) {
       requestContext.abortWith(rateLimitedResponse(requestContext, decision));
     }
@@ -76,13 +92,6 @@ public class AbuseProtectionFilter implements ContainerRequestFilter, ContainerR
   }
 
   private RateLimitDecision evaluate(ContainerRequestContext request) {
-    if (request.getLength() > properties.requestSizeLimitBytes()) {
-      return RateLimitDecision.rejected(
-          "request-size",
-          properties.requestSizeLimitBytes(),
-          Instant.now().plus(properties.window()));
-    }
-
     if (isStreamRequest(request)
         && streamingSessionRegistry.size() >= properties.concurrentStreamLimit()) {
       return RateLimitDecision.rejected(
@@ -118,23 +127,29 @@ public class AbuseProtectionFilter implements ContainerRequestFilter, ContainerR
   }
 
   private String path(ContainerRequestContext request) {
-    return "/" + request.getUriInfo().getPath();
+    String path = request.getUriInfo().getPath();
+    return path.startsWith("/") ? path : "/" + path;
   }
 
   private boolean isAiRequest(ContainerRequestContext request) {
     String uri = path(request);
     return uri.contains("/search/analyze")
+        || uri.startsWith("/api/v2/search")
+        || uri.startsWith("/api/v2/sessions/")
+            && (uri.endsWith("/turns") || uri.endsWith("/turns/stream") || uri.endsWith("/accept"))
+        || uri.startsWith("/api/v2/domains/") && uri.endsWith("/search")
+        || uri.startsWith("/api/v2/relaxations/") && uri.endsWith("/accept")
         || uri.contains("/ai/")
         || uri.contains("/search/stream/");
   }
 
   private boolean isStreamRequest(ContainerRequestContext request) {
-    return path(request).contains("/stream/");
+    return path(request).contains("/stream/") || path(request).endsWith("/stream");
   }
 
   private String clientIp(ContainerRequestContext request) {
     String forwarded = request.getHeaderString("X-Forwarded-For");
-    if (forwarded != null && !forwarded.isBlank()) {
+    if (trustedForwardedHeaders && forwarded != null && !forwarded.isBlank()) {
       return forwarded.split(",")[0].trim();
     }
     if (routingContext != null
@@ -145,8 +160,20 @@ public class AbuseProtectionFilter implements ContainerRequestFilter, ContainerR
     return "unknown";
   }
 
-  private String fingerprint(String value) {
-    return Integer.toHexString(value.trim().hashCode());
+  /**
+   * A collision-resistant bucket key for an API key. {@code String.hashCode()} was used before; its
+   * collisions can be crafted, letting one client exhaust another's quota (audit S5). The raw key
+   * is never stored or logged.
+   */
+  static String fingerprint(String value) {
+    try {
+      byte[] digest =
+          java.security.MessageDigest.getInstance("SHA-256")
+              .digest(value.trim().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+      return HexFormat.of().formatHex(digest, 0, 16);
+    } catch (java.security.NoSuchAlgorithmException e) {
+      throw new IllegalStateException("SHA-256 is required by the Java platform", e);
+    }
   }
 
   private void applyHeaders(ContainerResponseContext response, RateLimitDecision decision) {
@@ -155,8 +182,7 @@ public class AbuseProtectionFilter implements ContainerRequestFilter, ContainerR
         .putSingle(
             HttpHeaders.RETRY_AFTER,
             String.valueOf(
-                Math.max(
-                    1, decision.resetAt().getEpochSecond() - Instant.now().getEpochSecond())));
+                Math.max(1, decision.resetAt().getEpochSecond() - Instant.now().getEpochSecond())));
     response.getHeaders().putSingle("X-RateLimit-Limit", String.valueOf(decision.limit()));
     response.getHeaders().putSingle("X-RateLimit-Remaining", String.valueOf(decision.remaining()));
     response

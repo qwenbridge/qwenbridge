@@ -57,7 +57,8 @@ class OpenSearchProviderTest {
             eq(
                 Map.of(
                     "query", openSearchRequest.query(),
-                    "size", openSearchRequest.size()))))
+                    "size", openSearchRequest.size(),
+                    "_source", Map.of("excludes", List.of("embedding"))))))
         .thenReturn(rawResponse);
     when(responseMapper.from(rawResponse)).thenReturn(mappedResponse);
 
@@ -75,7 +76,8 @@ class OpenSearchProviderTest {
             eq(
                 Map.of(
                     "query", openSearchRequest.query(),
-                    "size", openSearchRequest.size())));
+                    "size", openSearchRequest.size(),
+                    "_source", Map.of("excludes", List.of("embedding")))));
     verify(responseMapper).from(rawResponse);
     verifyNoMoreInteractions(client, queryFactory, responseMapper);
   }

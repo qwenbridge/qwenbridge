@@ -1,11 +1,32 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
-import { randomItem, uuidv4 } from "https://jslib.k6.io/k6-utils/1.4.0/index.js";
+import { Counter, Rate, Trend } from "k6/metrics";
+import execution from "k6/execution";
+
+const cacheHits = new Counter("cache_hits");
+const cacheMisses = new Counter("cache_misses");
+const cacheHitRate = new Rate("cache_hit_rate");
+const aiAnalysisTime = new Trend("ai_analysis_ms");
+const executionTime = new Trend("execution_ms");
+const uuidv4 = () => `${Date.now()}-${__VU}-${__ITER}-${Math.random()}`;
 
 const baseUrl = __ENV.BASE_URL || "http://localhost:8080";
 const totalRequests = Number(__ENV.PERF_TOTAL_REQUESTS || "1000000");
 const vus = Number(__ENV.PERF_VUS || "250");
 const maxDuration = __ENV.PERF_MAX_DURATION || "30m";
+if (!Number.isSafeInteger(totalRequests) || totalRequests < 1 ||
+    !Number.isSafeInteger(vus) || vus < 1 || vus > totalRequests) {
+  throw new Error("PERF_TOTAL_REQUESTS and PERF_VUS must be positive integers; VUs cannot exceed requests");
+}
+const cacheExpectation = __ENV.PERF_CACHE_EXPECTATION || "any";
+const thresholds = {
+  checks: ["rate==1"],
+  iterations: [`count==${totalRequests}`],
+  http_req_failed: ["rate<0.05"],
+  http_req_duration: ["p(95)<5000", "p(99)<15000"]
+};
+if (cacheExpectation === "miss") thresholds.cache_hit_rate = ["rate==0"];
+if (cacheExpectation === "hit") thresholds.cache_hit_rate = ["rate>0.99"];
 
 export const options = {
   scenarios: {
@@ -16,10 +37,7 @@ export const options = {
       maxDuration
     }
   },
-  thresholds: {
-    http_req_failed: ["rate<0.05"],
-    http_req_duration: ["p(95)<5000", "p(99)<15000"]
-  }
+  thresholds
 };
 
 const queries = [
@@ -36,7 +54,7 @@ const queries = [
 ];
 
 export default function () {
-  const selected = randomItem(queries);
+  const selected = queries[execution.scenario.iterationInTest % queries.length];
   const requestId = `k6-v9-${selected.lang}-${uuidv4()}`;
 
   const response = http.post(
@@ -55,22 +73,26 @@ export default function () {
     }
   );
 
+  let data = null;
+  try { data = response.json(); } catch (_) {}
+  const hit = Boolean(data && data.cache && data.cache.enabled && data.cache.hit);
+  const miss = Boolean(data && data.cache && data.cache.enabled && data.cache.miss);
+  cacheHits.add(hit ? 1 : 0);
+  cacheMisses.add(miss ? 1 : 0);
+  cacheHitRate.add(hit);
+  for (const step of (data && data.pipelineTrace) || []) {
+    if (step.step === "AIAnalysisStep") aiAnalysisTime.add(step.durationMs);
+    if (step.step === "DecisionStep") executionTime.add(step.durationMs);
+  }
   check(response, {
     "status is 200": r => r.status === 200,
-    "has request id": r => {
-      try {
-        return r.json("requestId") === requestId;
-      } catch {
-        return false;
-      }
-    },
-    "has pipeline trace": r => {
-      try {
-        return Array.isArray(r.json("pipelineTrace"));
-      } catch {
-        return false;
-      }
-    }
+    "has request id": () => data !== null && data.requestId === requestId,
+    "has pipeline trace": () => data !== null && Array.isArray(data.pipelineTrace),
+    "has model analysis": () => data !== null && data.semanticValidated === true &&
+      data.confidenceAssessment && data.confidenceAssessment.method === "model-signal-min-v1",
+    "has search execution": () => data !== null && data.search && data.search.available === true,
+    "cache contract": () => data !== null && data.cache && data.cache.enabled === true &&
+      (cacheExpectation !== "miss" || miss)
   });
 
   sleep(0.01);

@@ -2,9 +2,9 @@ package io.qwenbridge.ai.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.quarkus.test.junit.QuarkusTest;
 import io.qwenbridge.ai.provider.spi.AIProvider;
 import io.qwenbridge.ai.provider.spi.AIProviderResolver;
-import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 

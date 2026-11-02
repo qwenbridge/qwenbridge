@@ -2,9 +2,9 @@ package io.qwenbridge.evaluation.policy;
 
 import io.qwenbridge.evaluation.model.EvaluationGateResult;
 import io.qwenbridge.evaluation.model.EvaluationResult;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.List;
-import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class DefaultEvaluationThresholdPolicy implements EvaluationThresholdPolicy {

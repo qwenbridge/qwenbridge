@@ -3,13 +3,35 @@ package io.qwenbridge.operations.health;
 import io.qwenbridge.execution.provider.opensearch.client.OpenSearchClient;
 import jakarta.enterprise.context.ApplicationScoped;
 
+/**
+ * Readiness of the optional OpenSearch backend. QB-287: it is probed and reported only when
+ * OpenSearch is the selected v1 search backend or Commerce backend; the default offline runtime
+ * never contacts it.
+ */
 @ApplicationScoped
 public class OpenSearchDependencyHealthChecker implements DependencyHealthChecker {
 
   private final OpenSearchClient client;
+  private final boolean selected;
 
-  public OpenSearchDependencyHealthChecker(OpenSearchClient client) {
+  @jakarta.inject.Inject
+  public OpenSearchDependencyHealthChecker(
+      OpenSearchClient client,
+      @org.eclipse.microprofile.config.inject.ConfigProperty(
+              name = "qwenbridge.search.backend",
+              defaultValue = "in-memory")
+          String searchBackend,
+      @org.eclipse.microprofile.config.inject.ConfigProperty(
+              name = "qwenbridge.commerce.backend",
+              defaultValue = "memory")
+          String commerceBackend) {
     this.client = client;
+    this.selected = "opensearch".equals(searchBackend) || "opensearch".equals(commerceBackend);
+  }
+
+  @Override
+  public boolean active() {
+    return selected;
   }
 
   @Override

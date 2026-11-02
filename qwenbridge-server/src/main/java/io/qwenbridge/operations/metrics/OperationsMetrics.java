@@ -3,9 +3,9 @@ package io.qwenbridge.operations.metrics;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
-import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class OperationsMetrics {

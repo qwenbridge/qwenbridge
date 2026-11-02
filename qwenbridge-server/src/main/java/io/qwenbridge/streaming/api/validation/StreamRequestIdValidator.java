@@ -1,25 +1,23 @@
 package io.qwenbridge.streaming.api.validation;
 
-import java.util.regex.Pattern;
+import io.qwenbridge.core.context.RequestIds;
 import jakarta.enterprise.context.ApplicationScoped;
 
+/** SSE path request IDs follow the same shared identifier rule as REST headers (QB-006). */
 @ApplicationScoped
 public class StreamRequestIdValidator {
-
-  private static final int MAX_LENGTH = 128;
-
-  private static final Pattern SAFE_REQUEST_ID = Pattern.compile("^[A-Za-z0-9][A-Za-z0-9._:-]*$");
 
   public void validate(String requestId) {
     if (requestId == null || requestId.isBlank()) {
       throw new IllegalArgumentException("requestId must not be blank");
     }
 
-    if (requestId.length() > MAX_LENGTH) {
-      throw new IllegalArgumentException("requestId must not exceed " + MAX_LENGTH + " characters");
+    if (requestId.length() > RequestIds.MAX_LENGTH) {
+      throw new IllegalArgumentException(
+          "requestId must not exceed " + RequestIds.MAX_LENGTH + " characters");
     }
 
-    if (!SAFE_REQUEST_ID.matcher(requestId).matches()) {
+    if (!RequestIds.isValid(requestId)) {
       throw new IllegalArgumentException("requestId contains unsupported characters");
     }
   }

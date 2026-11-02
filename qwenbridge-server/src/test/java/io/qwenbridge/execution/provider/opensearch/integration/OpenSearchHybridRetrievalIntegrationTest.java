@@ -2,12 +2,12 @@ package io.qwenbridge.execution.provider.opensearch.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.quarkus.test.junit.QuarkusTest;
 import io.qwenbridge.ai.contract.EmbeddingRequest;
 import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.execution.provider.implementation.OpenSearchProvider;
 import io.qwenbridge.execution.provider.model.SearchRequest;
 import io.qwenbridge.execution.provider.model.SearchResponse;
-import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;

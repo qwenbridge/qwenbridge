@@ -16,6 +16,7 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
  * and error handling remain in {@link OpenSearchClient}.
  */
 @RegisterRestClient(configKey = "opensearch")
+@org.eclipse.microprofile.rest.client.annotation.RegisterClientHeaders(OpenSearchAuthHeaders.class)
 public interface OpenSearchApiClient {
 
   @POST
@@ -27,4 +28,19 @@ public interface OpenSearchApiClient {
   @GET
   @Path("/")
   Response ping();
+
+  @jakarta.ws.rs.PUT
+  @Path("/{index}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  Map<String, Object> createIndex(@PathParam("index") String index, Map<String, Object> mapping);
+
+  @jakarta.ws.rs.PUT
+  @Path("/{index}/_doc/{id}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  Map<String, Object> upsert(
+      @PathParam("index") String index, @PathParam("id") String id, Map<String, Object> document);
+
+  @jakarta.ws.rs.DELETE
+  @Path("/{index}/_doc/{id}")
+  Map<String, Object> delete(@PathParam("index") String index, @PathParam("id") String id);
 }

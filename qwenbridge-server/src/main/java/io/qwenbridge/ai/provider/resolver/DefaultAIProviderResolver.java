@@ -6,8 +6,8 @@ import io.qwenbridge.ai.provider.spi.AIProvider;
 import io.qwenbridge.ai.provider.spi.AIProviderRegistry;
 import io.qwenbridge.ai.provider.spi.AIProviderResolver;
 import io.qwenbridge.ai.value.ProviderId;
-import lombok.RequiredArgsConstructor;
 import jakarta.enterprise.context.ApplicationScoped;
+import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
 @RequiredArgsConstructor

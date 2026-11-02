@@ -2,10 +2,10 @@ package io.qwenbridge.threat.correlation.rule;
 
 import io.qwenbridge.threat.correlation.ThreatRiskLevel;
 import io.qwenbridge.threat.model.ThreatType;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import jakarta.enterprise.context.ApplicationScoped;
 import org.yaml.snakeyaml.Yaml;
 
 @ApplicationScoped
@@ -14,17 +14,19 @@ public class ThreatCorrelationRuleLoader {
   @SuppressWarnings("unchecked")
   public List<ThreatCorrelationRule> load(String resourcePath) {
     Map<String, Object> root;
-    try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath)) {
+    try (InputStream in =
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath)) {
       if (in == null) {
-        return List.of();
+        // Fail closed (audit S4): a missing correlation file is a misconfiguration.
+        throw new IllegalStateException("Threat correlation file missing: " + resourcePath);
       }
       root = new Yaml().load(in);
     } catch (java.io.IOException ex) {
-      return List.of();
+      throw new IllegalStateException("Threat correlation file unreadable: " + resourcePath, ex);
     }
 
-    if (root == null || !root.containsKey("rules")) {
-      return List.of();
+    if (root == null || !(root.get("rules") instanceof List<?> list) || list.isEmpty()) {
+      throw new IllegalStateException("Threat correlation file has no rules: " + resourcePath);
     }
 
     List<Map<String, Object>> rules = (List<Map<String, Object>>) root.get("rules");

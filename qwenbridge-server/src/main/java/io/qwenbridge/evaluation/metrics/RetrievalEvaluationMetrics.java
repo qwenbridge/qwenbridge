@@ -11,7 +11,7 @@ public class RetrievalEvaluationMetrics {
       return 0.0;
     }
 
-    Map<String, ?> labels = query.labelsByDocumentId();
+    Map<String, io.qwenbridge.evaluation.model.RelevanceLabel> labels = query.labelsByDocumentId();
 
     long relevantRetrieved =
         rankedDocumentIds.stream()
@@ -19,9 +19,7 @@ public class RetrievalEvaluationMetrics {
             .filter(
                 documentId -> {
                   var label = labels.get(documentId);
-                  return label
-                          instanceof io.qwenbridge.evaluation.model.RelevanceLabel relevanceLabel
-                      && relevanceLabel.relevant();
+                  return label != null && label.relevant();
                 })
             .count();
 
@@ -38,7 +36,7 @@ public class RetrievalEvaluationMetrics {
       return 0.0;
     }
 
-    Map<String, ?> labels = query.labelsByDocumentId();
+    Map<String, io.qwenbridge.evaluation.model.RelevanceLabel> labels = query.labelsByDocumentId();
 
     long relevantRetrieved =
         rankedDocumentIds.stream()
@@ -46,9 +44,7 @@ public class RetrievalEvaluationMetrics {
             .filter(
                 documentId -> {
                   var label = labels.get(documentId);
-                  return label
-                          instanceof io.qwenbridge.evaluation.model.RelevanceLabel relevanceLabel
-                      && relevanceLabel.relevant();
+                  return label != null && label.relevant();
                 })
             .count();
 
@@ -60,13 +56,12 @@ public class RetrievalEvaluationMetrics {
       return 0.0;
     }
 
-    Map<String, ?> labels = query.labelsByDocumentId();
+    Map<String, io.qwenbridge.evaluation.model.RelevanceLabel> labels = query.labelsByDocumentId();
 
     for (int index = 0; index < rankedDocumentIds.size(); index++) {
       var label = labels.get(rankedDocumentIds.get(index));
 
-      if (label instanceof io.qwenbridge.evaluation.model.RelevanceLabel relevanceLabel
-          && relevanceLabel.relevant()) {
+      if (label != null && label.relevant()) {
         return 1.0 / (index + 1);
       }
     }

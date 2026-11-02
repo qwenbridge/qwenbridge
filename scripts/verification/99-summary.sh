@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+# Sourced by scripts/verify-release.sh (not executed directly).
 print_summary() {
   echo ""
   echo "======================================================"
@@ -6,6 +8,7 @@ print_summary() {
 
   echo -e "${GREEN}Passed:${NC} ${PASSED}"
   echo -e "${YELLOW}Warnings:${NC} ${WARNINGS}"
+  echo -e "${YELLOW}Skipped:${NC} ${SKIPPED}"
   echo -e "${RED}Failed:${NC} ${FAILED}"
 
   if [[ "${FAILED}" -eq 0 ]]; then

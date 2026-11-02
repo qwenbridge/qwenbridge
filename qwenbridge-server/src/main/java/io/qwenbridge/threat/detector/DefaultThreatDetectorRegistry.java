@@ -12,7 +12,7 @@ public class DefaultThreatDetectorRegistry implements ThreatDetectorRegistry {
 
   @Inject
   public DefaultThreatDetectorRegistry(@All List<ThreatDetector> detectors) {
-    this.detectors = detectors;
+    this.detectors = List.copyOf(detectors);
   }
 
   @Override

@@ -1,6 +1,6 @@
 {
   "name": "@qwenbridge/sdk",
-  "version": "0.1.0-SNAPSHOT",
+  "version": "0.9.1",
   "description": "Official TypeScript SDK for QwenBridge",
   "license": "Apache-2.0",
   "author": "QwenBridge",
@@ -29,6 +29,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./web-component": {
+      "types": "./dist/web-component.d.ts",
+      "import": "./dist/web-component.js"
     }
   },
   "files": [
@@ -42,18 +46,22 @@
   },
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "npm run clean && tsc -p tsconfig.json",
+    "build": "npm run clean && tsc -p tsconfig.json && node scripts/web-assets.mjs --build",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepack": "npm run build",
-    "pack:check": "npm pack --dry-run"
+    "pack:check": "npm pack --dry-run",
+    "web:assets": "node scripts/web-assets.mjs",
+    "web:check": "node scripts/web-assets.mjs --check",
+    "test:browser": "node --test test/browser/*.mjs"
   },
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
+    "playwright": "1.63.0",
     "typescript": "^5.8.3",
-    "vitest": "^3.2.6"
+    "vitest": "5.0.5"
   }
 }

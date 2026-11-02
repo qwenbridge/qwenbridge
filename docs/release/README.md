@@ -1,5 +1,7 @@
 # QwenBridge Release History
 
+> Historical release record. The current application is Quarkus on Java 25; the Spring Boot starter was removed. See [current phase audit](../platform/phase-acceptance.md).
+
 This document summarizes the public release evolution of QwenBridge.
 
 ## V1 — Search Box Core

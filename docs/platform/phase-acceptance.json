@@ -1,0 +1,409 @@
+{
+  "date": "2026-10-30",
+  "scope": "Current local Quarkus tree, including pre-existing uncommitted recovery changes",
+  "java": 25,
+  "phases": [
+    {
+      "phase": 1,
+      "title": "Multilingual Input Foundation",
+      "status": "implemented",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/input/model/MultilingualInput.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/input/model/MultilingualInputTest.java",
+      "findings": "Immutable original input, language/locale/source metadata and backwards-compatible API request constructors. Tests cover supported-language samples; this does not certify model quality."
+    },
+    {
+      "phase": 2,
+      "title": "Language Detection and Normalization",
+      "status": "implemented",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/normalization/service/DefaultInputNormalizer.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/normalization/service/DefaultInputNormalizerTest.java",
+      "findings": "Ordered Unicode, URL, HTML, whitespace and control-character rules with trace. LanguageServiceTest covers 11 realistic language samples. Short Latin input intentionally falls back to English; declared language is currently trusted as a hint."
+    },
+    {
+      "phase": 3,
+      "title": "Translation and Mixed-Language Understanding",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/rewrite/RewriteService.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/rewrite/RewriteServiceTest.java",
+      "findings": "AI rewrites and an explicit original-query fallback for empty model rewrite lists exist. No translation/equivalence contract or multilingual constraint-preservation acceptance gate."
+    },
+    {
+      "phase": 4,
+      "title": "Intent Detection",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/intent/IntentService.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/intent/IntentServiceTest.java",
+      "findings": "Intent enum, confidence, parser and UNKNOWN fallback exist. An interactive ambiguity/disambiguation protocol and measured multilingual intent quality are absent."
+    },
+    {
+      "phase": 5,
+      "title": "Entity and Constraint Extraction",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/intelligence/extraction/QueryEntityConstraintExtractor.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/intelligence/extraction/QueryEntityConstraintExtractorTest.java",
+      "findings": "Grounded entity spans and English under/below/up-to prices in USD/EUR/SEK. No general date, time, place, range, multilingual amount or negation extraction. The public AI analysis maps entities to UNKNOWN."
+    },
+    {
+      "phase": 6,
+      "title": "Typed Intermediate Representation",
+      "status": "implemented",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/intelligence/ir/QueryIR.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/intelligence/ir/QueryIRMapperTest.java",
+      "findings": "Immutable version-1 IR validates entity evidence spans and rejects other versions. Covers the existing entity/price vocabulary; not a full commerce schema and not attached to the public pipeline."
+    },
+    {
+      "phase": 7,
+      "title": "Schema Registry",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/intelligence/schema/QuerySchemaRegistry.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/intelligence/schema/QuerySchemaValidatorTest.java",
+      "findings": "Static allowlist for price, BRAND and PRODUCT. No schema registration/update API, schema version lifecycle or backend mapping registry."
+    },
+    {
+      "phase": 8,
+      "title": "Constraint Validation and Mapping",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/intelligence/constraint/QueryConstraintValidator.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/intelligence/constraint/QueryConstraintValidatorTest.java",
+      "findings": "Logical allowlists, duplicates, evidence and resource budgets exist in the opt-in structured path. The public API does not run this path. Normal OpenSearch compilation now rejects nonempty uncompiled constraints rather than dropping them."
+    },
+    {
+      "phase": 9,
+      "title": "Security Input Validation",
+      "status": "implemented",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/threat/ThreatService.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/threat/ThreatServiceHybridCoverageTest.java",
+      "findings": "Deterministic injection/payload detectors, YAML rules, correlation and pipeline stop-before-AI behavior have unit/API coverage. Rule coverage is not proof against every novel payload."
+    },
+    {
+      "phase": 10,
+      "title": "AI Threat Detection",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/threat/ThreatService.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/threat/ThreatServiceCorrelationIntegrationTest.java",
+      "findings": "Hybrid in test names means combined rule/correlation detectors. No AI threat-classifier invocation or model/rule arbitration contract is implemented."
+    },
+    {
+      "phase": 11,
+      "title": "Policy and Authorization Engine",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/pipeline/step/PolicyStep.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/pipeline/step/PolicyStepTest.java",
+      "findings": "Policy checks rewrite content and breadth before execution. X-API-Key is used for rate limiting, not authentication. No principal/tenant identity, roles, resource permissions or identity-based authorization."
+    },
+    {
+      "phase": 12,
+      "title": "Explainability and Confidence Model",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/confidence/ConfidenceService.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/confidence/ConfidenceAssessmentTest.java",
+      "findings": "Conservative minimum of intent/semantic/decision signals; absent analysis scores zero. API and SDKs expose uncalibrated confidenceAssessment. Rule-based blocks identify their method. No calibrated probability model or general evidence graph."
+    },
+    {
+      "phase": 13,
+      "title": "Filterless Commerce Core",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/pipeline/step/DecisionStep.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/pipeline/step/DecisionStepTest.java",
+      "findings": "Natural-language retrieval works, but public DecisionStep executes ordinary SearchRequest without QueryIR/constraint compilation. Price language in a query is not an enforced filter."
+    },
+    {
+      "phase": 14,
+      "title": "Product Catalog Intelligence",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "Only the demo seed index and generic document maps exist. No product ingestion/normalization service, catalog schema, product relations or catalog-quality tests."
+    },
+    {
+      "phase": 15,
+      "title": "Query-to-Filter Compilation",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/execution/provider/opensearch/query/OpenSearchQueryFactory.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/execution/provider/opensearch/query/OpenSearchStructuredQueryFactoryTest.java",
+      "findings": "Opt-in OpenSearch keyword price/currency filters exist. Structured vector/hybrid and other backends are rejected or absent; no cross-backend typed filter acceptance suite."
+    },
+    {
+      "phase": 16,
+      "title": "Keyword, Vector and Hybrid Search",
+      "status": "implemented",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/execution/provider/implementation/OpenSearchProvider.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/execution/provider/opensearch/integration/OpenSearchHybridRetrievalIntegrationTest.java",
+      "findings": "OpenSearch keyword, kNN and bool-should hybrid retrieval plus embedding provider exist. The live test is opt-in and needs BGE-M3 and seeded products. Hybrid is combined scoring, not an independently tuned fusion model."
+    },
+    {
+      "phase": 17,
+      "title": "Ranking and Reranking",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/ranking/service/SearchResultRanker.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/ranking/service/SearchResultRankerTest.java",
+      "findings": "Ranking no longer clips all raw scores above one into a tie. QueryTermReranker provides a replaceable deterministic baseline when requested; disabled mode retains NoOpReranker. No learned/cross-encoder model or validated uplift benchmark."
+    },
+    {
+      "phase": 18,
+      "title": "Query Relaxation and Zero-Result Recovery",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "No zero-hit trigger, relaxation planner, preserved hard-constraint policy or recovery acceptance tests."
+    },
+    {
+      "phase": 19,
+      "title": "Search Suggestions and Refinement",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/rewrite/RewriteService.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/rewrite/RewriteServiceTest.java",
+      "findings": "AI rewrites exist. There is no suggestion/refinement API, candidate ranking or iterative user refinement state."
+    },
+    {
+      "phase": 20,
+      "title": "Search Session and Conversation Context",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "StreamingSessionRegistry tracks SSE subscriptions, not conversation memory. No persisted turns, carried constraints, session isolation or context-expiry contract."
+    },
+    {
+      "phase": 21,
+      "title": "Commerce Domain Pack",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "No installable commerce pack, pack manifest or commerce domain model/contract."
+    },
+    {
+      "phase": 22,
+      "title": "Commerce Provider Connectors",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/execution/provider/spi/SearchProvider.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/execution/provider/registry/DefaultSearchProviderRegistryTest.java",
+      "findings": "Generic provider SPI/registry/resolver exist. They are not a catalog synchronization/ingestion connector SPI. Shopify is not present in source, tests or inspected Git history."
+    },
+    {
+      "phase": 23,
+      "title": "Elasticsearch Connector",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "No Elasticsearch client, credential configuration, connector, mappings or compatibility tests. OpenSearch implementation is not evidence of Elasticsearch support."
+    },
+    {
+      "phase": 24,
+      "title": "OpenSearch Connector",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/execution/provider/opensearch/client/OpenSearchClient.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/execution/provider/opensearch/client/OpenSearchClientTest.java",
+      "findings": "Queries, mappings, response adaptation, retry/error behavior and timeouts exist. The local stack disables authentication; credentialed backend acceptance is not implemented/verified."
+    },
+    {
+      "phase": 25,
+      "title": "PostgreSQL and MongoDB Connectors",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "Neither backend has a connector implementation, dependency, schema mapping or query-translation test suite."
+    },
+    {
+      "phase": 26,
+      "title": "Frontend-Neutral Search API",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/api/SearchAnalyzeController.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/api/SearchAnalyzeControllerTest.java",
+      "findings": "REST analyze, error contracts, IDs, health/version and typed SSE are UI-neutral. Public API still lacks a typed commerce filter/result contract and schema negotiation."
+    },
+    {
+      "phase": 27,
+      "title": "Java SDK and historical Spring Boot Starter",
+      "status": "implemented",
+      "source": "qwenbridge-java-sdk/src/main/java/io/qwenbridge/sdk/QwenBridgeClient.java",
+      "tests": "qwenbridge-java-sdk/src/test/java/io/qwenbridge/sdk/QwenBridgeClientTest.java",
+      "findings": "Java SDK supports sync/async, retries and typed SSE; all modules target Java 25. Starter is intentionally removed and is not an outstanding requirement. Historical release notes are marked historical."
+    },
+    {
+      "phase": 28,
+      "title": "JavaScript Web Component",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "TypeScript SDK is a client library. No customElements.define, browser widget, UI component contract or component tests."
+    },
+    {
+      "phase": 29,
+      "title": "Developer Playground",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "Swagger/OpenAPI exists, but there is no playground displaying query, confidence, evidence and results. Earlier README and CI referenced absent playground files; those claims were removed."
+    },
+    {
+      "phase": 30,
+      "title": "Search Analytics and Evaluation",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/evaluation/metrics/RetrievalEvaluationMetrics.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/evaluation/metrics/RetrievalEvaluationMetricsTest.java",
+      "findings": "Offline Precision@K, Recall@K, reciprocal rank/MRR and nDCG benchmark tooling exist. Operational metrics are not click/query analytics; production relevance judgments and quality acceptance remain separate."
+    },
+    {
+      "phase": 31,
+      "title": "Plugin SDK Foundation",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/ai/provider/spi/AIProvider.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/execution/provider/registry/DefaultSearchProviderRegistryTest.java",
+      "findings": "AI/search provider interfaces are extension points. No general plugin manifest, loading API, compatibility contract or third-party plugin SDK acceptance."
+    },
+    {
+      "phase": 32,
+      "title": "Domain Pack Architecture",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "No domain-pack type, manifest, dependency boundary or domain-specific pack discovery."
+    },
+    {
+      "phase": 33,
+      "title": "Connector Pack Architecture",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "No connector-pack manifest, configuration contract, install lifecycle or upgrade semantics. StructuredExecutionLimits comments labelled stages 33+ concern input budgets only."
+    },
+    {
+      "phase": 34,
+      "title": "AI Provider Pack Architecture",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/ai/provider/spi/AIProvider.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/ai/provider/ollama/client/OllamaClientReliabilityTest.java",
+      "findings": "AI provider registry/resolver and Ollama implementation exist. No provider-pack manifest, packaging, install lifecycle or second provider acceptance."
+    },
+    {
+      "phase": 35,
+      "title": "Policy Pack Architecture",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "Threat-rule YAML files are not installable policy packs. No pack contract, scoped policy selection or lifecycle."
+    },
+    {
+      "phase": 36,
+      "title": "Pack Registry and Lifecycle",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "Provider bean registries do not install/activate/disable/upgrade packs. No pack lifecycle state machine, rollback, signature or dependency management."
+    },
+    {
+      "phase": 37,
+      "title": "Licensing and Entitlement Engine",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "Apache repository license exists. No runtime license validation, entitlement evaluation, signing keys or feature enforcement."
+    },
+    {
+      "phase": 38,
+      "title": "Community, Professional and Enterprise Editions",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "No edition model, capability matrix or tested feature gates."
+    },
+    {
+      "phase": 39,
+      "title": "QwenBridge Marketplace Foundation",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "No marketplace metadata contract, publisher validation, package publication workflow or marketplace API."
+    },
+    {
+      "phase": 40,
+      "title": "Machine Output Parsing Foundation",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "AI search-JSON parsing exists for search analysis only. No machine-output parser SPI, canonical input formats or Kubernetes adapter."
+    },
+    {
+      "phase": 41,
+      "title": "Typed Machine Event Model",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "PipelineEvent represents search lifecycle events, not a canonical machine event/source/resource schema."
+    },
+    {
+      "phase": 42,
+      "title": "Machine-to-Human Explanation Engine",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "ThreatExplanation renders threat findings for one query. No general machine-event explanation service with retained evidence."
+    },
+    {
+      "phase": 43,
+      "title": "Audience-Aware Explanation",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "No developer/DevOps/manager/end-user audience model, rendering policy or audience acceptance tests."
+    },
+    {
+      "phase": 44,
+      "title": "Evidence and Source Attribution",
+      "status": "partial",
+      "source": "qwenbridge-server/src/main/java/io/qwenbridge/threat/explanation/ThreatExplanation.java",
+      "tests": "qwenbridge-server/src/test/java/io/qwenbridge/threat/explanation/ThreatExplanationTest.java",
+      "findings": "Threat findings, grounded query spans and pipeline event timestamps provide local evidence. No machine-event evidence IDs, source/time attribution store or end-to-end citation contract."
+    },
+    {
+      "phase": 45,
+      "title": "Root-Cause Analysis Engine",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "No ranked root-cause hypotheses, causal evidence model or root-cause evaluation dataset."
+    },
+    {
+      "phase": 46,
+      "title": "Event Correlation Engine",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "Threat correlation combines rule findings from one input. It does not correlate machine events across services/resources/time."
+    },
+    {
+      "phase": 47,
+      "title": "Timeline Reconstruction",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "Search pipeline events have order/timestamps. There is no machine-event timeline reconstruction or dependency/clock-skew handling."
+    },
+    {
+      "phase": 48,
+      "title": "Impact and Blast-Radius Analysis",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "No service/resource dependency graph, impacted-user model, propagation analysis or uncertainty bounds."
+    },
+    {
+      "phase": 49,
+      "title": "Recommended Action Engine",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "No action candidates, risk/success scoring or evidence-backed remediation ranking. Existing direct-answer executor contains placeholder output."
+    },
+    {
+      "phase": 50,
+      "title": "Human Feedback and Correction Loop",
+      "status": "missing",
+      "source": null,
+      "tests": null,
+      "findings": "No feedback endpoint/storage, correction lineage, reviewer identity or evaluation/correction loop."
+    }
+  ],
+  "historical_baseline": true,
+  "subsequent_acceptance": "docs/platform/commerce-acceptance-2026-10-31.md"
+}

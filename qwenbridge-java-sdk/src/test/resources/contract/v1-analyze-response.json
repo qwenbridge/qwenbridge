@@ -1,0 +1,322 @@
+{
+  "requestId" : "contract-1",
+  "processingTimeMs" : 194,
+  "originalQuery" : "کفش مشکی",
+  "language" : "fa",
+  "intent" : "PRODUCT_SEARCH",
+  "decision" : "ALLOW",
+  "confidence" : 0.8,
+  "confidenceAssessment" : {
+    "value" : 0.8,
+    "method" : "model-signal-min-v1",
+    "calibrated" : false,
+    "signals" : {
+      "intent" : 0.9,
+      "decision" : 0.8,
+      "semantic" : 0.8
+    }
+  },
+  "rewrites" : [ "black shoes" ],
+  "threatReasons" : [ ],
+  "semanticValidated" : true,
+  "semanticScore" : 0.8,
+  "policyPassed" : true,
+  "policyViolations" : [ ],
+  "executionPlan" : {
+    "available" : true,
+    "mode" : "KEYWORD",
+    "backend" : "OPENSEARCH",
+    "steps" : [ {
+      "order" : 10,
+      "operation" : "KEYWORD_SEARCH",
+      "reason" : "Decision requested keyword search."
+    }, {
+      "order" : 20,
+      "operation" : "RETURN_RESULTS",
+      "reason" : "Return search results."
+    } ],
+    "reason" : "test"
+  },
+  "executionResult" : {
+    "available" : true,
+    "executed" : true,
+    "operations" : [ "KEYWORD_SEARCH", "RETURN_RESULTS" ],
+    "results" : [ ],
+    "reason" : "Execution plan executed successfully using search provider: opensearch"
+  },
+  "search" : {
+    "available" : true,
+    "totalHits" : 0,
+    "tookMillis" : 0,
+    "hits" : [ ]
+  },
+  "cache" : {
+    "enabled" : false,
+    "hit" : false,
+    "miss" : true,
+    "key" : "",
+    "provider" : "",
+    "model" : "",
+    "version" : ""
+  },
+  "pipelineTrace" : [ {
+    "step" : "LanguageStep",
+    "status" : "EXECUTED",
+    "durationMs" : 8
+  }, {
+    "step" : "NormalizationStep",
+    "status" : "EXECUTED",
+    "durationMs" : 4
+  }, {
+    "step" : "ThreatStep",
+    "status" : "EXECUTED",
+    "durationMs" : 40
+  }, {
+    "step" : "AIAnalysisStep",
+    "status" : "EXECUTED",
+    "durationMs" : 1
+  }, {
+    "step" : "ModelSafetyStep",
+    "status" : "EXECUTED",
+    "durationMs" : 0
+  }, {
+    "step" : "TranslationStep",
+    "status" : "EXECUTED",
+    "durationMs" : 6
+  }, {
+    "step" : "IntentStep",
+    "status" : "EXECUTED",
+    "durationMs" : 13
+  }, {
+    "step" : "QueryIrStep",
+    "status" : "EXECUTED",
+    "durationMs" : 32
+  }, {
+    "step" : "ConstraintValidationStep",
+    "status" : "EXECUTED",
+    "durationMs" : 1
+  }, {
+    "step" : "RewriteStep",
+    "status" : "EXECUTED",
+    "durationMs" : 0
+  }, {
+    "step" : "SemanticStep",
+    "status" : "EXECUTED",
+    "durationMs" : 1
+  }, {
+    "step" : "PolicyStep",
+    "status" : "EXECUTED",
+    "durationMs" : 0
+  }, {
+    "step" : "DecisionStep",
+    "status" : "EXECUTED",
+    "durationMs" : 13
+  }, {
+    "step" : "ConfidenceStep",
+    "status" : "EXECUTED",
+    "durationMs" : 0
+  } ],
+  "clarificationQuestions" : [ ],
+  "languageAnalysis" : {
+    "detected" : "fa",
+    "confidenceKind" : "HEURISTIC",
+    "confidenceValue" : null,
+    "detector" : "script-heuristic-v1",
+    "declared" : null,
+    "primaryLanguage" : "fa",
+    "mixed" : false,
+    "direction" : "RTL",
+    "configuredLanguage" : true,
+    "segments" : [ {
+      "start" : 0,
+      "end" : 8,
+      "script" : "ARABIC",
+      "language" : "fa",
+      "confidenceKind" : "HEURISTIC"
+    } ]
+  },
+  "intentAnalysis" : {
+    "taxonomyVersion" : "1.0",
+    "status" : "CLEAR",
+    "issues" : [ ],
+    "intents" : [ {
+      "id" : "i1",
+      "type" : "search",
+      "start" : 0,
+      "end" : 8,
+      "confidenceKind" : "HEURISTIC"
+    } ],
+    "retrievalModes" : [ "LEXICAL" ],
+    "subqueries" : [ ]
+  },
+  "queryIR" : {
+    "originalText" : "کفش مشکی",
+    "irVersion" : "1.0",
+    "language" : "fa",
+    "retrievalHints" : {
+      "modes" : [ "LEXICAL" ],
+      "crossLanguage" : false
+    },
+    "intents" : [ {
+      "id" : "i1",
+      "type" : "search",
+      "confidence" : {
+        "kind" : "HEURISTIC"
+      },
+      "span" : {
+        "start" : 0,
+        "end" : 8,
+        "text" : "کفش مشکی"
+      }
+    } ]
+  },
+  "unresolved" : [ ],
+  "constraintValidation" : {
+    "status" : "NO_SCHEMA",
+    "schema" : null,
+    "enforced" : false,
+    "lostNegations" : [ ],
+    "assessments" : [ ]
+  },
+  "translation" : {
+    "status" : "SKIPPED",
+    "reason" : "NOT_REQUESTED",
+    "provider" : null,
+    "sourceLanguage" : "fa",
+    "targetLanguage" : null,
+    "confidence" : null,
+    "preservation" : null,
+    "elapsedMs" : 1
+  },
+  "textRepresentations" : {
+    "original" : "کفش مشکی",
+    "normalized" : "کفش مشکی",
+    "translated" : null,
+    "transformations" : [ {
+      "kind" : "NORMALIZATION",
+      "from" : "original",
+      "to" : "normalized",
+      "actor" : "search-normalization-v1",
+      "details" : {
+        "steps" : ""
+      }
+    } ]
+  },
+  "threatAssessment" : {
+    "zone" : "USER_INPUT",
+    "action" : "ALLOW",
+    "modelStatus" : "EVALUATED",
+    "degraded" : false,
+    "failedDetectors" : [ ],
+    "signals" : [ ]
+  },
+  "confidenceReport" : {
+    "method" : "weakest-link-v1",
+    "calibrated" : false,
+    "overall" : {
+      "kind" : "HEURISTIC",
+      "value" : null
+    },
+    "components" : [ {
+      "component" : "LANGUAGE",
+      "source" : "script-heuristic-v1",
+      "confidence" : {
+        "kind" : "HEURISTIC",
+        "value" : null
+      }
+    }, {
+      "component" : "INTENT",
+      "source" : "intent-taxonomy-1.0",
+      "confidence" : {
+        "kind" : "HEURISTIC",
+        "value" : null
+      }
+    }, {
+      "component" : "THREAT",
+      "source" : "threat-rules",
+      "confidence" : {
+        "kind" : "DETERMINISTIC",
+        "value" : null
+      }
+    }, {
+      "component" : "MODEL_INTENT",
+      "source" : "search-analysis-model",
+      "confidence" : {
+        "kind" : "MODEL_SCORE",
+        "value" : 0.9
+      }
+    }, {
+      "component" : "MODEL_SEMANTIC",
+      "source" : "search-analysis-model",
+      "confidence" : {
+        "kind" : "MODEL_SCORE",
+        "value" : 0.8
+      }
+    }, {
+      "component" : "MODEL_DECISION",
+      "source" : "search-analysis-model",
+      "confidence" : {
+        "kind" : "MODEL_SCORE",
+        "value" : 0.8
+      }
+    } ]
+  },
+  "explanations" : {
+    "evidenceVersion" : "1.0",
+    "items" : [ {
+      "subject" : "intent:i1",
+      "status" : "SUPPORTED",
+      "statement" : "Intent search recognized from \"کفش مشکی\".",
+      "confidence" : {
+        "kind" : "HEURISTIC",
+        "value" : null
+      },
+      "evidence" : [ {
+        "id" : "ev-i1",
+        "kind" : "USER_TEXT",
+        "sourceType" : "query",
+        "sourceId" : "original",
+        "spanStart" : 0,
+        "spanEnd" : 8,
+        "contentSha256" : null,
+        "parentId" : null
+      } ]
+    }, {
+      "subject" : "threat",
+      "status" : "SUPPORTED",
+      "statement" : "No threat rule matched; action ALLOW.",
+      "confidence" : {
+        "kind" : "DETERMINISTIC",
+        "value" : null
+      },
+      "evidence" : [ {
+        "id" : "ev-threat",
+        "kind" : "POLICY_DECISION",
+        "sourceType" : "threat-rules",
+        "sourceId" : "none-matched",
+        "spanStart" : null,
+        "spanEnd" : null,
+        "contentSha256" : null,
+        "parentId" : null
+      } ]
+    }, {
+      "subject" : "plan",
+      "status" : "SUPPORTED",
+      "statement" : "Plan KEYWORD on OPENSEARCH with 2 step(s), chosen by the model decision.",
+      "confidence" : {
+        "kind" : "MODEL_DECISION",
+        "value" : null
+      },
+      "evidence" : [ {
+        "id" : "ev-plan",
+        "kind" : "MODEL_OUTPUT",
+        "sourceType" : "model",
+        "sourceId" : "decision",
+        "spanStart" : null,
+        "spanEnd" : null,
+        "contentSha256" : "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+        "parentId" : null
+      } ]
+    } ]
+  }
+}

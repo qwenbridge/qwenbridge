@@ -49,6 +49,14 @@ class LanguageStepTest {
     assertThat(context.stopped()).isFalse();
   }
 
+  @Test
+  void shouldUseDeclaredLanguageForAmbiguousShortLatinText() {
+    var input =
+        io.qwenbridge.input.model.MultilingualInput.of(
+            "bord", "sv", null, io.qwenbridge.input.model.InputSource.API);
+    assertThat(step.execute(new ExecutionContext("id", input)).language()).isEqualTo("sv");
+  }
+
   private static Stream<Arguments> languageQueries() {
     return Stream.of(
         Arguments.of("What are the best wireless headphones for working from home?", "en"),

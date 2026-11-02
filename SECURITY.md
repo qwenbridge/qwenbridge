@@ -2,49 +2,45 @@
 
 ## Supported versions
 
-Security fixes are handled on the active public release line.
-
-Current public release track:
-
-```text
-V9 — Developer Platform
-```
+Security fixes are made on the active release line: currently **0.9.x (QwenBridge 1.0 release
+candidate)**. Older lines (V1–V9 records in `docs/release/`) are historical and unsupported.
 
 ## Reporting a vulnerability
 
-Please report suspected vulnerabilities privately. Do not open a public issue with exploit details.
+Report suspected vulnerabilities **privately** to the maintainers, through the repository's private
+vulnerability reporting (GitHub Security Advisories). Do not open a public issue with exploit
+details.
 
 Include:
-
-- affected module
-- affected version or commit
-- reproduction steps
-- expected impact
-- any relevant logs or payload examples
+- the affected module and version or commit;
+- reproduction steps;
+- the expected impact;
+- relevant logs or payloads, with secrets removed.
 
 ## Secrets
 
-Never commit secrets, credentials, private tokens, API keys, passwords, private endpoints, or local `.env` files.
+Never commit secrets, credentials, tokens, API keys, passwords, private endpoints or `.env` files.
+API principals and provider credentials are supplied through the environment. See the
+[secrets handling policy](docs/security/secrets-handling-policy.md).
 
-Read:
+## Built-in protections
 
-- `docs/security/secrets-handling-policy.md`
+The server provides:
+- request validation and size limits;
+- 12 threat-detector families;
+- central policy;
+- per-IP, per-key and quota rate limiting;
+- tenant isolation.
 
-## Abuse protection
+The `prod` profile requires API keys. See [abuse protection](docs/security/abuse-protection.md)
+and the [1.0 security audit](docs/security/QwenBridge-1.0-Security-Audit.md).
 
-QwenBridge includes input security checks, threat detection, and rate-limiting support.
+## Before a release
 
-Read:
+The steps are in the [release process](docs/publishing/release-process.md):
+- `mvn clean verify`;
+- the code-quality profile;
+- the dependency and container scans (CI jobs `dependency-scan`, `container-scan`);
+- the master verification.
 
-- `docs/security/abuse-protection.md`
-
-## Security verification
-
-Before public release:
-
-```bash
-mvn clean verify
-bash scripts/verify-release.sh
-```
-
-Dependency and vulnerability findings should be reviewed before publishing release artifacts.
+Review every finding before publishing.

@@ -1,7 +1,7 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
 
-const baseUrl = __ENV.BASE_URL || "http://localhost:8080"\;
+const baseUrl = __ENV.BASE_URL || "http://localhost:8080";
 
 export const options = {
   scenarios: {
@@ -13,6 +13,7 @@ export const options = {
     }
   },
   thresholds: {
+    checks: ["rate==1"],
     http_req_failed: ["rate<0.20"],
     http_req_duration: ["p(95)<8000"]
   }
@@ -35,7 +36,7 @@ const cases = [
     name: "oversized",
     body: JSON.stringify({ requestId: `k6-oversized-${Date.now()}`, query: "gaming laptop ".repeat(5000) }),
     contentType: "application/json",
-    accepted: [200, 400, 413, 429, 502]
+    accepted: [400, 413]
   },
   {
     name: "wrong-content-type",
@@ -46,13 +47,14 @@ const cases = [
 ];
 
 export default function () {
-  const selected = cases[Math.floor(Math.random() * cases.length)];
+  const selected = cases[(__ITER + __VU - 1) % cases.length];
   const requestId = `k6-resilience-${selected.name}-${Date.now()}-${Math.random()}`;
 
   const response = http.post(
     `${baseUrl}/api/v1/search/analyze`,
     selected.body,
     {
+      responseCallback: http.expectedStatuses(...selected.accepted),
       headers: {
         "Content-Type": selected.contentType,
         "X-Request-ID": requestId

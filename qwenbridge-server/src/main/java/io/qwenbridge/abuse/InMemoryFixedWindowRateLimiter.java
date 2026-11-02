@@ -1,13 +1,13 @@
 package io.qwenbridge.abuse;
 
+import io.quarkus.arc.DefaultBean;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
-import io.quarkus.arc.DefaultBean;
-import jakarta.inject.Inject;
-import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 @DefaultBean

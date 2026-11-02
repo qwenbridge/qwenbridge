@@ -1,0 +1,242 @@
+{
+  "run_id": "20261031-010519",
+  "model_placement": "http://qwenbridge-ollama:11434",
+  "runner": "docker",
+  "phases": {
+    "cold": {
+      "expected_requests": 10,
+      "completed_requests": 10,
+      "completed_iterations": 10,
+      "exit_code": 0,
+      "passed": true,
+      "checks_passed": 60,
+      "checks_failed": 0,
+      "http_error_rate": 0,
+      "p95_ms": 2791.4163347,
+      "p99_ms": 2890.76493494,
+      "cache_hits": 0,
+      "cache_misses": 10,
+      "ai_p95_ms": 2782.25,
+      "redis_pool_rejected": 0.0,
+      "cache_fallbacks": 0,
+      "vus": 1
+    },
+    "warm-1000": {
+      "expected_requests": 1000,
+      "completed_requests": 1000,
+      "completed_iterations": 1000,
+      "exit_code": 0,
+      "passed": true,
+      "checks_passed": 6000,
+      "checks_failed": 0,
+      "http_error_rate": 0,
+      "p95_ms": 17.7413,
+      "p99_ms": 26.686161659999996,
+      "cache_hits": 1000,
+      "cache_misses": 0,
+      "ai_p95_ms": 1,
+      "redis_pool_rejected": 0.0,
+      "cache_fallbacks": 0,
+      "vus": 10
+    },
+    "warm-10000": {
+      "expected_requests": 10000,
+      "completed_requests": 10000,
+      "completed_iterations": 10000,
+      "exit_code": 0,
+      "passed": true,
+      "checks_passed": 60000,
+      "checks_failed": 0,
+      "http_error_rate": 0,
+      "p95_ms": 23.357962849999996,
+      "p99_ms": 34.29310517,
+      "cache_hits": 10000,
+      "cache_misses": 0,
+      "ai_p95_ms": 3,
+      "redis_pool_rejected": 0.0,
+      "cache_fallbacks": 0,
+      "vus": 50
+    },
+    "warm-concurrency": {
+      "expected_requests": 10000,
+      "completed_requests": 10000,
+      "completed_iterations": 10000,
+      "exit_code": 0,
+      "passed": true,
+      "checks_passed": 60000,
+      "checks_failed": 0,
+      "http_error_rate": 0,
+      "p95_ms": 65.2254208,
+      "p99_ms": 81.61539948999997,
+      "cache_hits": 10000,
+      "cache_misses": 0,
+      "ai_p95_ms": 17,
+      "redis_pool_rejected": 0.0,
+      "cache_fallbacks": 0,
+      "vus": 250
+    },
+    "cached-load": {
+      "expected_requests": 1000000,
+      "completed_requests": 1000000,
+      "completed_iterations": 1000000,
+      "exit_code": 0,
+      "passed": true,
+      "checks_passed": 6000000,
+      "checks_failed": 0,
+      "http_error_rate": 0,
+      "p95_ms": 43.085541049999996,
+      "p99_ms": 51.135960659999995,
+      "cache_hits": 1000000,
+      "cache_misses": 0,
+      "ai_p95_ms": 12,
+      "redis_pool_rejected": 0.0,
+      "cache_fallbacks": 0,
+      "vus": 250
+    }
+  },
+  "note": "Cold uses cache misses. Throughput phases repeat ten queries; concurrency is VUs, not total requests.",
+  "passed": true,
+  "date": "2026-10-31",
+  "runtime": {
+    "framework": "Quarkus 3.40.1",
+    "java": 25,
+    "docker_cpus": 8,
+    "docker_memory_bytes": 24899309568,
+    "ollama_memory_limit_gib": 12,
+    "opensearch_memory_limit_gib": 2,
+    "redis_max_pool_size": 32,
+    "redis_max_pool_waiting": 1024
+  },
+  "models": {
+    "qwen2.5": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+    "bge-m3": "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab"
+  },
+  "thresholds": {
+    "p95_ms": 5000,
+    "p99_ms": 15000,
+    "checks_rate": 1,
+    "completed_requests": "exactly requested count",
+    "cached_hit_rate_min": 0.99,
+    "redis_pool_rejected": 0,
+    "cache_fallbacks": 0
+  },
+  "million_request_rate_per_second": 6062.8530506583265,
+  "million_duration_seconds": 164.938848368,
+  "scope": {
+    "catalog_products": 5,
+    "repeated_queries": 10,
+    "cold_queries": 10,
+    "cold_vus": 1,
+    "model_weights_resident": true,
+    "unique_million_query_capacity_measured": false,
+    "million_simultaneous_users_measured": false,
+    "post_load_corpus_sample": {
+      "query": "best gaming laptop under 1500 euro",
+      "search_available": true,
+      "hit_count": 1,
+      "rewrites": [
+        "best gaming laptop under1500 euro"
+      ]
+    }
+  },
+  "tests": {
+    "junit_server": 583,
+    "junit_java_sdk": 38,
+    "junit_total": 621,
+    "junit_failures": 0,
+    "junit_errors": 0,
+    "junit_skipped": 0,
+    "typescript_tests": 33,
+    "typescript_files": 6,
+    "code_quality": "passed",
+    "verifier_regressions": "passed",
+    "release_passed": 70,
+    "release_failed": 0,
+    "release_skipped": 1,
+    "release_warnings": [
+      "existing dirty worktree",
+      "strict release tag absent"
+    ],
+    "local_suite_executed_separately": true
+  },
+  "additional_k6": {
+    "security-input": {
+      "requests": 9,
+      "checks_passed": 18,
+      "checks_failed": 0,
+      "http_error_rate": 0,
+      "p95_ms": 217.3603999999999,
+      "passed": true
+    },
+    "language-quality": {
+      "requests": 11,
+      "checks_passed": 22,
+      "checks_failed": 0,
+      "http_error_rate": 0,
+      "p95_ms": 2250.5395,
+      "passed": true
+    },
+    "retrieval-quality": {
+      "requests": 5,
+      "checks_passed": 15,
+      "checks_failed": 0,
+      "http_error_rate": 0,
+      "p95_ms": 2069.1904,
+      "passed": true
+    },
+    "resilience": {
+      "requests": 4,
+      "checks_passed": 8,
+      "checks_failed": 0,
+      "http_error_rate": 0,
+      "p95_ms": 16.12245,
+      "passed": true
+    }
+  },
+  "stopped_attempt_before_pool_fix": {
+    "run_id": "20261031-005520",
+    "passed": false,
+    "phase": {
+      "expected_requests": 1000000,
+      "completed_requests": 2368,
+      "completed_iterations": 2368,
+      "exit_code": 105,
+      "passed": false,
+      "checks_passed": 14208,
+      "checks_failed": 0,
+      "http_error_rate": 0,
+      "p95_ms": 27533.586900500002,
+      "p99_ms": 34968.773710860005,
+      "cache_hits": 1944,
+      "cache_misses": 424,
+      "ai_p95_ms": 17289.65,
+      "vus": 250
+    }
+  },
+  "debugger_evidence": {
+    "exception": "io.vertx.core.http.ConnectionPoolTooBusyException: Connection pool reached max wait queue size of 24",
+    "cached_read_false_misses_before_fix": 846,
+    "cached_reads_in_reproducer": 1000,
+    "false_misses_after_fix": 0,
+    "production_pool_rejections_observed_before_stop": 1075
+  },
+  "final_state": {
+    "readiness": "UP",
+    "dependencies": {
+      "ollama": "UP",
+      "opensearch": "UP",
+      "redis": "UP"
+    },
+    "app_url": "http://127.0.0.1:18080",
+    "normal_per_ip_limit": 60,
+    "normal_ai_request_quota": 120,
+    "window": "1m",
+    "app_restarts": 0,
+    "app_oom_killed": false,
+    "models_and_volumes_preserved": true
+  },
+  "artifacts": {
+    "folder": "logs/verification/performance-20261031-010519",
+    "release_log": "logs/verification/verify-release-20261031-010519.log"
+  }
+}

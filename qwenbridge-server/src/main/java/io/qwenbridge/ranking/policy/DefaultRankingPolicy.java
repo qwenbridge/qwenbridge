@@ -2,11 +2,17 @@ package io.qwenbridge.ranking.policy;
 
 import io.qwenbridge.execution.provider.model.SearchHit;
 import io.qwenbridge.ranking.model.RankingScore;
-import java.util.Map;
 import jakarta.enterprise.context.ApplicationScoped;
+import java.util.Map;
 
 @ApplicationScoped
 public class DefaultRankingPolicy implements RankingPolicy {
+
+  /**
+   * QB-117: the v1 analysis pipeline's weighted policy, named and versioned so every ranked hit
+   * says which policy produced its score. Changing a weight requires a new version.
+   */
+  public static final String ID = "qwenbridge-v1-weighted@1.0";
 
   private static final double LEXICAL_WEIGHT = 0.45;
   private static final double VECTOR_WEIGHT = 0.45;

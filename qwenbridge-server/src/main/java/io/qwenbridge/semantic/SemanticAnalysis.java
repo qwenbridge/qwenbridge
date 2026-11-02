@@ -33,7 +33,7 @@ public record SemanticAnalysis(
     domainHints = domainHints == null ? List.of() : List.copyOf(domainHints);
     ambiguity = ambiguity == null ? SemanticAmbiguity.none() : ambiguity;
 
-    if (confidence < 0.0 || confidence > 1.0) {
+    if (!Double.isFinite(confidence) || confidence < 0.0 || confidence > 1.0) {
       throw new IllegalArgumentException("confidence must be between 0.0 and 1.0");
     }
   }

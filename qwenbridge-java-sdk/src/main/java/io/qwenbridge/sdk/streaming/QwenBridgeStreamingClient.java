@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
-public class QwenBridgeStreamingClient {
+public final class QwenBridgeStreamingClient {
 
   private final QwenBridgeClientConfig config;
   private final HttpClient httpClient;

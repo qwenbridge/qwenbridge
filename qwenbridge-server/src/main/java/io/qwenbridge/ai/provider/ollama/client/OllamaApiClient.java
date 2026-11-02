@@ -20,6 +20,8 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
  * metrics, and error normalization remain in {@link OllamaClient}.
  */
 @RegisterRestClient(configKey = "ollama")
+@org.eclipse.microprofile.rest.client.annotation.RegisterClientHeaders(
+    io.qwenbridge.operations.tracing.OutboundTraceHeaders.class)
 public interface OllamaApiClient {
 
   @POST

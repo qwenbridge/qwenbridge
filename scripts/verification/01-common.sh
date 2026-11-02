@@ -1,6 +1,10 @@
-mkdir -p "${VERIFY_LOG_DIR}"
-exec > >(tee -a "${VERIFY_LOG_FILE}") 2>&1
-echo "Verification log file: ${VERIFY_LOG_FILE}"
+#!/usr/bin/env bash
+# Sourced by scripts/verify-release.sh (not executed directly).
+if [[ -n "${VERIFY_LOG_FILE:-}" ]]; then
+  mkdir -p "$(dirname "${VERIFY_LOG_FILE}")"
+  exec > >(tee -a "${VERIFY_LOG_FILE}") 2>&1
+  echo "Verification log file: ${VERIFY_LOG_FILE}"
+fi
 
 pass() {
   echo -e "${GREEN}PASS${NC} - $1"
@@ -32,13 +36,21 @@ require_command() {
   command -v "$1" >/dev/null 2>&1
 }
 
-compose() {
-  if [[ -n "${COMPOSE_PROFILE}" ]]; then
-    docker compose -f "${COMPOSE_FILE}" --profile "${COMPOSE_PROFILE}" "$@"
-    return $?
-  fi
+curl() {
+  command curl --connect-timeout "${HTTP_CONNECT_TIMEOUT_SECONDS:-10}" \
+    --max-time "${HTTP_TIMEOUT_SECONDS:-180}" "$@"
+}
 
-  docker compose -f "${COMPOSE_FILE}" "$@"
+compose() {
+  local args=(-f "${COMPOSE_FILE}")
+  local profile=""
+  local profiles=()
+  # COMPOSE_PROFILE is a comma-separated list (QB-293), e.g. "production,opensearch".
+  IFS=',' read -r -a profiles <<<"${COMPOSE_PROFILE:-}"
+  for profile in "${profiles[@]}"; do
+    [[ -n "${profile}" ]] && args+=(--profile "${profile}")
+  done
+  docker compose "${args[@]}" "$@"
 }
 
 compose_with_profiles() {
@@ -58,17 +70,27 @@ compose_with_profiles() {
   docker compose "${args[@]}" "$@"
 }
 
+skip() {
+  echo -e "${YELLOW}SKIP${NC} - $1"
+  SKIPPED=$((SKIPPED + 1))
+}
+
 run_step() {
   local name="$1"
   shift
 
   section "${name}"
 
-  if "$@"; then
+  local status=0
+  "$@" || status=$?
+  if [[ "${status}" -eq 0 ]]; then
     pass "${name}"
+  elif [[ "${status}" -eq 77 ]]; then
+    skip "${name}"
   else
     fail "${name}"
   fi
+  return "${status}"
 }
 
 terminate_background_process() {
@@ -90,6 +112,7 @@ cleanup_background_processes() {
 
   SSE_PRIMARY_PID=""
   SSE_UNRELATED_PID=""
+  if declare -F stop_secure_opensearch >/dev/null; then stop_secure_opensearch || true; fi
 }
 
 trap cleanup_background_processes EXIT INT TERM

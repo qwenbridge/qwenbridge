@@ -23,8 +23,7 @@ public class ApiVersionController {
   public ApiVersionController(
       @ConfigProperty(name = "quarkus.application.name", defaultValue = "qwenbridge")
           String applicationName,
-      @ConfigProperty(name = "qwenbridge.version", defaultValue = "0.1.0-SNAPSHOT")
-          String applicationVersion) {
+      @ConfigProperty(name = "qwenbridge.version") String applicationVersion) {
     this.applicationName = applicationName;
     this.applicationVersion = applicationVersion;
   }

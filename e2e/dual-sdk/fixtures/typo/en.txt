@@ -1,0 +1,22 @@
+# E2E typo dictionary (QB-295 fixture): English
+red	800
+winter	700
+jacket	600
+jackets	300
+under	900
+running	500
+shoes	800
+black	700
+laptop	600
+lightweight	300
+available	300
+show	300
+find	400
+warm	300
+bag	100
+bad	100
+replacement	100
+fan	100
+red winter
+winter jacket
+running shoes

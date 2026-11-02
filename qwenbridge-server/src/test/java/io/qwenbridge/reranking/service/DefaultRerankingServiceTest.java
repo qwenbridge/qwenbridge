@@ -69,6 +69,35 @@ class DefaultRerankingServiceTest {
   }
 
   @Test
+  void shouldPreserveInterruptionWhenReturningFallback() throws Exception {
+    java.util.concurrent.CountDownLatch returned = new java.util.concurrent.CountDownLatch(1);
+    java.util.concurrent.atomic.AtomicBoolean interrupted =
+        new java.util.concurrent.atomic.AtomicBoolean();
+    Reranker slow =
+        (query, results) -> {
+          try {
+            returned.await(5, java.util.concurrent.TimeUnit.SECONDS);
+          } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+          }
+          return results;
+        };
+    DefaultRerankingService service = new DefaultRerankingService(slow, Duration.ofSeconds(10));
+    Thread caller =
+        Thread.ofVirtual()
+            .start(
+                () -> {
+                  Thread.currentThread().interrupt();
+                  assertThat(service.rerank("mouse", source)).isSameAs(source);
+                  interrupted.set(Thread.currentThread().isInterrupted());
+                  returned.countDown();
+                });
+    caller.join(2000);
+    assertThat(caller.isAlive()).isFalse();
+    assertThat(interrupted).isTrue();
+  }
+
+  @Test
   void shouldSkipRerankerForEmptyResults() {
     Reranker reranker = mock(Reranker.class);
 

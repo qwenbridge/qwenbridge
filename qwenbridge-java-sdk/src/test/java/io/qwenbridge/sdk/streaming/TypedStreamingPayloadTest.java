@@ -33,7 +33,7 @@ class TypedStreamingPayloadTest {
   void shouldMapKnownStreamingPayloads() throws Exception {
     server =
         startSseServer(
-            """
+"""
 event: stream.connected
 data: {"requestId":"req-typed","sessionId":"session-1"}
 

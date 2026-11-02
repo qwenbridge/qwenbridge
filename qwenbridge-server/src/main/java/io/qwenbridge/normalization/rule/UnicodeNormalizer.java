@@ -1,10 +1,15 @@
 package io.qwenbridge.normalization.rule;
 
-import java.text.Normalizer;
 import jakarta.enterprise.context.ApplicationScoped;
+import java.text.Normalizer;
 
 @ApplicationScoped
 public class UnicodeNormalizer implements InputNormalizationRule {
+
+  @Override
+  public int order() {
+    return 30;
+  }
 
   @Override
   public String name() {

@@ -24,6 +24,39 @@ import org.junit.jupiter.api.Test;
 class DecisionStepTest {
 
   @Test
+  void safeUncertainAnalysisAndInvalidConstraintsClarifyWithoutExecution() {
+    var context = new ExecutionContext("unclear product");
+    context.store(
+        SearchAnalysis.class,
+        SearchAnalysis.builder()
+            .modelThreatDecision("ALLOW")
+            .semanticValidated(false)
+            .intentConfidence(0.5)
+            .build());
+    assertThat(step().execute(context).type())
+        .isEqualTo(io.qwenbridge.decision.DecisionType.CLARIFY);
+    context.store(
+        SearchAnalysis.class,
+        SearchAnalysis.builder()
+            .modelThreatDecision("ALLOW")
+            .semanticValidated(true)
+            .intent(IntentType.PRODUCT_SEARCH)
+            .intentConfidence(.9)
+            .constraints(
+                List.of(
+                    new io.qwenbridge.analysis.model.Grounded.Constraint(
+                        "id",
+                        io.qwenbridge.analysis.model.Grounded.Operator.EQ,
+                        "12345",
+                        new io.qwenbridge.analysis.model.Grounded.Evidence(
+                            "original", 0, 5, "12345"))))
+            .build());
+    assertThat(step().execute(context).type())
+        .isEqualTo(io.qwenbridge.decision.DecisionType.CLARIFY);
+    assertThat(context.get(DecisionStep.ConstraintQuestions.class).questions()).isNotEmpty();
+  }
+
+  @Test
   void shouldReturnRewriteDecisionWhenAnalysisRequiresRewrite() {
     ExecutionContext context = new ExecutionContext("میز");
     context.store(SearchAnalysis.class, analysis(true));

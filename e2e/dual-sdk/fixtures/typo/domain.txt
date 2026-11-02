@@ -1,0 +1,4 @@
+# E2E domain vocabulary (QB-295 fixture)
+Featherbook
+Northpeak
+Stride

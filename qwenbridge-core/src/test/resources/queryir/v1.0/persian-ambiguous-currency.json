@@ -1,0 +1,83 @@
+{
+  "irVersion": "1.0",
+  "originalText": "کفش مشکی برای پیاده‌روی زیر ۱۲۰۰ کرون می‌خوام.",
+  "language": "fa",
+  "intents": [
+    {
+      "id": "i1",
+      "type": "search",
+      "confidence": {
+        "kind": "HEURISTIC"
+      }
+    }
+  ],
+  "constraints": [
+    {
+      "id": "c1",
+      "field": "price",
+      "operator": "LT",
+      "value": {
+        "type": "money",
+        "amount": 1200
+      },
+      "strength": "HARD",
+      "provenance": "USER_TEXT",
+      "reason": "explicit upper bound; 'krona' is ambiguous (SEK/NOK/DKK/ISK) so no currency is assumed",
+      "span": {
+        "start": 24,
+        "end": 37,
+        "text": "زیر ۱۲۰۰ کرون"
+      },
+      "confidence": {
+        "kind": "DETERMINISTIC"
+      }
+    },
+    {
+      "id": "c2",
+      "field": "color",
+      "operator": "EQ",
+      "value": {
+        "type": "text",
+        "value": "black"
+      },
+      "strength": "HARD",
+      "provenance": "USER_TEXT",
+      "reason": "explicit attribute value",
+      "span": {
+        "start": 4,
+        "end": 8,
+        "text": "مشکی"
+      },
+      "confidence": {
+        "kind": "HEURISTIC"
+      }
+    }
+  ],
+  "semanticSignals": [
+    {
+      "id": "g1",
+      "concept": "walking_suitability",
+      "polarity": "POSITIVE",
+      "target": "product",
+      "span": {
+        "start": 9,
+        "end": 23,
+        "text": "برای پیاده‌روی"
+      },
+      "confidence": {
+        "kind": "MODEL_DECISION"
+      }
+    }
+  ],
+  "retrievalHints": {
+    "modes": [
+      "SEMANTIC",
+      "STRUCTURED"
+    ],
+    "crossLanguage": true,
+    "contentLanguages": [
+      "en",
+      "sv"
+    ]
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "irVersion": "1.0",
+  "originalText": "Identify IPs with bot score below 10, excluding trusted sources",
+  "language": "en",
+  "intents": [
+    {
+      "id": "i1",
+      "type": "analyze",
+      "confidence": {
+        "kind": "MODEL_SCORE",
+        "value": 0.82
+      },
+      "span": {
+        "start": 0,
+        "end": 8,
+        "text": "Identify"
+      }
+    }
+  ],
+  "entities": [
+    {
+      "id": "e1",
+      "type": "network.ip_address",
+      "value": "IPs",
+      "span": {
+        "start": 9,
+        "end": 12,
+        "text": "IPs"
+      },
+      "confidence": {
+        "kind": "HEURISTIC"
+      }
+    }
+  ],
+  "constraints": [
+    {
+      "id": "c1",
+      "field": "bot_score",
+      "operator": "LT",
+      "value": {
+        "type": "number",
+        "value": 10
+      },
+      "strength": "HARD",
+      "provenance": "USER_TEXT",
+      "reason": "explicit upper bound 'below'",
+      "span": {
+        "start": 28,
+        "end": 36,
+        "text": "below 10"
+      },
+      "confidence": {
+        "kind": "DETERMINISTIC"
+      }
+    },
+    {
+      "id": "c2",
+      "field": "source.trust",
+      "operator": "NOT_IN",
+      "value": {
+        "type": "list",
+        "values": [
+          {
+            "type": "text",
+            "value": "trusted"
+          }
+        ]
+      },
+      "strength": "HARD",
+      "provenance": "USER_TEXT",
+      "reason": "explicit exclusion 'excluding'",
+      "span": {
+        "start": 38,
+        "end": 63,
+        "text": "excluding trusted sources"
+      },
+      "confidence": {
+        "kind": "DETERMINISTIC"
+      }
+    }
+  ],
+  "retrievalHints": {
+    "modes": [
+      "EXACT",
+      "STRUCTURED"
+    ],
+    "crossLanguage": false
+  }
+}

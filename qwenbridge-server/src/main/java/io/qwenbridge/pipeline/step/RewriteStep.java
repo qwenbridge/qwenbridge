@@ -37,6 +37,11 @@ public class RewriteStep implements PipelineStep<RewriteResult> {
       return RewriteResult.none();
     }
 
+    if (analysis.rewrites().isEmpty()) {
+      return new RewriteResult(
+          false, "original-query-fallback", java.util.List.of(context.request().originalQuery()));
+    }
+
     return analysis.toRewriteResult();
   }
 }

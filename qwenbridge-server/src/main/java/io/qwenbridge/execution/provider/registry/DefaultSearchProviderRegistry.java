@@ -1,8 +1,8 @@
 package io.qwenbridge.execution.provider.registry;
 
+import io.quarkus.arc.All;
 import io.qwenbridge.execution.provider.spi.SearchProvider;
 import io.qwenbridge.execution.provider.spi.SearchProviderRegistry;
-import io.quarkus.arc.All;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.Collection;

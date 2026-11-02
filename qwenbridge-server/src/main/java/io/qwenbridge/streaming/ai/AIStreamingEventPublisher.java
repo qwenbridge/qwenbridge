@@ -4,9 +4,9 @@ import io.qwenbridge.streaming.event.AICompletedStreamingPayload;
 import io.qwenbridge.streaming.event.AIFailedStreamingPayload;
 import io.qwenbridge.streaming.event.AITokenStreamingPayload;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 @RequiredArgsConstructor

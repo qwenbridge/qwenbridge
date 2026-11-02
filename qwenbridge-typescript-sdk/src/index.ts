@@ -1,8 +1,13 @@
 export { QwenBridgeClient } from "./qwenbridge-client.js";
+export { CommerceClient, COMMERCE_CONTRACT_V1, COMMERCE_RESPONSE_FIELDS } from "./commerce-client.js";
+export type { CommerceRequest, CommerceResponse, CommerceConstraint, CommerceEvent, EvidenceSpan, CommerceSession, SessionTurn, RelaxationProposal, SessionEvent, CommerceClientOptions, CommerceFieldSpec, CommerceHit, CommerceResults, CommerceRetrieval, CommerceInterpretation, CommerceSubQuery, CommerceClarification, StreamError, ProgressEventFields, ServerVersion } from "./commerce-client.js";
+export type { Expansion, ExpansionTarget, ExpansionTargetStatus } from "./types.js";
+export type { Spelling, SpellingCorrection, SpellingLanguage } from "./types.js";
 export { QwenBridgeStreamingClient } from "./streaming/qwenbridge-streaming-client.js";
 export { StreamingPayloadMapper } from "./streaming/streaming-payload-mapper.js";
 export {
   QwenBridgeApiError,
+  QwenBridgeIncompatibleServerError,
   QwenBridgeTransportError
 } from "./errors.js";
 export { RetryClassifier } from "./retry/retry-classifier.js";

@@ -21,11 +21,11 @@ import io.qwenbridge.streaming.ai.AIStreamingEventPublisher;
 import io.qwenbridge.streaming.config.StreamingProperties;
 import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import io.qwenbridge.testsupport.MutinyUnitTestExtension;
+import io.smallrye.mutiny.Multi;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
-import io.smallrye.mutiny.Multi;
 
 @ExtendWith(MutinyUnitTestExtension.class)
 class QwenSearchAnalysisServiceStreamingTest {

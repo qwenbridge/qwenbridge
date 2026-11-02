@@ -47,7 +47,7 @@ public class AIChatController {
                   @ExampleObject(
                       name = "AI chat response",
                       value =
-                          """
+"""
 {
   "content": "QwenBridge is an AI-native search and provider bridge platform."
 }
@@ -85,8 +85,16 @@ public class AIChatController {
   @Path("/chat")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public AIChatResponse chat(@Valid AIChatRequest request) {
+  public AIChatResponse chat(
+      @Valid AIChatRequest request,
+      @jakarta.ws.rs.core.Context io.vertx.core.http.HttpServerResponse http) {
     ChatResponse response = aiService.chat(new ChatRequest(request.prompt()));
+    // QB-248: which provider answered, so a fallback answer is never presented as the primary's.
+    var served = aiService.takeServed();
+    if (http != null && served != null) {
+      http.putHeader("X-QwenBridge-AI-Provider", served.provider());
+      if (served.fallback()) http.putHeader("X-QwenBridge-AI-Fallback", "true");
+    }
     return new AIChatResponse(response.content());
   }
 }

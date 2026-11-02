@@ -6,8 +6,8 @@ import io.qwenbridge.execution.provider.spi.SearchProviderRegistry;
 import io.qwenbridge.execution.provider.spi.SearchProviderResolver;
 import io.qwenbridge.pipeline.ExecutionContext;
 import io.qwenbridge.pipeline.context.ContextKeys;
-import lombok.RequiredArgsConstructor;
 import jakarta.enterprise.context.ApplicationScoped;
+import lombok.RequiredArgsConstructor;
 
 @ApplicationScoped
 @RequiredArgsConstructor

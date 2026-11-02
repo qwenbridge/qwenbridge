@@ -1,14 +1,14 @@
 package io.qwenbridge.analysis.cache.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.quarkus.redis.datasource.RedisDataSource;
+import io.quarkus.redis.datasource.value.SetArgs;
+import io.quarkus.redis.datasource.value.ValueCommands;
 import io.qwenbridge.analysis.cache.AIAnalysisCache;
 import io.qwenbridge.analysis.cache.CacheKey;
 import io.qwenbridge.analysis.cache.config.AIAnalysisCacheProperties;
 import io.qwenbridge.analysis.model.SearchAnalysis;
 import io.qwenbridge.operations.metrics.OperationsMetrics;
-import io.quarkus.redis.datasource.RedisDataSource;
-import io.quarkus.redis.datasource.value.SetArgs;
-import io.quarkus.redis.datasource.value.ValueCommands;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Optional;
 
@@ -57,7 +57,7 @@ public class RedisAIAnalysisCache implements AIAnalysisCache {
 
   @Override
   public void put(CacheKey key, SearchAnalysis value) {
-    if (!properties.enabled() || !isRedis() || value == null) {
+    if (!properties.enabled() || !isRedis() || value == null || !value.semanticValidated()) {
       return;
     }
 

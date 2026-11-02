@@ -6,6 +6,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 public class ControlCharacterNormalizer implements InputNormalizationRule {
 
   @Override
+  public int order() {
+    return 40;
+  }
+
+  @Override
   public String name() {
     return "control-character";
   }

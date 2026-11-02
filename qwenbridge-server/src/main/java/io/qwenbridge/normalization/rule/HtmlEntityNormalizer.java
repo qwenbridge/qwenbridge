@@ -6,6 +6,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 public class HtmlEntityNormalizer implements InputNormalizationRule {
 
   @Override
+  public int order() {
+    return 20;
+  }
+
+  @Override
   public String name() {
     return "html-entity";
   }

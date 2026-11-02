@@ -13,6 +13,15 @@ import org.junit.jupiter.api.Test;
 class OpenSearchQueryFactoryTest {
 
   @Test
+  void mustNotSilentlyDiscardUncompiledConstraints() {
+    var factory = new OpenSearchQueryFactory(properties());
+    var request = new SearchRequest("mouse", Map.of("price", 50), Map.of());
+    org.assertj.core.api.Assertions.assertThatThrownBy(() -> factory.from(request))
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessageContaining("structured compilation");
+  }
+
+  @Test
   void shouldCreateMultiMatchQuery() {
     OpenSearchQueryFactory factory = new OpenSearchQueryFactory(properties());
 

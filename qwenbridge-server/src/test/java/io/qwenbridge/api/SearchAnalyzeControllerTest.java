@@ -9,6 +9,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
 import io.qwenbridge.ai.contract.ChatRequest;
 import io.qwenbridge.ai.contract.ChatResponse;
 import io.qwenbridge.ai.exception.AIException;
@@ -19,8 +21,6 @@ import io.qwenbridge.decision.SearchBackend;
 import io.qwenbridge.decision.SearchMode;
 import io.qwenbridge.execution.provider.opensearch.client.OpenSearchClient;
 import io.qwenbridge.intent.IntentType;
-import io.quarkus.test.InjectMock;
-import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 import java.util.List;
@@ -54,6 +54,10 @@ class SearchAnalyzeControllerTest {
     postAnalyze("{\"query\":\"میز\"}")
         .statusCode(200)
         .body("originalQuery", equalTo("میز"))
+        .body("confidence", equalTo(0.85f))
+        .body("confidenceAssessment.value", equalTo(0.85f))
+        .body("confidenceAssessment.method", equalTo("model-signal-min-v1"))
+        .body("confidenceAssessment.calibrated", equalTo(false))
         .body("language", equalTo("fa"))
         .body("decision", equalTo("ALLOW"))
         .body("rewrites[0]", equalTo("table"))
@@ -126,7 +130,8 @@ class SearchAnalyzeControllerTest {
 
   @Test
   void shouldMapAIProviderFailureToBadGateway() {
-    when(searchAnalysisService.analyze("table")).thenThrow(new AIException("Ollama provider failure"));
+    when(searchAnalysisService.analyze("table"))
+        .thenThrow(new AIException("Ollama provider failure"));
     when(searchAnalysisService.analyze(anyString(), anyString()))
         .thenThrow(new AIException("Ollama provider failure"));
 
@@ -135,7 +140,7 @@ class SearchAnalyzeControllerTest {
         .body("status", equalTo(502))
         .body("error", equalTo("Bad Gateway"))
         .body("code", equalTo("AI_PROVIDER_ERROR"))
-        .body("message", equalTo("Ollama provider failure"))
+        .body("message", equalTo("AI provider failure")) // QB-062: upstream text is never returned
         .body("path", equalTo("/api/v1/search/analyze"))
         .body("requestId", notNullValue())
         .header("X-Request-ID", notNullValue());
@@ -154,7 +159,7 @@ class SearchAnalyzeControllerTest {
         .body("status", equalTo(502))
         .body("error", equalTo("Bad Gateway"))
         .body("code", equalTo("SEARCH_PROVIDER_ERROR"))
-        .body("message", equalTo("OpenSearch provider failure"))
+        .body("message", equalTo("Search provider failure")) // QB-062
         .body("path", equalTo("/api/v1/search/analyze"))
         .body("requestId", notNullValue())
         .header("X-Request-ID", notNullValue());
@@ -207,7 +212,8 @@ class SearchAnalyzeControllerTest {
 
   @Test
   void shouldMapAIChatProviderFailureToBadGateway() {
-    when(aiService.chat(any(ChatRequest.class))).thenThrow(new AIException("Ollama provider failure"));
+    when(aiService.chat(any(ChatRequest.class)))
+        .thenThrow(new AIException("Ollama provider failure"));
 
     given()
         .contentType(ContentType.JSON)
@@ -219,7 +225,7 @@ class SearchAnalyzeControllerTest {
         .body("status", equalTo(502))
         .body("error", equalTo("Bad Gateway"))
         .body("code", equalTo("AI_PROVIDER_ERROR"))
-        .body("message", equalTo("Ollama provider failure"))
+        .body("message", equalTo("AI provider failure")) // QB-062: upstream text is never returned
         .body("path", equalTo("/api/v1/ai/chat"))
         .header("X-Request-ID", notNullValue());
   }
@@ -387,29 +393,29 @@ class SearchAnalyzeControllerTest {
 
   private String analysisJson(String language, String rewrite) {
     return """
-           {
-             "language": "%s",
-             "intent": "PRODUCT_SEARCH",
-             "intentConfidence": 0.85,
-             "intentReason": "Product search.",
-             "rewrites": ["%s"],
-             "semanticValidated": true,
-             "semanticScore": 0.90,
-             "semanticMeaning": "Product search.",
-             "entities": ["%s"],
-             "searchMode": "KEYWORD",
-             "backend": "OPENSEARCH",
-             "keywordSearch": true,
-             "vectorSearch": false,
-             "hybridSearch": false,
-             "facets": true,
-             "rerank": false,
-             "rewriteAgain": false,
-             "answer": false,
-             "decisionConfidence": 0.80,
-             "decisionReason": "Keyword search is enough."
-           }
-           """
+    {
+      "language": "%s",
+      "intent": "PRODUCT_SEARCH",
+      "intentConfidence": 0.85,
+      "intentReason": "Product search.",
+      "rewrites": ["%s"],
+      "semanticValidated": true,
+      "semanticScore": 0.90,
+      "semanticMeaning": "Product search.",
+      "entities": ["%s"],
+      "searchMode": "KEYWORD",
+      "backend": "OPENSEARCH",
+      "keywordSearch": true,
+      "vectorSearch": false,
+      "hybridSearch": false,
+      "facets": true,
+      "rerank": false,
+      "rewriteAgain": false,
+      "answer": false,
+      "decisionConfidence": 0.80,
+      "decisionReason": "Keyword search is enough."
+    }
+    """
         .formatted(language, rewrite, rewrite);
   }
 
@@ -426,7 +432,8 @@ class SearchAnalyzeControllerTest {
   private void mockSuccessfulAnalyze(String query, String language, String rewrite) {
     SearchAnalysis analysis = searchAnalysis(language, rewrite);
 
-    when(aiService.chat(any(ChatRequest.class))).thenReturn(new ChatResponse(analysisJson(language, rewrite)));
+    when(aiService.chat(any(ChatRequest.class)))
+        .thenReturn(new ChatResponse(analysisJson(language, rewrite)));
 
     when(searchAnalysisService.analyze(query)).thenReturn(analysis);
     when(searchAnalysisService.analyze(anyString(), anyString())).thenReturn(analysis);

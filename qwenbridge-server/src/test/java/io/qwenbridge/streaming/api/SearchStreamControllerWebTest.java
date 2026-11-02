@@ -6,8 +6,8 @@ import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
-import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import io.quarkus.test.junit.QuarkusTest;
+import io.qwenbridge.streaming.session.StreamingSessionRegistry;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;

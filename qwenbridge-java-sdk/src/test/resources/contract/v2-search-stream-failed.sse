@@ -1,0 +1,8 @@
+event:search.started
+data:{"version":2,"kind":"search.started","requestId":"r-2","response":null,"message":"","sequence":1,"terminal":false,"traceId":"4bf92f3577b34da6a3ce929d0e0e4736"}
+
+:heartbeat
+
+event:search.failed
+data:{"version":2,"kind":"search.failed","requestId":"r-2","response":null,"message":"Search could not complete","sequence":2,"terminal":true,"error":{"code":"CANCELLED","category":"CANCELLED","message":"Request was cancelled","retryable":false},"traceId":"4bf92f3577b34da6a3ce929d0e0e4736"}
+

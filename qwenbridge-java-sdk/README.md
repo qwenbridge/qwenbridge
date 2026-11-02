@@ -6,7 +6,7 @@ The SDK supports synchronous search analysis, asynchronous search analysis, type
 
 ## Requirements
 
-- Java 21+
+- Java 25
 - Maven 3.9+
 - A running QwenBridge server
 
@@ -18,7 +18,7 @@ Local monorepo development:
 <dependency>
     <groupId>io.qwenbridge</groupId>
     <artifactId>qwenbridge-java-sdk</artifactId>
-    <version>0.9.0</version>
+    <version>0.9.1</version>
 </dependency>
 ```
 
@@ -160,14 +160,43 @@ Typed payloads include:
 
 ## Examples
 
-Runnable examples are available in:
+The repository's independent Java consumer,
+[`e2e/dual-sdk/java-consumer`](../e2e/dual-sdk/java-consumer), is a runnable, plain Java 25
+application. It uses this SDK as an external Maven dependency and covers:
+- v2 search;
+- streaming and cancellation;
+- typed errors;
+- the v1 analyze calls (synchronous and asynchronous);
+- typed v1 streaming.
 
-```text
-examples/java-sdk-example
+The repository README has a short quick start.
+
+### Persistent commerce sessions
+
+The Java 25 `CommerceClient` supports `createSession`, `session`, `turn`,
+`streamTurn`, `proposals`, and `accept`. Typed responses expose paging cursors,
+actual stage timings, policy decisions and locked fields. Legacy search/refine
+constructors remain available. Include the current session revision for turns
+and consent; retain a session ID to reconnect with the same authenticated owner.
+See [Table 1 contracts](../docs/platform/table-1-api.md).
+
+### v2 client: errors, timeouts, retries and cancellation (1.0)
+
+```java
+var config = new CommerceClientConfig(
+    URI.create("https://search.example.com"), apiKey,
+    Duration.ofSeconds(5),      // connect
+    Duration.ofSeconds(30),     // per call; also sent as X-Request-Timeout-Ms
+    RetryPolicy.defaultPolicy());
+try (var client = new CommerceClient(config)) {
+  client.requireCompatibleServer();
+  var pending = client.searchAsync(CommerceContracts.Request.planned("black shoes under 100 EUR"));
+  pending.cancel(true);            // aborts the call and asks the server to cancel
+} catch (QwenBridgeApiException e) {
+  // e.status(), e.code(), e.category(), e.apiError().retryable()
+}
 ```
 
-Example guide:
-
-```text
-docs/examples/java-sdk-example.md
-```
+Only search, refine and reads are retried, always with the same request ID. Session turns,
+acceptances, streams and cancellations are never retried. See [docs/sdk](../docs/sdk/README.md) for
+the full behaviour and how compatibility is tested.

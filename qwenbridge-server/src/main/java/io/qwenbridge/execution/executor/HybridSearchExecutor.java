@@ -2,8 +2,8 @@ package io.qwenbridge.execution.executor;
 
 import io.qwenbridge.execution.ExecutionOperation;
 import io.qwenbridge.execution.ExecutionStep;
-import java.util.List;
 import jakarta.enterprise.context.ApplicationScoped;
+import java.util.List;
 
 @ApplicationScoped
 public class HybridSearchExecutor implements ExecutionOperationExecutor {

@@ -5,11 +5,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.reset;
 
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
 import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.analysis.service.SearchAnalysisService;
 import io.qwenbridge.execution.provider.opensearch.client.OpenSearchClient;
-import io.quarkus.test.InjectMock;
-import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -35,9 +35,16 @@ class ApiVersionControllerTest {
         .then()
         .statusCode(200)
         .header("X-Request-ID", notNullValue())
-        .header("X-QwenBridge-Version", "0.1.0-SNAPSHOT")
+        .header(
+            "X-QwenBridge-Version",
+            org.eclipse.microprofile.config.ConfigProvider.getConfig()
+                .getValue("quarkus.application.version", String.class))
         .body("name", equalTo("qwenbridge"))
-        .body("version", equalTo("0.1.0-SNAPSHOT"))
+        .body(
+            "version",
+            equalTo(
+                org.eclipse.microprofile.config.ConfigProvider.getConfig()
+                    .getValue("quarkus.application.version", String.class)))
         .body("apiVersion", equalTo("v1"))
         .body("javaVersion", notNullValue());
   }

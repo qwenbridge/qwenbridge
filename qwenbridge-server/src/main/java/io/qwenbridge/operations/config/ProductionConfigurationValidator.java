@@ -11,17 +11,19 @@ import org.eclipse.microprofile.config.ConfigProvider;
 @ApplicationScoped
 public class ProductionConfigurationValidator {
 
+  /**
+   * Settings production must define. The optional OpenSearch backend, Connector Pack settings and
+   * the optional Redis cache are not required (QB-293): they are needed only when enabled.
+   */
   private static final List<String> REQUIRED_PRODUCTION_PROPERTIES =
-      List.of(
-          "qwenbridge.security.cors.allowed-origin-patterns",
-          "qwenbridge.ai.ollama.base-url",
-          "qwenbridge.search.opensearch.base-url",
-          "qwenbridge.analysis.cache.redis.host");
+      List.of("qwenbridge.security.cors.allowed-origin-patterns", "qwenbridge.ai.ollama.base-url");
 
   void validate(@Observes StartupEvent event) {
     Config config = ConfigProvider.getConfig();
 
-    boolean production = config.unwrap(SmallRyeConfig.class).getProfiles().contains("production");
+    // Audit S1b: Quarkus's production profile is "prod"; "production" is kept for compatibility.
+    var profiles = config.unwrap(SmallRyeConfig.class).getProfiles();
+    boolean production = profiles.contains("prod") || profiles.contains("production");
     if (!production) {
       return;
     }

@@ -6,6 +6,8 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
 import io.qwenbridge.ai.service.AIService;
 import io.qwenbridge.analysis.service.SearchAnalysisService;
 import io.qwenbridge.execution.provider.opensearch.client.OpenSearchClient;
@@ -13,8 +15,6 @@ import io.qwenbridge.operations.health.DependencyHealth;
 import io.qwenbridge.operations.health.OperationalHealthService;
 import io.qwenbridge.operations.health.OperationalStatus;
 import io.qwenbridge.operations.health.ReadinessHealthResponse;
-import io.quarkus.test.InjectMock;
-import io.quarkus.test.junit.QuarkusTest;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +44,10 @@ class ApiHealthControllerTest {
         .then()
         .statusCode(200)
         .header("X-Request-ID", notNullValue())
-        .header("X-QwenBridge-Version", "0.1.0-SNAPSHOT")
+        .header(
+            "X-QwenBridge-Version",
+            org.eclipse.microprofile.config.ConfigProvider.getConfig()
+                .getValue("quarkus.application.version", String.class))
         .body("status", equalTo("UP"))
         .body("service", equalTo("qwenbridge"))
         .body("apiVersion", equalTo("v1"));

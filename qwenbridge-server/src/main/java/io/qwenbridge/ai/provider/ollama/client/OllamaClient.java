@@ -8,6 +8,7 @@ import io.qwenbridge.ai.provider.ollama.dto.OllamaEmbeddingRequest;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaEmbeddingResponse;
 import io.qwenbridge.ai.provider.ollama.dto.OllamaStreamingChatResponse;
 import io.qwenbridge.operations.metrics.OperationsMetrics;
+import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ProcessingException;
@@ -17,7 +18,6 @@ import java.time.Duration;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
-import io.smallrye.mutiny.Multi;
 
 @ApplicationScoped
 @Slf4j
@@ -37,8 +37,7 @@ public class OllamaClient {
 
   public OllamaChatResponse chat(OllamaChatRequest request) {
     log.debug("Sending Ollama chat request. model={}", request.model());
-    return execute(
-        "chat", () -> invoke(() -> api.chat(request)), "Ollama chat response was empty");
+    return execute("chat", () -> invoke(() -> api.chat(request)), "Ollama chat response was empty");
   }
 
   public Multi<OllamaStreamingChatResponse> streamChat(OllamaChatRequest request) {
@@ -61,9 +60,7 @@ public class OllamaClient {
   public OllamaEmbeddingResponse embed(OllamaEmbeddingRequest request) {
     log.debug("Sending Ollama embedding request. model={}", request.model());
     return execute(
-        "embedding",
-        () -> invoke(() -> api.embed(request)),
-        "Ollama embedding response was empty");
+        "embedding", () -> invoke(() -> api.embed(request)), "Ollama embedding response was empty");
   }
 
   private <T> T execute(String operation, Supplier<T> call, String emptyResponseMessage) {
@@ -96,7 +93,8 @@ public class OllamaClient {
 
     recordProvider(operation, "failure", started);
     throw new AIException(
-        "Ollama %s request failed after %d retry attempt(s)".formatted(operation, maxRetries), last);
+        "Ollama %s request failed after %d retry attempt(s)".formatted(operation, maxRetries),
+        last);
   }
 
   private AIException normalize(String operation, RuntimeException exception) {
