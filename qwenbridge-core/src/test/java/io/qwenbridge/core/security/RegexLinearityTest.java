@@ -46,6 +46,8 @@ class RegexLinearityTest {
             "shoes" + " ".repeat(N) + "x",
             "shoes," + " ".repeat(N) + "x",
             ",both " + " ".repeat(N) + "\nx",
+            ",both ".repeat(N / 6) + "\nx",
+            "a%".repeat(N / 2) + "@",
             "shoes" + " ".repeat(N) + "and" + " ".repeat(N) + "x"))
       assertTimeoutPreemptively(
           LIMIT,

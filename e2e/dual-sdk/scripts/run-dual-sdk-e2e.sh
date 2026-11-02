@@ -34,6 +34,8 @@ done
 RUN_ID="dual-sdk-$(date +%Y%m%d-%H%M%S)"
 RUN="${REPORT_DIR:-${E2E}/reports/${RUN_ID}}"
 mkdir -p "${RUN}" || exit 2
+# Absolute, because later steps run from other directories (a relative --report-dir broke CI).
+RUN="$(cd "${RUN}" && pwd)" || exit 2
 PORT="${QB295_PORT:-18295}"
 STUB_PORT=$((PORT + 1)); PROVIDER_PORT=$((PORT + 2)); SERVER_B_PORT=$((PORT + 3)); V1_PORT=$((PORT + 4))
 PIDS=()

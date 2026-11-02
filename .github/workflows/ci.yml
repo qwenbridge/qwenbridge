@@ -10,7 +10,7 @@ name: CI
 
 on:
   push:
-    branches: [ main, quarkus-branch ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:

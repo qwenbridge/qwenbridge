@@ -216,6 +216,19 @@ The first pull-request run (PR #68) failed:
   few milliseconds on 200,000 characters. `RegexLinearityTest` guards this.
 - **Not changed:** `ModelDescriptor.SECRET_KEY`. It only checks configuration metadata keys.
 
+**Second PR run:** all four required checks and every other job passed, except two:
+- **Dual-SDK E2E.** CI passes a relative `--report-dir`, and the orchestrator packs the
+  TypeScript SDK from another directory, so the tarball landed in the wrong place. The
+  orchestrator now makes the report directory absolute; verified with the same relative argument.
+- **CodeQL.** It still flagged `EMAIL` and the `IntentAnalyzer` separators, which are linear in
+  practice but bounded now, and `SHARED_TAIL`, a real quadratic case on repeated `, both`
+  followed by a line break. Fixes:
+  - `EMAIL` is bounded to RFC 5321 lengths;
+  - whitespace runs in the separators are bounded to 16 characters;
+  - the shared tail is searched only on the query's last line, in code instead of with `.*$`.
+- **Duplicate runs removed:** CI now runs on pull requests and pushes to `main`, no longer on
+  pushes to the feature branch as well.
+
 **Local verification of the fixes:**
 - full build with all tests and no model reachable: core 648, packs 17 + 5, server 970, Java SDK
   76;

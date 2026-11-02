@@ -42,12 +42,19 @@ public final class IntentAnalyzer {
 
   private static final Pattern SEQUENTIAL =
       Pattern.compile(
-          "(?i)(?:,?(?<!\\s)\\s+and\\s+then\\s+|,\\s*then\\s+|(?<!\\s)\\s+och\\s+sedan\\s+|(?<!\\s)\\s+و\\s+سپس\\s+|(?<!\\s)\\s+و\\s+بعد\\s+)");
+          // Whitespace runs are bounded so matching stays linear (CodeQL java/polynomial-redos).
+          "(?i)(?:,?(?<!\\s)\\s{1,16}and\\s{1,16}then\\s{1,16}|,\\s{0,16}then\\s{1,16}|(?<!\\s)\\s{1,16}och\\s{1,16}sedan\\s{1,16}|(?<!\\s)\\s{1,16}و\\s{1,16}سپس\\s{1,16}|(?<!\\s)\\s{1,16}و\\s{1,16}بعد\\s{1,16})");
   private static final Pattern PARALLEL =
       Pattern.compile(
-          "(?i)(?:(?<!\\s)\\s+(?:and|och|plus)\\s+(?=(?:a|an|also|en|ett)\\s)|(?<!\\s)\\s+و\\s+(?=یک\\s))");
+          "(?i)(?:(?<!\\s)\\s{1,16}(?:and|och|plus)\\s{1,16}(?=(?:a|an|also|en|ett)\\s)|(?<!\\s)\\s{1,16}و\\s{1,16}(?=یک\\s))");
+
+  /**
+   * The start of a shared tail ("…, both under 100 EUR"). It applies only on the query's last line,
+   * which is checked in code instead of with {@code .*$}: that backtracked quadratically on
+   * repeated ", both" followed by a line break (CodeQL java/polynomial-redos).
+   */
   private static final Pattern SHARED_TAIL =
-      Pattern.compile("(?i),\\s*(?:both|båda|هر\\s+دو)\\s.*$");
+      Pattern.compile("(?i),\\s{0,16}(?:both|båda|هر\\s{1,16}دو)\\s");
 
   private final IntentTaxonomy taxonomy;
 
@@ -176,7 +183,7 @@ public final class IntentAnalyzer {
 
   private static List<SubQuery> decompose(String text, List<Intent> intents) {
     int end = text.length();
-    Matcher tail = SHARED_TAIL.matcher(text);
+    Matcher tail = SHARED_TAIL.matcher(text).region(lastLineStart(text), text.length());
     boolean sharedTail = tail.find();
     if (sharedTail) {
       end = tail.start();
@@ -203,6 +210,21 @@ public final class IntentAnalyzer {
       previousStep = List.copyOf(currentStep);
     }
     return subqueries.size() >= 2 ? List.copyOf(subqueries) : List.of();
+  }
+
+  /** Index after the last line terminator, ignoring one terminator that ends the text. */
+  private static int lastLineStart(String text) {
+    int end = text.length();
+    if (end > 0 && isLineTerminator(text.charAt(end - 1))) {
+      end--;
+      if (end > 0 && text.charAt(end) == '\n' && text.charAt(end - 1) == '\r') end--;
+    }
+    for (int i = end - 1; i >= 0; i--) if (isLineTerminator(text.charAt(i))) return i + 1;
+    return 0;
+  }
+
+  private static boolean isLineTerminator(char c) {
+    return c == '\n' || c == '\r' || c == '\u0085' || c == '\u2028' || c == '\u2029';
   }
 
   private static List<int[]> split(String text, int from, int to, Pattern separator) {

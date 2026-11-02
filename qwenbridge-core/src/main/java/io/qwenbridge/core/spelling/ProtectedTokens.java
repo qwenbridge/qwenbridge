@@ -26,7 +26,8 @@ public final class ProtectedTokens {
   private static final Pattern URL = Pattern.compile("(?i)\\b(?:https?|ftp)://\\S+|\\bwww\\.\\S+");
   private static final Pattern EMAIL =
       Pattern.compile(
-          "(?<![\\p{L}\\p{N}._%+-])[\\p{L}\\p{N}._%+-]+@[\\p{L}\\p{N}.-]+\\.\\p{L}{2,}");
+          // RFC 5321 lengths bound the parts, so matching stays linear (CodeQL polynomial-redos).
+          "(?<![\\p{L}\\p{N}._%+-])[\\p{L}\\p{N}._%+-]{1,64}@[\\p{L}\\p{N}.-]{1,253}\\.\\p{L}{2,63}");
   private static final Pattern HOST =
       Pattern.compile("(?<![\\p{L}\\p{N}-])[\\p{L}\\p{N}-]++(?:\\.[\\p{L}\\p{N}-]++)++");
   private static final Pattern AMOUNT =
