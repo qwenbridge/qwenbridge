@@ -61,6 +61,10 @@ jobs:
       QWENBRIDGE_EMBEDDING_TIMEOUT: 120s
       QWENBRIDGE_MULTILINGUAL_TIMEOUT: 300s
       QWENBRIDGE_MULTILINGUAL_PER_LANGUAGE_TIMEOUT: 180s
+      # Analysis streams the model answer and gives up when no token arrives within this time
+      # (30 s by default). On CPU the prompt alone takes about 30 s before the first token, so the
+      # request fell back to the fail-closed answer (BLOCK, no model analysis).
+      QWENBRIDGE_STREAMING_MAX_AI_STREAM_DURATION: 180s
       # The test HTTP client gives up after 30 s by default; the first model call (loading the
       # model into memory on CPU) can take longer.
       QUARKUS_HTTP_TEST_TIMEOUT: 300s
@@ -99,7 +103,7 @@ jobs:
           for name in QWENBRIDGE_AI_OLLAMA_READ_TIMEOUT QUARKUS_REST_CLIENT_OLLAMA_READ_TIMEOUT \
             QWENBRIDGE_ANALYSIS_CACHE_ANALYSIS_TIMEOUT QWENBRIDGE_COMMERCE_RERANK_TIMEOUT_MS \
             QWENBRIDGE_EMBEDDING_TIMEOUT QWENBRIDGE_MULTILINGUAL_TIMEOUT \
-            QWENBRIDGE_MULTILINGUAL_PER_LANGUAGE_TIMEOUT; do
+            QWENBRIDGE_MULTILINGUAL_PER_LANGUAGE_TIMEOUT QWENBRIDGE_STREAMING_MAX_AI_STREAM_DURATION; do
             sed -i "/^${name}=/d" .env
             echo "${name}=${!name}" >> .env
           done
