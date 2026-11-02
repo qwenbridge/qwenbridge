@@ -61,6 +61,9 @@ jobs:
       QWENBRIDGE_EMBEDDING_TIMEOUT: 120s
       QWENBRIDGE_MULTILINGUAL_TIMEOUT: 300s
       QWENBRIDGE_MULTILINGUAL_PER_LANGUAGE_TIMEOUT: 180s
+      # The test HTTP client gives up after 30 s by default; the first model call (loading the
+      # model into memory on CPU) can take longer.
+      QUARKUS_HTTP_TEST_TIMEOUT: 300s
     steps:
       - name: Free runner disk space
         run: |
