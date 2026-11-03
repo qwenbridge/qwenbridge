@@ -1,6 +1,6 @@
 # QwenBridge Documentation
 
-This index covers the current documentation for QwenBridge 1.0 (build 0.9.1). The **historical
+This index covers the current documentation for QwenBridge 1.0 (build 1.0.0-RC1). The **historical
 records** (old roadmaps and release evidence) describe the repository at the time they were
 written; each one carries a banner that says so.
 

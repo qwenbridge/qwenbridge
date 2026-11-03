@@ -1,6 +1,6 @@
 # QwenBridge 1.0: Compatibility Matrix
 
-**Code versions.** Server, Java SDK and TypeScript SDK are built as `0.9.1` from this branch. The
+**Code versions.** Server, Java SDK and TypeScript SDK are built as `1.0.0-RC1`. The
 `1.0` contract versions below are what they implement.
 
 **How support is proven.** Every "supported" row below is checked by the master verification run
@@ -28,8 +28,8 @@
 
 | Client | Against | Check |
 |---|---|---|
-| Java SDK 0.9.1 (v2 Commerce client, v1 client) | This server | Unit tests (76); live v2 calls and live analyze in the master run; `ServerContractCompatibilityTest`; `ApiContractFixturesTest` (fixtures captured from the server) |
-| TypeScript SDK 0.9.1 | This server | Unit tests (70); live v2 calls on Node.js 20 in the master run |
+| Java SDK 1.0.0-RC1 (v2 Commerce client, v1 client) | This server | Unit tests (76); live v2 calls and live analyze in the master run; `ServerContractCompatibilityTest`; `ApiContractFixturesTest` (fixtures captured from the server) |
+| TypeScript SDK 1.0.0-RC1 | This server | Unit tests (70); live v2 calls on Node.js 20 in the master run |
 | Web component | This server | Browser tests (12, Chromium) |
 
 ## Removed in QB-287 (breaking)
