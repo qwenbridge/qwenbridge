@@ -1,10 +1,12 @@
 {
   "name": "qwenbridge-dual-sdk-typescript-consumer",
-  "version": "0.9.1",
+  "version": "1.0.0-RC1",
   "private": true,
   "description": "QB-295: independent TypeScript consumer of the published @qwenbridge/sdk package (installed from its packed tarball by the orchestrator).",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "devDependencies": {
     "@types/node": "22.20.0",
     "typescript": "5.9.3"

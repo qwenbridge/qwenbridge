@@ -18,7 +18,7 @@ Local monorepo development:
 <dependency>
     <groupId>io.qwenbridge</groupId>
     <artifactId>qwenbridge-java-sdk</artifactId>
-    <version>0.9.1</version>
+    <version>1.0.0-RC1</version>
 </dependency>
 ```
 

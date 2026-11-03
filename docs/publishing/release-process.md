@@ -14,7 +14,7 @@ without credentials.
 | Core, plugin SDK, packs | `qwenbridge-core`, `qwenbridge-plugin-sdk`, `qwenbridge-commerce-pack`, `qwenbridge-library-pack` | Built with the server. Publish only when a stable plugin API is announced |
 
 All modules share one version, held in the root `pom.xml` and in
-`qwenbridge-typescript-sdk/package.json`. `scripts/check-versions.py` fails the build when the
+`qwenbridge-typescript-sdk/package.json`. `scripts/verification/check-versions.py` fails the build when the
 two differ.
 
 ## 1. Preconditions
@@ -33,7 +33,7 @@ two differ.
 ```bash
 mvn -B versions:set -DnewVersion=X.Y.Z -DgenerateBackupPoms=false
 (cd qwenbridge-typescript-sdk && npm version X.Y.Z --no-git-tag-version)
-python3 scripts/check-versions.py
+python3 scripts/verification/check-versions.py
 ```
 
 Release versions never end in `-SNAPSHOT`. Update the version in the README, the SDK READMEs and

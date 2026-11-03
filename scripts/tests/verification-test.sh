@@ -69,7 +69,8 @@ with tempfile.TemporaryDirectory() as tmp:
     pom.write_text(pom.read_text().replace("<maven.compiler.release>25", "<maven.compiler.release>21"))
     assert any("maven.compiler.release" in e for e in mod.check(fixture)[1])
     sdk = fixture / "qwenbridge-typescript-sdk/package.json"
-    sdk.write_text(sdk.read_text().replace('"version": "0.9.1"', '"version": "0.1.0"'))
+    # Change whichever version package.json has, so a version bump does not break this test.
+    sdk.write_text(re.sub(r'"version": "[^"]+"', '"version": "0.1.0"', sdk.read_text(), count=1))
     assert any("package/lock" in e for e in mod.check(fixture)[1])
     workflow = fixture / ".github/workflows/ci.yml"
     workflow.write_text(workflow.read_text().replace("java-version: 25", "java-version: 21"))

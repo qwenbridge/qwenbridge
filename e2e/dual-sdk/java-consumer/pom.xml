@@ -10,14 +10,14 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.qwenbridge.e2e</groupId>
   <artifactId>dual-sdk-java-consumer</artifactId>
-  <version>0.9.1</version>
+  <version>1.0.0-RC1</version>
   <packaging>jar</packaging>
   <name>QwenBridge dual-SDK E2E Java consumer</name>
 
   <properties>
     <maven.compiler.release>25</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <qwenbridge.sdk.version>0.9.1</qwenbridge.sdk.version>
+    <qwenbridge.sdk.version>1.0.0-RC1</qwenbridge.sdk.version>
   </properties>
 
   <dependencies>

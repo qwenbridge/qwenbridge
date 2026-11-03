@@ -94,9 +94,20 @@ public final class JavaConsumer {
     return map;
   }
 
+  /** The version of the SDK JAR actually on the class path, from its Maven metadata. */
   static String sdkVersion() {
     String v = CommerceClient.class.getPackage().getImplementationVersion();
-    return v == null ? "0.9.1" : v;
+    if (v != null) return v;
+    try (var in =
+        CommerceClient.class.getResourceAsStream(
+            "/META-INF/maven/io.qwenbridge/qwenbridge-java-sdk/pom.properties")) {
+      if (in == null) return "unknown";
+      var properties = new java.util.Properties();
+      properties.load(in);
+      return properties.getProperty("version", "unknown");
+    } catch (java.io.IOException e) {
+      return "unknown";
+    }
   }
 
   String token(JsonNode scenario) {

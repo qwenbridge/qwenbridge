@@ -37,7 +37,7 @@ optional and off by default.
 
 | | |
 |---|---|
-| **Version** | 0.9.1 (QwenBridge 1.0 release candidate) |
+| **Version** | 1.0.0-RC1 (QwenBridge 1.0 release candidate) |
 | **Runtime** | Quarkus on Java 25. Quarkus is the only application framework ([certification](docs/architecture/quarkus-only.md)) |
 | **Clients** | REST and SSE; Java SDK (Java 25); TypeScript SDK (Node.js 20+ and browsers) |
 | **Model** | Any Ollama-compatible local model (default `qwen2.5`, embeddings `bge-m3`), or an HTTP JSON gateway |
@@ -125,7 +125,7 @@ terminal event, `search.completed` or `search.failed`. See the [SSE contract](do
 <dependency>
   <groupId>io.qwenbridge</groupId>
   <artifactId>qwenbridge-java-sdk</artifactId>
-  <version>0.9.1</version>
+  <version>1.0.0-RC1</version>
 </dependency>
 ```
 

@@ -15,7 +15,7 @@ The package version must be valid semantic versioning.
 Valid:
 
 ```json
-"version": "0.9.1"
+"version": "1.0.0-RC1"
 ```
 
 Invalid for public npm publishing:
@@ -38,7 +38,7 @@ npm pack --dry-run
 
 ```bash
 cd qwenbridge-typescript-sdk
-npm version 0.9.1 --no-git-tag-version
+npm version 1.0.0-RC1 --no-git-tag-version
 npm run build
 npm test
 npm publish --access public
