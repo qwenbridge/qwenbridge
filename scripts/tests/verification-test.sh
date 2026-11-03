@@ -47,6 +47,7 @@ fi
 python3 - <<'PY'
 import importlib.util
 from pathlib import Path
+import re
 import tempfile
 import shutil
 spec = importlib.util.spec_from_file_location("versions", "scripts/verification/check-versions.py")
@@ -73,8 +74,11 @@ with tempfile.TemporaryDirectory() as tmp:
     workflow = fixture / ".github/workflows/ci.yml"
     workflow.write_text(workflow.read_text().replace("java-version: 25", "java-version: 21"))
     assert any("CI Java" in e for e in mod.check(fixture)[1])
-    workflow.write_text(workflow.read_text().replace(
-        "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020", "actions/setup-node@v7"))
+    # Unpin whichever setup-node SHA the workflow uses, so action updates do not break this test.
+    pinned = workflow.read_text()
+    unpinned = re.sub(r"actions/setup-node@[0-9a-f]{40}", "actions/setup-node@v7", pinned)
+    assert unpinned != pinned, "ci.yml no longer pins actions/setup-node"
+    workflow.write_text(unpinned)
     assert any("full commit SHA" in e for e in mod.check(fixture)[1])
 spec = importlib.util.spec_from_file_location("performance", "scripts/verification/run-performance.py")
 performance = importlib.util.module_from_spec(spec)

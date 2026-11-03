@@ -55,19 +55,21 @@
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.version>3.40.1</quarkus.platform.version>
 
-    <compiler-plugin.version>3.14.0</compiler-plugin.version>
-    <surefire-plugin.version>3.5.4</surefire-plugin.version>
+    <compiler-plugin.version>3.16.0</compiler-plugin.version>
+    <surefire-plugin.version>3.6.1</surefire-plugin.version>
 
-    <maven-enforcer-plugin.version>3.6.3</maven-enforcer-plugin.version>
-    <spotless-maven-plugin.version>3.10.0</spotless-maven-plugin.version>
-    <spotbugs-maven-plugin.version>4.10.4.0</spotbugs-maven-plugin.version>
+    <maven-enforcer-plugin.version>3.7.0</maven-enforcer-plugin.version>
+    <spotless-maven-plugin.version>3.10.4</spotless-maven-plugin.version>
+    <spotbugs-maven-plugin.version>4.10.5.0</spotbugs-maven-plugin.version>
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
 
     <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
     <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
     <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
-    <central-publishing-maven-plugin.version>0.11.0</central-publishing-maven-plugin.version>
+    <central-publishing-maven-plugin.version>0.12.0</central-publishing-maven-plugin.version>
+    <okio.version>3.16.4</okio.version>
+    <guava.version>33.7.2-jre</guava.version>
   </properties>
 
   <dependencyManagement>
@@ -78,6 +80,19 @@
         <version>${quarkus.platform.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+      </dependency>
+      <!-- Security overrides of transitive versions (Dependabot alerts). okio comes through
+           lingua -> moshi (CVE-2023-3635, fixed in 3.4.0); guava through the Quarkus test
+           framework's Maven resolver, test scope only. -->
+      <dependency>
+        <groupId>com.squareup.okio</groupId>
+        <artifactId>okio</artifactId>
+        <version>${okio.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
