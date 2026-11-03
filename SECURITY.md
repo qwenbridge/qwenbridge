@@ -2,8 +2,16 @@
 
 ## Supported versions
 
-Security fixes are made on the active release line: currently **0.9.x (QwenBridge 1.0 release
-candidate)**. Older lines (V1–V9 records in `docs/release/`) are historical and unsupported.
+Security fixes are made on the active release line only.
+
+| Version | Status |
+|---|---|
+| 1.0.0-RC1 (QwenBridge 1.0 release candidate) | Current; receives fixes |
+| 0.9.1 and older 0.x | **Deprecated**; no fixes. Upgrade to 1.0.0-RC1 ([compatibility](docs/release/QwenBridge-1.0-Compatibility.md)) |
+| V1–V9 records in `docs/release/` | Historical, unsupported |
+
+Maven Central and npm do not allow published versions to be removed or changed, so 0.9.1 stays
+downloadable; it is deprecated here and in its GitHub release.
 
 ## Reporting a vulnerability
 
