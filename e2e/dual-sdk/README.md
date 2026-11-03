@@ -40,7 +40,7 @@ flowchart TD
 | `fixtures/catalog-e2e-1.0.json` | 24 invented, generic products: ids, titles, descriptions, categories, prices and currencies, variants, availability, attributes, weights. Includes deliberate traps |
 | `fixtures/model-answers.json` | Reviewed answers of the model stand-in. Every filter quotes its own query |
 | `fixtures/typo/`, `fixtures/glossary/` | Test dictionaries and phrase tables (en, sv, fa; en→sv/fa/nb/nn, sv→en) |
-| `java-consumer/` | Standalone Maven project, not a reactor module. Depends on the SDK artifact `io.qwenbridge:qwenbridge-java-sdk:0.9.1` |
+| `java-consumer/` | Standalone Maven project, not a reactor module. Depends on the SDK artifact `io.qwenbridge:qwenbridge-java-sdk:1.0.0-RC1` |
 | `typescript-consumer/` | Standalone package. Imports `@qwenbridge/sdk` by name only, installed from the SDK's `npm pack` tarball. Type-checked with `tsc` |
 | `provider-adapters/` | `local_model_stub.py` (Ollama-compatible `/api/chat`, `/api/embed`, `/api/tags`); `catalog_provider.py` (an `http-json` change feed with switchable failure modes); `shopify_check.py` (read-only Admin GraphQL contract check, mock or live) |
 | `scripts/` | `run-dual-sdk-e2e.sh` (orchestrator), `evaluate.py`, `protocol_checks.py`, `provider_checks.py`, `live-providers.sh`, `redis_ping.py` |

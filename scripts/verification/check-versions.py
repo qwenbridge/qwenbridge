@@ -31,6 +31,13 @@ def check(root):
         lock = json.loads((root / module / "package-lock.json").read_text())
         if package["version"] != version or lock["version"] != version or lock["packages"][""]["version"] != version:
             errors.append(f"{module}: package/lock versions must equal {version}")
+    # The dual-SDK E2E consumer is a standalone project; with another version it resolves an older
+    # published SDK from Maven Central instead of the one built here.
+    consumer = root / "e2e/dual-sdk/java-consumer/pom.xml"
+    if consumer.exists():
+        sdk = ET.parse(consumer).getroot().findtext("m:properties/m:qwenbridge.sdk.version", namespaces=ns)
+        if sdk != version:
+            errors.append(f"e2e/dual-sdk/java-consumer: qwenbridge.sdk.version {sdk} must equal {version}")
     dockerfile = (root / "qwenbridge-server/Dockerfile").read_text()
     if "eclipse-temurin-25" not in dockerfile or "eclipse-temurin:25-jre" not in dockerfile:
         errors.append("Docker build and runtime must use Java 25")
