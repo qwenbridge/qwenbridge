@@ -37,7 +37,7 @@ optional and off by default.
 
 | | |
 |---|---|
-| **Version** | 1.0.0-RC1 (QwenBridge 1.0 release candidate) |
+| **Version** | 1.0.0-RC1 (QwenBridge 1.0 release candidate). 0.9.1 is deprecated ([supported versions](SECURITY.md#supported-versions)) |
 | **Runtime** | Quarkus on Java 25. Quarkus is the only application framework ([certification](docs/architecture/quarkus-only.md)) |
 | **Clients** | REST and SSE; Java SDK (Java 25); TypeScript SDK (Node.js 20+ and browsers) |
 | **Model** | Any Ollama-compatible local model (default `qwen2.5`, embeddings `bge-m3`), or an HTTP JSON gateway |

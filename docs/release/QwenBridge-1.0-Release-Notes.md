@@ -1,8 +1,8 @@
 # QwenBridge 1.0: Release Notes
 
 > **Release status:** see `QwenBridge-1.0-Release-Decision.md`. These notes describe what is
-> implemented and verified on `quarkus-branch` (artifact version 0.9.1, uncommitted). They claim
-> nothing beyond the tests and master runs cited.
+> implemented and verified on `main`, released as the candidate `1.0.0-RC1` (tag `v1.0.0-RC1`).
+> They claim nothing beyond the tests and master runs cited. 0.9.1 is deprecated.
 
 ## Summary
 
